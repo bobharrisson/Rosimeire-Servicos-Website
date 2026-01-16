@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rosimeire Serviços | Serenity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --midnight: #081221;
+            --deep-navy: #0a192f;
+            --petal: #f8c8c4;
+            --gold: #d4af37;
+            --text-dim: rgba(255, 255, 255, 0.6);
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--midnight);
+            color: white;
+            overflow-x: hidden;
+            letter-spacing: 0.02em;
+        }
+
+        /* Atmospheric Light System */
+        .atmosphere {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #0a1d37 0%, #081221 100%);
+        }
+
+        .light-beam {
+            position: absolute;
+            width: 80vw;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(248, 200, 196, 0.05) 0%, transparent 50%);
+            transform: rotate(-15deg);
+            filter: blur(120px);
+            animation: beam-float 20s infinite alternate ease-in-out;
+        }
+
+        .beam-2 {
+            right: -20%;
+            top: -20%;
+            background: linear-gradient(225deg, rgba(212, 175, 55, 0.03) 0%, transparent 40%);
+            animation-delay: -5s;
+        }
+
+        @keyframes beam-float {
+            0% { transform: rotate(-15deg) translate(-5%, -5%); opacity: 0.3; }
+            100% { transform: rotate(-10deg) translate(5%, 5%); opacity: 0.6; }
+        }
+
+        .glass-nav {
+            background: rgba(8, 18, 33, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .crystal-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.8s cubic-bezier(0.15, 0.83, 0.66, 1);
+        }
+
+        .crystal-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(248, 200, 196, 0.3);
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-serenity {
+            background: transparent;
+            border: 1px solid var(--petal);
+            color: var(--petal);
+            padding: 1rem 2.5rem;
+            border-radius: 2px;
+            font-weight: 300;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            transition: all 0.5s ease;
+        }
+
+        .btn-serenity:hover {
+            background: var(--petal);
+            color: var(--midnight);
+            box-shadow: 0 0 30px rgba(248, 200, 196, 0.2);
+        }
+
+        .heading-serif {
+            font-weight: 200;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .tagline {
+            letter-spacing: 0.8em;
+            text-transform: uppercase;
+            font-weight: 400;
+            font-size: 0.6rem;
+            color: var(--petal);
+            opacity: 0.8;
+        }
+
+        /* Glass Divider Styling */
+        .glass-divider {
+            height: 1px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            background: linear-gradient(90deg, transparent, rgba(248, 200, 196, 0.15), transparent);
+            position: relative;
+        }
+
+        .glass-divider::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(248, 200, 196, 0.4), transparent);
+            filter: blur(1px);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: var(--midnight); }
+        ::-webkit-scrollbar-thumb { background: var(--petal); }
+
+        .fade-mask {
+            mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "framer-motion": "https://esm.sh/framer-motion@^12.23.26",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
+  }
+}
+</script>
+</head>
+<body>
+    <div class="atmosphere">
+        <div class="light-beam"></div>
+        <div class="light-beam beam-2"></div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="index.tsx"></script>
+</body>
+</html>
