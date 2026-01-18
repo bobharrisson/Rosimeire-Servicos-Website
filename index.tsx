@@ -189,7 +189,7 @@ const translations = {
     servicesSubtitle: "La excelencia técnica que preserva su legado.",
     servicesDescription: "Nos dedicamos a la preservación y el cuidado de su propriedade con un rigor inigualável. A través de un servicio de limpeza profesional de alto nivel, nuestros técnicos especializados aseguran que cada detalle de su inmueble sea tratado con la máxima pericia, garantizando un ambiente absolutamente inmaculado. Combinamos la excelencia técnica con una política de transparencia e valor justo, ofreciéndole la seguridad de un patrimonio impecablemente mantenido, siempre que lo necesite.",
     s1Title: "Alojamientos y Unidades Turísticas",
-    s1Tagline: "Higienização rigorosa para a rotatividade do setor.",
+    s1Tagline: "Higienización rigorosa para a rotatividade do setor.",
     s1Desc: "Especialistas en la preparación de alojamientos locales, hostales y unidades hoteleras. Garantizamos una limpieza profunda e eficiente entre estadias, aseguran que cada nuevo huésped encuentre un inmueble con estándares de limpieza impecables.",
     s2Title: "Residencias Particulares e Diarias",
     s2Tagline: "Mantenimiento personalizado y asistencia de confianza.",
@@ -199,7 +199,7 @@ const translations = {
     s3Desc: "Un servicio de limpieza minucioso que va más allá de lo esencial. Intervenimos en los detalles más exigentes y de difícil acceso, garantizando un nivel de perfección y frescura que transforma completamente el ambiente.",
     s4Title: "Limpezas Post-Obra",
     s4Tagline: "Finalización técnica para entrega de espacios listos para habitar.",
-    s4Desc: "Eliminación profunda de polvos y residuos de construcción en chalets, restaurantes o tiendas. Transformamos o escenario de obra em um ambiente limpo e acolhedor, garantindo uma transição perfecta para la utilización final.",
+    s4Desc: "Eliminación profunda de polvos y residuos de construcción en chalets, restaurantes o tiendas. Transformamos o escenario de obra em um ambiente limpo e acolhedor, garantizando una transición perfecta para la utilización final.",
     reviewsTitle: "Voces de Confiança",
     partnersTitle: "Alianças de Prestígio",
     quoteTitle: "Contacto",
@@ -969,15 +969,14 @@ const App = () => {
                       <input required className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                      <div className="space-y-2">
-                        <label className="tagline block">{t.email}</label>
-                        <input type="email" required className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="tagline block">{t.phone}</label>
-                        <input type="tel" required className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
-                      </div>
+                    <div className="space-y-2">
+                      <label className="tagline block">{t.email}</label>
+                      <input type="email" required className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="tagline block">{t.phone}</label>
+                      <input type="tel" required className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
                     </div>
 
                     <div className="space-y-2">
