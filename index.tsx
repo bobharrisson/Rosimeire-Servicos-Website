@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { 
@@ -6,7 +7,7 @@ import {
   Star, CheckCircle2, Briefcase, MapPin, ArrowLeft, Globe, Target, Eye, 
   Heart, ShieldCheck, MessageSquare, Flame, Award, Users, Check,
   ChevronLeft, ChevronRight, Save, RotateCcw, Server, Cloud, CloudOff, RefreshCw, Loader2,
-  Instagram, Linkedin, Code, Zap
+  Instagram, Linkedin, Code, Zap, Trash2, Search, ChevronDown, MessageCircle, LogIn, Navigation
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminPanel from './AdminPanel';
@@ -71,6 +72,37 @@ interface Partner {
   url: string;
 }
 
+interface Country {
+  name: string;
+  code: string;
+  ddi: string;
+  flag: string;
+}
+
+const COUNTRIES: Country[] = [
+  { name: "Portugal", code: "PT", ddi: "+351", flag: "🇵🇹" },
+  { name: "United Kingdom", code: "GB", ddi: "+44", flag: "🇬🇧" },
+  { name: "France", code: "FR", ddi: "+33", flag: "🇫🇷" },
+  { name: "Germany", code: "DE", ddi: "+49", flag: "🇩🇪" },
+  { name: "Spain", code: "ES", ddi: "+34", flag: "🇪🇸" },
+  { name: "Ireland", code: "IE", ddi: "+353", flag: "🇮🇪" },
+  { name: "Netherlands", code: "NL", ddi: "+31", flag: "🇳🇱" },
+  { name: "United States", code: "US", ddi: "+1", flag: "🇺🇸" },
+  { name: "Belgium", code: "BE", ddi: "+32", flag: "🇧🇪" },
+  { name: "Switzerland", code: "CH", ddi: "+41", flag: "🇨🇭" },
+  { name: "Italy", code: "IT", ddi: "+39", flag: "🇮🇹" },
+  { name: "Brazil", code: "BR", ddi: "+55", flag: "🇧🇷" },
+  { name: "Angola", code: "AO", ddi: "+244", flag: "🇦🇴" },
+  { name: "Cape Verde", code: "CV", ddi: "+238", flag: "🇨🇻" },
+  { name: "Mozambique", code: "MZ", ddi: "+258", flag: "🇲🇿" },
+  { name: "Luxembourg", code: "LU", ddi: "+352", flag: "🇱🇺" },
+  { name: "Canada", code: "CA", ddi: "+1", flag: "🇨🇦" },
+  { name: "Austria", code: "AT", ddi: "+43", flag: "🇦🇹" },
+  { name: "Sweden", code: "SE", ddi: "+46", flag: "🇸🇪" },
+  { name: "Norway", code: "NO", ddi: "+47", flag: "🇳🇴" },
+  { name: "Denmark", code: "DK", ddi: "+45", flag: "🇩🇰" }
+].sort((a, b) => a.name.localeCompare(b.name));
+
 // --- Visual Elements ---
 const GlassDivider = () => (
   <motion.div 
@@ -89,7 +121,7 @@ const translations = {
     heroSubtitle: "Rosimeire Serviços",
     servicesTitle: "O Rigor do Detalhe",
     servicesSubtitle: "A excelência técnica que preserva o seu legado.",
-    servicesDescription: "Dedicamo-nodes à preservação e cuidado da sua propriedade com um rigor inigualável. Através de um serviço de limpeza profissional de alto padrão, os nossos técnicos especializados asseguram que cada detalhe do seu imóvel seja tratado com a máxima perícia, garantindo um ambiente absolutamente imaculado. Aliamos a excelência técnica a uma política de transparência e valor justo, oferecendo-lhe a segurança de um património impecavelmente mantido, sempre que necessitar.",
+    servicesDescription: "Dedicamo-nodes à preservação e cuidado da sua propriedade com um rigor inigualável. Através de um serviço de limpeza profissional de alto padrão, os nossos técnicos especializados asseguram que cada detalhe do seu imóvel seja tratado com a máxima perícia, garantizando um ambiente absolutamente imaculado. Aliamos a excelência técnica a uma política de transparência e valor justo, oferecendo-lhe a segurança de um património impecavelmente mantido, sempre que necessitar.",
     s1Title: "Alojamentos e Unidades Turísticas",
     s1Tagline: "Higienização rigorosa para a rotatividade do setor.",
     s1Desc: "Especialistas na preparação de alojamentos locais, hostels e unidades hoteleiras. Garantimos uma limpeza profunda e eficiente entre estadias, assegurando que cada novo hóspede encontre um imóvel com padrões de limpeza impecáveis.",
@@ -106,11 +138,13 @@ const translations = {
     partnersTitle: "Alianças de Prestígio",
     quoteTitle: "Contacto",
     addressTitle: "Nosso Escritório",
-    addressDetail: "R. 25 de Abril 49, 8125-234, Quarteira, Faro Algarve – Portugal",
     name: "Nome Completo", email: "Email", phone: "Contacto Telefónico", message: "Em que podemos ajudar?",
     send: "Enviar Mensagem", success: "Mensagem enviada. Entraremos em contacto brevemente.",
+    clearForm: "Limpar Formulário", searchCountry: "Procurar País...",
+    whatsappLabel: "WhatsApp Direto",
     footerNote: "A alma do Algarve bem cuidada.",
     footerSobre: "Sobre", footerCarreira: "Carreira", developedBy: "Desenvolvido & Gerido Por",
+    footerSocial: "Social", footerLinks: "A Empresa",
     adminTitle: "Painel Administrativo", adminSlides: "Slides", adminNotices: "Avisos", adminReviews: "Depoimentos", adminPartners: "Parceiros", adminImages: "Visual", adminEmail: "E-mail",
     sirTitle: "SIR - Sistema Integrado", logout: "Fechar Panel", back: "Voltar ao Início",
     aboutSectionTitle: "A Nossa Essência",
@@ -148,18 +182,20 @@ const translations = {
     s3Title: "Precision Detail",
     s3Tagline: "Absolute focus on details and finishes.",
     s3Desc: "A thorough cleaning service that goes beyond the essential. We intervene in the most demanding and hard-to-reach details, ensuring a level of perfection and freshness that completely transforms the environment.",
-    s4Title: "Post-Construction Cleaning",
+    s4Title: "Limpezas Pós-Obra",
     s4Tagline: "Technical finishing for move-in ready spaces.",
     s4Desc: "Deep removal of dust and construction residues in villas, restaurants, or shops. We transform the construction site into a clean and welcoming environment, ensuring a perfect transition to final use.",
     reviewsTitle: "Trusted Voices",
     partnersTitle: "Prestige Alliances",
     quoteTitle: "Contact",
     addressTitle: "Our Office",
-    addressDetail: "R. 25 de Abril 49, 8125-234, Quarteira, Faro Algarve – Portugal",
     name: "Full Name", email: "Email", phone: "Phone Number", message: "How may we assist?",
     send: "Send Message", success: "Message sent. We will contact you shortly.",
+    clearForm: "Clear Form", searchCountry: "Search Country...",
+    whatsappLabel: "Direct WhatsApp",
     footerNote: "The soul of a well-kept Algarve.",
     footerSobre: "About", footerCarreira: "Careers", developedBy: "Developed & Managed By",
+    footerSocial: "Social", footerLinks: "The Company",
     adminTitle: "Admin Panel", adminSlides: "Slides", adminNotices: "Notices", adminReviews: "Reviews", adminPartners: "Partners", adminImages: "Visual", adminEmail: "Email",
     sirTitle: "SIR - Integrated System", logout: "Close Panel", back: "Back Home",
     aboutSectionTitle: "Our Essence",
@@ -187,48 +223,50 @@ const translations = {
     heroSubtitle: "Rosimeire Serviços",
     servicesTitle: "El Rigor del Detalle",
     servicesSubtitle: "La excelencia técnica que preserva su legado.",
-    servicesDescription: "Nos dedicamos a la preservación y el cuidado de su propriedade con un rigor inigualável. A través de un servicio de limpeza profesional de alto nivel, nuestros técnicos especializados aseguran que cada detalle de su inmueble sea tratado con la máxima pericia, garantizando un ambiente absolutamente inmaculado. Combinamos la excelencia técnica con una política de transparencia e valor justo, ofreciéndole la seguridad de un patrimonio impecablemente mantenido, siempre que lo necesite.",
+    servicesDescription: "Nos dedicamos a la preservación y el cuidado de su propriedade con un rigor inigualável. A través de un serviço de limpeza profesional de alto nivel, nuestros técnicos especializados aseguran que cada detalle de su inmueble sea tratado con la máxima pericia, garantizando un ambiente absolutamente inmaculado. Combinamos la excelencia técnica con una política de transparencia e valor justo, ofreciéndole la segurança de un patrimonio impecablemente mantenido, siempre que lo necesite.",
     s1Title: "Alojamientos y Unidades Turísticas",
-    s1Tagline: "Higienización rigorosa para a rotatividade do setor.",
-    s1Desc: "Especialistas en la preparación de alojamientos locales, hostales y unidades hoteleras. Garantizamos una limpieza profunda e eficiente entre estadias, aseguran que cada nuevo huésped encuentre un inmueble con estándares de limpieza impecables.",
+    s1Tagline: "Higienização rigorosa para a rotatividade do setor.",
+    s1Desc: "Especialistas en la preparación de alojamientos locales, hostales y unidades hoteleras. Garantizamos una limpeza profunda e eficiente entre estadias, aseguran que cada nuevo huésped encuentre un inmueble con estándares de limpeza impecables.",
     s2Title: "Residencias Particulares e Diarias",
-    s2Tagline: "Mantenimiento personalizado y asistencia de confianza.",
-    s2Desc: "Servicios de limpeza diaria o periódica adaptados a la rutina de su hogar. Ofrecemos el apoyo de equipos dedicados para la gestión de su santuario personal, actuando con la máxima discreción, celo y regularidad.",
+    s2Tagline: "Mantenimiento personalizado y assistência de confianza.",
+    s2Desc: "Servicios de limpeza diaria o periódica adaptados a la rutina de su hogar. Oferecemos el apoyo de equipos dedicados para la gestión de su santuario personal, actuando con la máxima discreción, celo y regularidad.",
     s3Title: "Detalle de Precisão",
     s3Tagline: "Enfoque absoluto en los pormenores y acabados.",
-    s3Desc: "Un servicio de limpieza minucioso que va más allá de lo esencial. Intervenimos en los detalles más exigentes y de difícil acceso, garantizando un nivel de perfección y frescura que transforma completamente el ambiente.",
+    s3Desc: "Un serviço de limpeza minucioso que va más allá de lo esencial. Intervenimos en los detalles más exigentes y de difícil acesso, garantizando un nivel de perfección y frescura que transforma completamente el ambiente.",
     s4Title: "Limpezas Post-Obra",
-    s4Tagline: "Finalización técnica para entrega de espacios listos para habitar.",
-    s4Desc: "Eliminación profunda de polvos y residuos de construcción en chalets, restaurantes o tiendas. Transformamos o escenario de obra em um ambiente limpo e acolhedor, garantizando una transición perfecta para la utilización final.",
+    s4Tagline: "Finalización técnica para entrega de espaços listos para habitar.",
+    s4Desc: "Eliminación profunda de polvos y resíduos de construção en chalets, restaurantes o tiendas. Transformamos o escenario de obra em um ambiente limpo e acolhedor, garantizando una transición perfeita para la utilización final.",
     reviewsTitle: "Voces de Confiança",
     partnersTitle: "Alianças de Prestígio",
     quoteTitle: "Contacto",
     addressTitle: "Nuestra Oficina",
-    addressDetail: "R. 25 de Abril 49, 8125-234, Quarteira, Faro Algarve – Portugal",
-    name: "Nombre Completo", email: "Email", phone: "Teléfono", message: "¿Cómo podemos ayudar?",
+    name: "Nombre Completo", email: "Email", phone: "Teléfono", message: "¿Cómo podemos ajudar?",
     send: "Enviar Mensagem", success: "Mensaje enviado. Le contactaremos pronto.",
+    clearForm: "Limpar Formulario", searchCountry: "Buscar País...",
+    whatsappLabel: "WhatsApp Directo",
     footerNote: "El alma del Algarve bien cuidada.",
     footerSobre: "Sobre", footerCarreira: "Carrera", developedBy: "Desarrollado y Gestionado Por",
+    footerSocial: "Social", footerLinks: "La Empresa",
     adminTitle: "Panel Administrativo", adminSlides: "Slides", adminNotices: "Avisos", adminReviews: "Testimonios", adminPartners: "Socios", adminImages: "Visual", adminEmail: "Email",
     sirTitle: "SIR - Sistema Integrado", logout: "Cerrar Panel", back: "Volver al Inicio",
     aboutSectionTitle: "Nuestra Esencia",
-    aboutSectionText: "Rosimeire Serviços inició su trayectoria en 2011, fruto de la visión y dedicación de su fundadora, Rosimeire Silva. Actuando inicialmente de forma independiente en propiedades exclusivas, su rigor técnico, honestidade y un perfeccionismo inaquebrantable se convirtieron en su sello distintivo. Esta postura de excelencia permitió fidelizar una cartera de clientes de prestigio, consolidando los cimientos que impulsaron el crecimiento y la solidez que la empresa presenta hoy.",
+    aboutSectionText: "Rosimeire Serviços iniciou su trajetória em 2011, fruto da visão e dedicação de sua fundadora, Rosimeire Silva. Actuando inicialmente de forma independente em propriedades exclusivas, su rigor técnico, honestidade e um perfeccionismo inaquebrantável se convirtieron em su sello distintivo. Esta postura de excelencia permitió fidelizar una cartera de clientes de prestigio, consolidando los cimientos que impulsaron el crescimento y la solidez que la empresa apresenta hoy.",
     missionTitle: "Misión", missionText: "Satisfacer al cliente dejando su propiedad impecablemente limpia, según su necesidad.",
-    visionTitle: "Vision", visionText: "Próximamente nuestros servicios estarán disponibles en otros países de Europa, con el mesmo estándar de calidad que atendemos actualmente em Portugal.",
+    visionTitle: "Vision", visionText: "Próximamente nuestros serviços estarán disponibles en otros países de Europa, con el mesmo estándar de calidad que atendemos actualmente em Portugal.",
     valuesTitle: "Valores",
-    val1: "Empatía con los clientes", val2: "Qualidad", val3: "Integridad e Honestidad", val4: "Abertura e Respeto", val5: "Coraje",
+    val1: "Empatia com los clientes", val2: "Qualidad", val3: "Integridad e Honestidad", val4: "Abertura e Respeto", val5: "Coraje",
     careersTitle: "Carreras",
     careersHeroTitle: "Únete a Nuestro Legado",
-    careersHeroSubtitle: "Buscamos profesionales que compartan nuestra pasión por la excelencia e el rigor en el detalle.",
-    careersAdvisoryTitle: "Aviso de Reclutamiento Geográfico",
-    careersAdvisoryText: "Actualmente solo estamos reclutando candidatos del Distrito de Faro que puedan desplazarse en transporte público o propio. Nuestro foco de reclutamiento es el Consejo de Loulé, ya que nuestra sede se encuentra en la Parroquia de Quarteira. Para esta Parroquia, podemos ofrecer furgonetas de transporte, em some casos, a nuestros puntos de encuentro.",
+    careersHeroSubtitle: "Buscamos profissionais que compartan nuestra pasión por la excelencia e el rigor em el detalhe.",
+    careersAdvisoryTitle: "Aviso de Recrutamento Geográfico",
+    careersAdvisoryText: "Actualmente solo estamos recrutando candidatos del Distrito de Faro que puedan desplazarse en transporte público o propio. Nuestro foco de recrutamento es el Consejo de Loulé, ya que nuestra sede se encuentra en la Parroquia de Quarteira. Para esta Parroquia, podemos oferecer furgonetas de transporte, em some casos, a nuestros puntos de encuentro.",
     careersWhyTitle: "¿Por qué Rosimeire Serviços?",
-    careersAdv1: "Formación Continua", careersAdv1Desc: "Desarrollo técnico en limpeza especializada.",
+    careersAdv1: "Formación Contínua", careersAdv1Desc: "Desarrollo técnico em limpeza especializada.",
     careersAdv2: "Ambiente de Respeito", careersAdv2Desc: "Valorizamos el bienestar de nuestro equipo.",
     careersAdv3: "Reconhecimento", careersAdv3Desc: "Oportunidades de crescimento no Algarve.",
     careersApplyTitle: "Aplica Hoy",
-    careersApplyDesc: "Si eres una persona dedicada, puntual y con ojo para o detalhe, queremos conocerte.",
-    careersApplyBtn: "Completar Formulario de Candidatura",
+    careersApplyDesc: "Si eres una persona dedicada, puntual y con ojo para o detalhe, queremos conhecerte.",
+    careersApplyBtn: "Completar Formulário de Candidatura",
     careersFormLink: "https://docs.google.com/forms/d/e/1FAIpQLSdo6NUZsw3gcZhigbPrAafa1zb32hgjQi67dDkEKEEByc1rHg/viewform?usp=sf_link"
   }
 };
@@ -276,8 +314,8 @@ const DEFAULT_EMAIL_CONFIG: EmailConfig = {
 };
 
 const DEFAULT_PARTNERS: Partner[] = [
-  { id: '1', name: "Algarve Living", logo: "https://images.unsplash.com/photo-1600607687940-4e7a6a353d2c?auto=format&fit=crop&q=80&w=800", url: "#" },
-  { id: '2', name: "Ocean Estates", logo: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=800", url: "#" },
+  { id: '1', name: "Algarve Living", logo: "https://images.unsplash.com/photo-1600607687940-4e7a6a353d2c?auto=format&fit=crop&q=80&w=1600", url: "#" },
+  { id: '2', name: "Ocean Estates", logo: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1600", url: "#" },
   { id: '3', name: "Serenity Rentals", logo: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200", url: "#" },
   { id: '4', name: "Elite Homes", logo: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&q=80&w=800", url: "#" }
 ];
@@ -298,7 +336,7 @@ const DEFAULT_REVIEWS: Review[] = [
   { 
     id: '2', 
     author: "Alex Alcivar", 
-    text: "Auténtico profesionales en el sector, sin duda muy por encima de la competencia!! Cuidan cada detalhe.", 
+    text: "Auténtico profesionales en el sector, sin duda muito por encima de la competencia!! Cuidan cada detalhe.", 
     time: "12 meses atrás",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200",
     initials: "AA",
@@ -307,6 +345,8 @@ const DEFAULT_REVIEWS: Review[] = [
 ];
 
 const INITIAL_GOOGLE_MAPS_LINK = "https://www.google.com/search?q=Rosimeire+Servi%C3%A7os+Quarteira&si=AMgyJEs9DArPE9xmb5yVYVjpG4jqWDEKSIpCRSjmm88XZWnGNakrDl7qyiJLF74BYlGsMcE9Da1nUDIZ5DNa9RlMSKMI70hspYaTqbBEPz7oFQkgC81_ZMtEKchYDA-1FddJnX-cdUqx";
+// Link direto que traça a rota (Direções)
+const SHARE_MAP_LINK = "https://www.google.com/maps/dir/?api=1&destination=Rosimeire+Servi%C3%A7os+Quarteira";
 const FIXED_GAS_URL = "https://script.google.com/macros/s/AKfycbzsOBqT_YLZW576jbHX8vAcuBi4bSNhn4CYdqTwcu7ObX6QcqNIhjXlsOYxlud9nqy6/exec";
 const SIR_URL = "https://sir.rosimeireservicos.com"; // Placeholder para o sistema integrado
 
@@ -353,7 +393,7 @@ const App = () => {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeAdminTab, setActiveAdminTab] = useState<'slides' | 'notices' | 'reviews' | 'partners' | 'images' | 'email'>('slides');
+  const [activeAdminTab, setActiveAdminTab] = useState<'slides' | 'notices' | 'reviews' | 'partners' | 'images' | 'email' | 'user'>('slides');
   const [isSyncing, setIsSyncing] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [cloudStatus, setCloudStatus] = useState<'idle' | 'loading' | 'connected' | 'error'>('idle');
@@ -361,6 +401,14 @@ const App = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState(false);
+
+  const [isDDIOpen, setIsDDIOpen] = useState(false);
+  const [ddiSearch, setDDISearch] = useState("");
+  const ddiRef = useRef<HTMLDivElement>(null);
+
+  // --- Admin Access Config ---
+  const [adminUsername, setAdminUsername] = useState('admin');
+  const [adminPassword, setAdminPassword] = useState('rosimeire2025');
 
   const STORAGE_KEY_PREFIX = 'rosimeire_config_v12';
 
@@ -373,7 +421,18 @@ const App = () => {
   const [reviews, setReviews] = useState<Review[]>(DEFAULT_REVIEWS);
   const [partners, setPartners] = useState<Partner[]>(DEFAULT_PARTNERS);
   const [googleMapsLink, setGoogleMapsLink] = useState<string>(INITIAL_GOOGLE_MAPS_LINK);
+  const [contactPhone, setContactPhone] = useState<string>('+351 912 525 649');
+  const [addressDetail, setAddressDetail] = useState<string>('R. 25 de Abril 49, 8125-234, Quarteira, Faro Algarve – Portugal');
   const [gasUrl, setGasUrl] = useState<string>(FIXED_GAS_URL);
+
+  // --- Form State ---
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    message: '',
+    ddi: '+351'
+  });
 
   // --- Cloud Sync Implementation ---
   const fetchFromCloud = async (url: string) => {
@@ -392,6 +451,12 @@ const App = () => {
         setReviews(data.reviews || DEFAULT_REVIEWS);
         setPartners(data.partners || DEFAULT_PARTNERS);
         setGoogleMapsLink(data.googleMapsLink || INITIAL_GOOGLE_MAPS_LINK);
+        setContactPhone(data.contactPhone || '+351 912 525 649');
+        setAddressDetail(data.addressDetail || 'R. 25 de Abril 49, 8125-234, Quarteira, Faro Algarve – Portugal');
+        
+        if (data.adminUsername) setAdminUsername(data.adminUsername);
+        if (data.adminPassword) setAdminPassword(data.adminPassword);
+
         setCloudStatus('connected');
         return true;
       }
@@ -417,6 +482,10 @@ const App = () => {
         reviews, 
         partners, 
         googleMapsLink,
+        contactPhone,
+        addressDetail,
+        adminUsername,
+        adminPassword,
         version: "1.2",
         lastSync: new Date().toISOString()
       };
@@ -454,6 +523,10 @@ const App = () => {
         setReviews(JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_reviews`) || JSON.stringify(DEFAULT_REVIEWS)));
         setPartners(JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_partners`) || JSON.stringify(DEFAULT_PARTNERS)));
         setGoogleMapsLink(localStorage.getItem(`${STORAGE_KEY_PREFIX}_maps`) || INITIAL_GOOGLE_MAPS_LINK);
+        setContactPhone(localStorage.getItem(`${STORAGE_KEY_PREFIX}_phone`) || '+351 912 525 649');
+        setAddressDetail(localStorage.getItem(`${STORAGE_KEY_PREFIX}_address`) || 'R. 25 de Abril 49, 8125-234, Quarteira, Faro Algarve – Portugal');
+        setAdminUsername(localStorage.getItem(`${STORAGE_KEY_PREFIX}_admin_user`) || 'admin');
+        setAdminPassword(localStorage.getItem(`${STORAGE_KEY_PREFIX}_admin_pass`) || 'rosimeire2025');
         hasLocalData = true;
       }
 
@@ -481,8 +554,23 @@ const App = () => {
       localStorage.setItem(`${STORAGE_KEY_PREFIX}_reviews`, JSON.stringify(reviews));
       localStorage.setItem(`${STORAGE_KEY_PREFIX}_partners`, JSON.stringify(partners));
       localStorage.setItem(`${STORAGE_KEY_PREFIX}_maps`, googleMapsLink);
+      localStorage.setItem(`${STORAGE_KEY_PREFIX}_phone`, contactPhone);
+      localStorage.setItem(`${STORAGE_KEY_PREFIX}_address`, addressDetail);
+      localStorage.setItem(`${STORAGE_KEY_PREFIX}_admin_user`, adminUsername);
+      localStorage.setItem(`${STORAGE_KEY_PREFIX}_admin_pass`, adminPassword);
     }
-  }, [slides, sectionImages, socialLinks, emailConfig, notices, reviews, partners, googleMapsLink, isInitialLoading]);
+  }, [slides, sectionImages, socialLinks, emailConfig, notices, reviews, partners, googleMapsLink, contactPhone, addressDetail, adminUsername, adminPassword, isInitialLoading]);
+
+  // Close DDI dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ddiRef.current && !ddiRef.current.contains(event.target as Node)) {
+        setIsDDIOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
@@ -558,16 +646,17 @@ const App = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === 'admin' && password === 'rosimeire2025') {
+    if (username === adminUsername && password === adminPassword) {
       setIsAuthenticated(true);
       setIsLoginOpen(false);
       setIsAdminOpen(true);
+      setLoginError(false);
     } else setLoginError(true);
   };
 
   const handleDemoAccess = () => {
-    setUsername('admin');
-    setPassword('rosimeire2025');
+    setUsername(adminUsername);
+    setPassword(adminPassword);
     setIsAuthenticated(true);
     setIsLoginOpen(false);
     setIsAdminOpen(true);
@@ -579,8 +668,28 @@ const App = () => {
     setTimeout(() => {
       setFormStatus('success');
       setTimeout(() => setFormStatus('idle'), 5000);
+      handleClearForm();
     }, 2000);
   };
+
+  const handleClearForm = () => {
+    setContactForm({
+      name: '',
+      email: '',
+      phone: '',
+      message: '',
+      ddi: '+351'
+    });
+  };
+
+  const filteredCountries = ddiSearch.trim() === "" 
+    ? COUNTRIES 
+    : COUNTRIES.filter(c => 
+        c.name.toLowerCase().includes(ddiSearch.toLowerCase()) || 
+        c.ddi.includes(ddiSearch)
+      );
+
+  const selectedCountry = COUNTRIES.find(c => c.ddi === contactForm.ddi) || COUNTRIES[0];
 
   return (
     <div className="min-h-screen selection:bg-[#f8c8c4] selection:text-[#081221]">
@@ -637,7 +746,7 @@ const App = () => {
                 onClick={() => window.open(SIR_URL, '_blank')}
                 className="group flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase text-white/30 hover:text-[#f8c8c4] transition-all"
               >
-                <Zap size={12} className="group-hover:scale-110 transition-transform"/> SIR
+                <LogIn size={12} className="group-hover:scale-110 transition-transform"/> SIR
               </button>
 
               <button onClick={handleAdminAccess} className={`transition-colors ${isAuthenticated ? 'text-[#f8c8c4]' : 'text-white/20 hover:text-[#f8c8c4]'}`}>
@@ -683,7 +792,7 @@ const App = () => {
                 onClick={() => window.open(SIR_URL, '_blank')}
                 className="text-left text-sm font-black tracking-[0.4em] text-[#f8c8c4]/40 hover:text-[#f8c8c4] uppercase flex items-center gap-3 pt-6 border-t border-white/5"
               >
-                <Zap size={16}/> ACESSO SIR (COLABORADORES)
+                <LogIn size={16}/> ACESSO SIR (COLABORADORES)
               </button>
             </nav>
 
@@ -948,48 +1057,237 @@ const App = () => {
           <motion.div key="contact" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="pt-48 pb-64">
             <div className="container mx-auto px-8 md:px-16">
               <button onClick={() => setView('home')} className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.4em] text-white/20 hover:text-[#f8c8c4] transition-all mb-16 group"><ArrowLeft size={16} /> {t.back}</button>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-24">
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 mb-24">
                 <div className="space-y-12">
                    <h2 className="heading-serif text-6xl text-white">{t.quoteTitle}</h2>
                    <div className="space-y-8">
                      <div className="flex items-start gap-6">
                        <MapPin className="text-[#f8c8c4]/40" />
-                       <p className="text-xl font-light text-white/60">{t.addressDetail}</p>
+                       <p className="text-xl font-light text-white/60">{addressDetail}</p>
                      </div>
                      <div className="flex items-start gap-6">
                        <Mail className="text-[#f8c8c4]/40" />
-                       <p className="text-xl font-light text-white/60">atendimento@rosimeireservicos.com</p>
+                       <a href={`mailto:${emailConfig.recipientEmail}`} className="text-base md:text-xl font-light text-white/60 hover:text-[#f8c8c4] transition-colors break-all">{emailConfig.recipientEmail}</a>
+                     </div>
+                     <div className="flex items-start gap-6 flex-col">
+                       <div className="flex items-center gap-6">
+                         <Phone className="text-[#f8c8c4]/40" />
+                         <a href={`tel:${contactPhone.replace(/\s+/g, '')}`} className="text-xl font-light text-white/60 hover:text-[#f8c8c4] transition-colors">{contactPhone}</a>
+                       </div>
+                       
+                       {/* WhatsApp Button */}
+                       <div className="flex items-center gap-6 ml-12">
+                         <a 
+                           href={`https://wa.me/${contactPhone.replace(/\D/g, '')}`} 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           className="btn-serenity !py-3 !px-5 !text-[9px] flex items-center gap-4 border-[#25D366]/30 text-white/70 hover:bg-[#25D366]/10 hover:border-[#25D366] hover:text-white transition-all group"
+                         >
+                           <div className="relative">
+                             <MessageCircle size={16} className="text-[#25D366]" />
+                             <div className="absolute inset-0 bg-[#25D366]/40 blur-md scale-150 animate-pulse rounded-full -z-10" />
+                           </div>
+                           <span className="font-bold tracking-[0.3em] uppercase">{t.whatsappLabel}</span>
+                         </a>
+                       </div>
                      </div>
                    </div>
                 </div>
+                
                 <div className="crystal-card p-12 rounded-sm">
                   <form onSubmit={handleContactSubmit} className="space-y-12">
                     <div className="space-y-2">
                       <label className="tagline block">{t.name}</label>
-                      <input required className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
+                      <input 
+                        required 
+                        value={contactForm.name}
+                        onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
+                        className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" 
+                      />
                     </div>
                     
                     <div className="space-y-2">
                       <label className="tagline block">{t.email}</label>
-                      <input type="email" required className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
+                      <input 
+                        type="email" 
+                        required 
+                        value={contactForm.email}
+                        onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
+                        className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" 
+                      />
                     </div>
 
                     <div className="space-y-2">
                       <label className="tagline block">{t.phone}</label>
-                      <input type="tel" required className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
+                      <div className="flex gap-4 items-end relative">
+                        <div ref={ddiRef} className="relative">
+                          <button 
+                            type="button"
+                            onClick={() => setIsDDIOpen(!isDDIOpen)}
+                            className="bg-transparent border-b border-white/10 py-4 text-lg font-light outline-none focus:border-[#f8c8c4] transition-all cursor-pointer flex items-center gap-2 min-w-[100px]"
+                          >
+                            <span className="text-2xl">{selectedCountry.flag}</span>
+                            <span className="text-white/60">{selectedCountry.ddi}</span>
+                            <ChevronDown size={14} className={`text-white/20 transition-transform duration-300 ${isDDIOpen ? 'rotate-180' : ''}`} />
+                          </button>
+
+                          <AnimatePresence>
+                            {isDDIOpen && (
+                              <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                className="absolute left-0 bottom-full mb-4 w-72 bg-[#081221] border border-white/10 shadow-2xl rounded-sm z-50 overflow-hidden"
+                              >
+                                <div className="p-4 border-b border-white/5 bg-white/[0.02]">
+                                  <div className="relative">
+                                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+                                    <input 
+                                      autoFocus
+                                      placeholder={t.searchCountry}
+                                      value={ddiSearch}
+                                      onChange={(e) => setDDISearch(e.target.value)}
+                                      className="w-full bg-white/5 border border-white/5 p-3 pl-10 text-xs text-white outline-none rounded-sm"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="max-h-60 overflow-y-auto scrollbar-thin">
+                                  {filteredCountries.map((c) => (
+                                    <button
+                                      key={`${c.code}-${c.ddi}`}
+                                      type="button"
+                                      onClick={() => {
+                                        setContactForm({...contactForm, ddi: c.ddi});
+                                        setIsDDIOpen(false);
+                                        setDDISearch("");
+                                      }}
+                                      className="w-full text-left p-4 hover:bg-[#f8c8c4]/10 transition-colors flex items-center justify-between group"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-2xl">{c.flag}</span>
+                                        <span className="text-xs text-white/60 group-hover:text-white transition-colors">{c.name}</span>
+                                      </div>
+                                      <span className="text-[10px] font-bold text-[#f8c8c4]/40">{c.ddi}</span>
+                                    </button>
+                                  ))}
+                                  {filteredCountries.length === 0 && (
+                                    <div className="p-8 text-center text-white/10 text-[10px] uppercase tracking-widest font-bold">Nenhum resultado</div>
+                                  )}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+
+                        <input 
+                          type="tel" 
+                          required 
+                          placeholder="912 345 678"
+                          value={contactForm.phone}
+                          onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
+                          className="flex-1 bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" 
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-2">
                       <label className="tagline block">{t.message}</label>
-                      <textarea required rows={4} className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
+                      <textarea 
+                        required 
+                        rows={4} 
+                        value={contactForm.message}
+                        onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
+                        className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" 
+                      />
                     </div>
                     
-                    <button className="w-full btn-serenity py-8">
-                      {formStatus === 'idle' ? t.send : (formStatus === 'sending' ? '...' : t.success)}
-                    </button>
+                    <div className="flex flex-col gap-6">
+                      <button className="w-full btn-serenity py-8">
+                        {formStatus === 'idle' ? t.send : (formStatus === 'sending' ? '...' : t.success)}
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={handleClearForm}
+                        className="flex items-center justify-center gap-3 text-[9px] font-bold tracking-[0.4em] text-white/10 hover:text-white/40 uppercase transition-all group"
+                      >
+                        <Trash2 size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" /> {t.clearForm}
+                      </button>
+                    </div>
                   </form>
                 </div>
               </div>
+
+              {/* Google Maps Section with Trust Card */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.98 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                className="relative w-full h-[500px] rounded-sm overflow-hidden border border-white/5 group shadow-2xl"
+              >
+                {/* Custom Google Map Embed */}
+                <iframe 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3184.8210385906814!2d-8.1039869!3d37.0734005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd1acb4a39b36965%3A0x6b44558e0a7865c6!2sR.%2025%20de%20Abril%2049%2C%208125-234%20Quarteira!5e0!3m2!1spt!2spt!4v1715800000000!5m2!1spt!2spt" 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 0, filter: 'grayscale(1) contrast(1.2) opacity(0.5) invert(0.9) hue-rotate(180deg)' }} 
+                  allowFullScreen={true} 
+                  loading="lazy" 
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
+
+                {/* Floating Trust Card Overlay */}
+                <div className="absolute top-8 left-8 z-10 hidden md:block">
+                   <motion.div 
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="crystal-card p-6 min-w-[320px] !bg-[#081221]/80 border-[#f8c8c4]/20 backdrop-blur-xl"
+                   >
+                     <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between">
+                           <div className="flex flex-col">
+                             <span className="text-lg font-light tracking-[0.2em] text-white uppercase leading-none">ROSIMEIRE</span>
+                             <span className="text-[7px] font-bold tracking-[0.4em] text-[#f8c8c4] uppercase mt-1">SERVIÇOS</span>
+                           </div>
+                           <div className="p-2 bg-[#f8c8c4]/10 rounded-sm">
+                             <MapPin size={18} className="text-[#f8c8c4]" />
+                           </div>
+                        </div>
+                        
+                        <div className="h-[1px] w-full bg-white/5" />
+                        
+                        <div className="flex items-center gap-4">
+                           <div className="flex items-center gap-1">
+                             {[...Array(5)].map((_, i) => (
+                               <Star key={i} size={12} fill="#f8c8c4" stroke="#f8c8c4" />
+                             ))}
+                           </div>
+                           <span className="text-xs font-bold text-white tracking-widest">5.0</span>
+                           <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[#f8c8c4]/40">Google Reviews</span>
+                        </div>
+
+                        <p className="text-[10px] text-white/40 leading-relaxed font-medium uppercase tracking-wider">{addressDetail}</p>
+
+                        <a 
+                          href={SHARE_MAP_LINK} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="btn-serenity !py-4 !px-4 !text-[8px] flex items-center justify-center gap-3 w-full group/map"
+                        >
+                          <Navigation size={12} className="group-hover/map:rotate-12 transition-transform" /> COMO CHEGAR
+                        </a>
+                     </div>
+                   </motion.div>
+                </div>
+
+                {/* Mobile Button Overlay (Correct Label 'COMO CHEGAR') */}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[80%] md:hidden z-10">
+                   <a href={SHARE_MAP_LINK} target="_blank" rel="noopener noreferrer" className="btn-serenity !bg-[#081221] !py-4 w-full flex justify-center items-center gap-3">
+                     COMO CHEGAR
+                   </a>
+                </div>
+              </motion.div>
             </div>
           </motion.div>
         )}
@@ -1004,6 +1302,10 @@ const App = () => {
         notices={notices} setNotices={setNotices} reviews={reviews} setReviews={setReviews}
         partners={partners} setPartners={setPartners}
         googleMapsLink={googleMapsLink} setGoogleMapsLink={setGoogleMapsLink}
+        contactPhone={contactPhone} setContactPhone={setContactPhone}
+        addressDetail={addressDetail} setAddressDetail={setAddressDetail}
+        adminUsername={adminUsername} setAdminUsername={setAdminUsername}
+        adminPassword={adminPassword} setAdminPassword={setAdminPassword}
         activeTab={activeAdminTab} setActiveTab={setActiveAdminTab} t={t}
         isSyncing={isSyncing} onResetDefaults={handleResetDefaults}
         gasUrl={gasUrl} setGasUrl={setGasUrl} onPublishToCloud={() => publishToCloud(gasUrl)}
@@ -1026,7 +1328,7 @@ const App = () => {
                   onClick={handleDemoAccess} 
                   className="w-full py-3 border border-dashed border-[#f8c8c4]/30 text-[9px] font-black tracking-[0.4em] uppercase text-[#f8c8c4] hover:bg-[#f8c8c4]/5 transition-all flex items-center justify-center gap-3"
                 >
-                  <Zap size={10}/> Acesso DEMO
+                  <Zap size={10}/> Acesso Direto
                 </button>
                 <button onClick={() => setIsLoginOpen(false)} className="w-full text-[9px] font-bold tracking-[0.3em] text-white/20 uppercase hover:text-white/40 transition-colors">Cancelar</button>
               </div>
@@ -1039,23 +1341,31 @@ const App = () => {
 
       <footer className="py-24 bg-[#040911] border-t border-white/5">
         <div className="container mx-auto px-8 md:px-16">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-16 mb-24">
-            <div className="text-left">
-              <h5 className="text-white font-light tracking-[0.4em] text-lg mb-8 uppercase">ROSIMEIRE SERVIÇOS</h5>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-24 items-start">
+            {/* Coluna 1: Empresa */}
+            <div className="flex flex-col gap-8">
+              <h5 className="text-white font-light tracking-[0.4em] text-lg uppercase leading-none">
+                ROSIMEIRE<br/>
+                <span className="text-[10px] font-bold tracking-[0.6em] text-[#f8c8c4] mt-2 block">SERVIÇOS</span>
+              </h5>
               <p className="text-[10px] font-bold tracking-[0.5em] text-white/20 uppercase max-w-xs">{t.footerNote}</p>
             </div>
             
-            <div className="grid grid-cols-2 gap-24">
-              <div className="flex flex-col gap-6">
-                <div className="flex gap-6">
-                  <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110 active:scale-95"><Instagram size={20} /></a>
-                  <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110 active:scale-95"><Linkedin size={20} /></a>
-                </div>
+            {/* Coluna 2: Redes Sociais */}
+            <div className="flex flex-col gap-6 md:items-center">
+              <h6 className="text-[9px] font-black tracking-[0.4em] uppercase text-white/10 md:text-center w-full">{t.footerSocial}</h6>
+              <div className="flex gap-8">
+                <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110 active:scale-95"><Instagram size={22} /></a>
+                <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110 active:scale-95"><Linkedin size={22} /></a>
               </div>
+            </div>
 
-              <div className="flex flex-col gap-6">
-                <button onClick={() => setView('about')} className="text-[11px] font-bold uppercase tracking-[0.4em] text-white/30 hover:text-[#f8c8c4] transition-colors text-left">{t.footerSobre}</button>
-                <button onClick={() => setView('careers')} className="text-[11px] font-bold uppercase tracking-[0.4em] text-white/30 hover:text-[#f8c8c4] transition-colors text-left">{t.footerCarreira}</button>
+            {/* Coluna 3: Links Úteis */}
+            <div className="flex flex-col gap-6 md:items-end">
+              <h6 className="text-[9px] font-black tracking-[0.4em] uppercase text-white/10 md:text-right w-full">{t.footerLinks}</h6>
+              <div className="flex flex-col gap-4 md:items-end">
+                <button onClick={() => setView('about')} className="text-[11px] font-bold uppercase tracking-[0.4em] text-white/30 hover:text-[#f8c8c4] transition-colors">{t.footerSobre}</button>
+                <button onClick={() => setView('careers')} className="text-[11px] font-bold uppercase tracking-[0.4em] text-white/30 hover:text-[#f8c8c4] transition-colors">{t.footerCarreira}</button>
               </div>
             </div>
           </div>

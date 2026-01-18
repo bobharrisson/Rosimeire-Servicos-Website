@@ -6,7 +6,7 @@ import {
   Briefcase, CheckCircle, Image as ImageIcon, RotateCcw, Cloud, Mail, 
   Key, Server, Eye, EyeOff, ShieldCheck, Zap, AlertCircle, Loader2, 
   Info, Lightbulb, Check, Database, Download, Upload, FileJson, ExternalLink, Link, RefreshCw, CloudOff,
-  Instagram, Linkedin, Palette, MessageSquare
+  Instagram, Linkedin, Palette, MessageSquare, Lock, Phone, MapPin, ToggleLeft, ToggleRight, Shield
 } from 'lucide-react';
 
 interface Slide {
@@ -85,7 +85,15 @@ interface AdminPanelProps {
   setPartners: (partners: Partner[]) => void;
   googleMapsLink: string;
   setGoogleMapsLink: (link: string) => void;
-  activeTab: 'slides' | 'notices' | 'reviews' | 'partners' | 'images' | 'email';
+  contactPhone: string;
+  setContactPhone: (phone: string) => void;
+  addressDetail: string;
+  setAddressDetail: (address: string) => void;
+  adminUsername: string;
+  setAdminUsername: (user: string) => void;
+  adminPassword: string;
+  setAdminPassword: (pass: string) => void;
+  activeTab: 'slides' | 'notices' | 'reviews' | 'partners' | 'images' | 'email' | 'user';
   setActiveTab: (tab: any) => void;
   t: any;
   isSyncing: boolean;
@@ -98,9 +106,11 @@ interface AdminPanelProps {
 
 const AdminPanel: React.FC<AdminPanelProps> = ({
   isOpen, onClose, onLogout, slides, setSlides, sectionImages, setSectionImages, socialLinks, setSocialLinks, emailConfig, setEmailConfig, notices, setNotices, reviews, setReviews, 
-  partners, setPartners, googleMapsLink, setGoogleMapsLink, activeTab, setActiveTab, t, isSyncing, onResetDefaults, gasUrl, setGasUrl, onPublishToCloud, cloudStatus
+  partners, setPartners, googleMapsLink, setGoogleMapsLink, contactPhone, setContactPhone, addressDetail, setAddressDetail, adminUsername, setAdminUsername, adminPassword, setAdminPassword, activeTab, setActiveTab, t, isSyncing, onResetDefaults, gasUrl, setGasUrl, onPublishToCloud, cloudStatus
 }) => {
   const [isSaving, setIsSaving] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showSmtpPass, setShowSmtpPass] = useState(false);
 
   if (!isOpen) return null;
 
@@ -181,24 +191,25 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
            </div>
         </div>
 
-        {/* Separadores Reorganizados em Grid (2 Linhas) */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-16">
+        {/* Separadores Reorganizados em Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-16">
           {[
-            { id: 'slides', icon: <ImageIcon size={14}/>, label: 'Slides Principal' },
-            { id: 'images', icon: <ImageIcon size={14}/>, label: 'Visual Páginas' },
-            { id: 'email', icon: <Mail size={14}/>, label: 'Contacto & Social' },
-            { id: 'notices', icon: <Bell size={14}/>, label: 'Barra de Avisos' },
+            { id: 'slides', icon: <ImageIcon size={14}/>, label: 'Slides' },
+            { id: 'images', icon: <Palette size={14}/>, label: 'Visual' },
+            { id: 'email', icon: <Mail size={14}/>, label: 'Contacto' },
+            { id: 'notices', icon: <Bell size={14}/>, label: 'Avisos' },
             { id: 'reviews', icon: <Star size={14}/>, label: 'Depoimentos' },
-            { id: 'partners', icon: <Briefcase size={14}/>, label: 'Parceiros' }
+            { id: 'partners', icon: <Briefcase size={14}/>, label: 'Parceiros' },
+            { id: 'user', icon: <User size={14}/>, label: 'Utilizador' }
           ].map((tab) => (
             <button 
               key={tab.id} onClick={() => setActiveTab(tab.id as any)} 
-              className={`p-6 text-[10px] font-bold tracking-[0.3em] uppercase transition-all flex items-center gap-4 rounded-sm border ${activeTab === tab.id ? 'text-[#f8c8c4] border-[#f8c8c4] bg-[#f8c8c4]/5 shadow-[0_0_20px_rgba(248,200,196,0.05)]' : 'text-white/20 border-white/5 bg-white/[0.01] hover:text-white/40 hover:bg-white/[0.03]'}`}
+              className={`p-6 text-[10px] font-bold tracking-[0.3em] uppercase transition-all flex flex-col items-center justify-center gap-4 rounded-sm border ${activeTab === tab.id ? 'text-[#f8c8c4] border-[#f8c8c4] bg-[#f8c8c4]/5 shadow-[0_0_20px_rgba(248,200,196,0.05)]' : 'text-white/20 border-white/5 bg-white/[0.01] hover:text-white/40 hover:bg-white/[0.03]'}`}
             >
               <div className={`${activeTab === tab.id ? 'text-[#f8c8c4]' : 'text-white/10'}`}>
                 {tab.icon}
               </div>
-              {tab.label}
+              <span className="text-center">{tab.label}</span>
             </button>
           ))}
         </div>
@@ -224,7 +235,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/[0.02] p-6 rounded-sm border border-white/5">
                       <div className="space-y-3">
-                        {/* Fix: MessageSquare icon added to imports to resolve the error */}
                         <label className="admin-label flex items-center gap-2 text-[#f8c8c4]/80"><MessageSquare size={10}/> Texto do Botão</label>
                         <input value={s.buttonText || ""} onChange={e => updateSlide(s.id, 'buttonText', e.target.value)} placeholder="Ex: Saiba Mais" className="admin-input !bg-white/5" />
                         <span className="text-[7px] text-white/20 uppercase font-bold">Vazio = padrão CONTACTO</span>
@@ -268,19 +278,94 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                <div className="crystal-card p-12 space-y-10 border-[#f8c8c4]/10">
                 <div className="flex items-center gap-6 text-[#f8c8c4]/60"><Mail size={24}/><h3 className="text-xl font-bold tracking-widest uppercase text-white">Configurações de Contacto</h3></div>
                 
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="admin-label">E-mail de Recebimento de Mensagens</label>
-                    <input type="email" value={emailConfig.recipientEmail} onChange={e => updateEmailConfig('recipientEmail', e.target.value)} className="admin-input" />
+                <div className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="admin-label flex items-center gap-2"><Mail size={12}/> E-mail de Recebimento</label>
+                      <input type="email" value={emailConfig.recipientEmail} onChange={e => updateEmailConfig('recipientEmail', e.target.value)} className="admin-input" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="admin-label flex items-center gap-2"><Phone size={12}/> Número de Telefone (Geral & WhatsApp)</label>
+                      <input type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value)} className="admin-input" />
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-white/5">
+                  <div className="space-y-2">
+                    <label className="admin-label flex items-center gap-2"><MapPin size={12}/> Morada / Endereço Completo</label>
+                    <input value={addressDetail} onChange={e => setAddressDetail(e.target.value)} placeholder="Rua, Número, Localidade, Algarve - Portugal" className="admin-input" />
+                  </div>
+
+                  {/* Configurações SMTP Técnicas */}
+                  <div className="pt-10 border-t border-white/5 space-y-10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-6 text-[#f8c8c4]/60">
+                        <Server size={20}/>
+                        <h4 className="text-sm font-bold tracking-[0.2em] uppercase text-white">Infraestrutura de Envio (SMTP)</h4>
+                      </div>
+                      <button 
+                        onClick={() => updateEmailConfig('useSmtp', !emailConfig.useSmtp)}
+                        className={`flex items-center gap-3 px-4 py-2 rounded-sm border transition-all ${emailConfig.useSmtp ? 'bg-[#f8c8c4]/10 border-[#f8c8c4] text-[#f8c8c4]' : 'bg-white/5 border-white/10 text-white/20'}`}
+                      >
+                        {emailConfig.useSmtp ? <ToggleRight size={20}/> : <ToggleLeft size={20}/>}
+                        <span className="text-[9px] font-black uppercase tracking-widest">{emailConfig.useSmtp ? 'SMTP ATIVO' : 'ATIVAR SMTP'}</span>
+                      </button>
+                    </div>
+
+                    <AnimatePresence>
+                      {emailConfig.useSmtp && (
+                        <motion.div 
+                          initial={{ height: 0, opacity: 0 }} 
+                          animate={{ height: 'auto', opacity: 1 }} 
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-white/[0.01] p-8 rounded-sm border border-white/5">
+                            <div className="md:col-span-2 space-y-2">
+                              <label className="admin-label">Host SMTP</label>
+                              <input value={emailConfig.smtpHost} onChange={e => updateEmailConfig('smtpHost', e.target.value)} placeholder="ex: smtp.gmail.com" className="admin-input" />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="admin-label">Porta</label>
+                              <input value={emailConfig.smtpPort} onChange={e => updateEmailConfig('smtpPort', e.target.value)} placeholder="587 / 465" className="admin-input" />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="admin-label">Utilizador SMTP</label>
+                              <input value={emailConfig.smtpUser} onChange={e => updateEmailConfig('smtpUser', e.target.value)} placeholder="email@dominio.com" className="admin-input" />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="admin-label">Palavra-passe SMTP</label>
+                              <div className="relative">
+                                <input 
+                                  type={showSmtpPass ? "text" : "password"} 
+                                  value={emailConfig.smtpPass} 
+                                  onChange={e => updateEmailConfig('smtpPass', e.target.value)} 
+                                  className="admin-input pr-12" 
+                                />
+                                <button onClick={() => setShowSmtpPass(!showSmtpPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors">
+                                  {showSmtpPass ? <EyeOff size={14}/> : <Eye size={14}/>}
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-6 pt-4">
+                              <button 
+                                onClick={() => updateEmailConfig('smtpSecure', !emailConfig.smtpSecure)}
+                                className={`flex items-center gap-3 text-[9px] font-black tracking-widest uppercase transition-colors ${emailConfig.smtpSecure ? 'text-[#f8c8c4]' : 'text-white/20'}`}
+                              >
+                                <Shield size={16}/> {emailConfig.smtpSecure ? 'SSL/TLS Ativo' : 'Sem Segurança'}
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-10 border-t border-white/5">
                     <div className="space-y-4">
                       <div className="flex items-center gap-3 text-[#f8c8c4]/60">
                         <Instagram size={14}/>
                         <label className="admin-label">Instagram URL</label>
                       </div>
-                      {/* Fix: corrected onChange handler to properly update socialLinks.instagram */}
                       <input value={socialLinks.instagram} onChange={e => updateSocialLink('instagram', e.target.value)} placeholder="https://instagram.com/..." className="admin-input" />
                     </div>
                     <div className="space-y-4">
@@ -288,7 +373,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         <Linkedin size={14}/>
                         <label className="admin-label">LinkedIn URL</label>
                       </div>
-                      {/* Fix: corrected onChange handler to properly update socialLinks.linkedin */}
                       <input value={socialLinks.linkedin} onChange={e => updateSocialLink('linkedin', e.target.value)} placeholder="https://linkedin.com/in/..." className="admin-input" />
                     </div>
                   </div>
@@ -394,6 +478,67 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 ))}
               </div>
               <button onClick={addPartner} className="admin-btn-add"><Plus size={16}/> Adicionar Novo Parceiro</button>
+            </div>
+          )}
+
+          {activeTab === 'user' && (
+            <div className="space-y-12 max-w-4xl mx-auto">
+              <div className="crystal-card p-12 space-y-10 border-[#f8c8c4]/10">
+                <div className="flex items-center gap-6 text-[#f8c8c4]/60 mb-4">
+                  <ShieldCheck size={24}/>
+                  <h3 className="text-xl font-bold tracking-widest uppercase text-white">Segurança & Acesso</h3>
+                </div>
+                
+                <div className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <label className="admin-label flex items-center gap-2"><User size={12}/> Utilizador Administrador</label>
+                      <input 
+                        value={adminUsername} 
+                        onChange={e => setAdminUsername(e.target.value)} 
+                        placeholder="Nome de utilizador" 
+                        className="admin-input" 
+                      />
+                      <span className="text-[7px] text-white/20 uppercase font-bold">Identificador de acesso ao painel</span>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="admin-label flex items-center gap-2"><Lock size={12}/> Palavra-passe</label>
+                      <div className="relative">
+                        <input 
+                          type={showPassword ? "text" : "password"}
+                          value={adminPassword} 
+                          onChange={e => setAdminPassword(e.target.value)} 
+                          placeholder="Password segura" 
+                          className="admin-input pr-12" 
+                        />
+                        <button 
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-[#f8c8c4] transition-colors"
+                        >
+                          {showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
+                        </button>
+                      </div>
+                      <span className="text-[7px] text-white/20 uppercase font-bold">Mantenha esta chave em segurança</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-8 border-t border-white/5 space-y-6">
+                    <div className="flex items-center gap-3 text-[#f8c8c4]/40">
+                      <Zap size={14}/>
+                      <span className="text-[9px] font-black uppercase tracking-[0.2em]">Sincronização Database SIR</span>
+                    </div>
+                    <div className="p-6 bg-white/[0.02] border border-white/5 rounded-sm space-y-4">
+                       <p className="text-[10px] font-light text-white/40 leading-relaxed italic">
+                         As suas credenciais de acesso são sincronizadas automaticamente com a base de dados via Google Apps Script (SIR). Isto garante que as definições de acesso sejam consistentes em todos os dispositivos.
+                       </p>
+                       <div className="flex items-center gap-2">
+                         <div className={`w-2 h-2 rounded-full ${cloudStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'}`} />
+                         <span className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/20">Ligação SIR: {cloudStatus === 'connected' ? 'Ativa' : 'Offline'}</span>
+                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
