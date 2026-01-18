@@ -22,6 +22,7 @@ interface Slide {
   image: string;
   tag: string;
   buttonLink?: string;
+  buttonText?: string;
 }
 
 interface SectionImages {
@@ -113,7 +114,7 @@ const translations = {
     adminTitle: "Painel Administrativo", adminSlides: "Slides", adminNotices: "Avisos", adminReviews: "Depoimentos", adminPartners: "Parceiros", adminImages: "Visual", adminEmail: "E-mail",
     sirTitle: "SIR - Sistema Integrado", logout: "Fechar Panel", back: "Voltar ao Início",
     aboutSectionTitle: "A Nossa Essência",
-    aboutSectionText: "A Rosimeire Serviços iniciou o seu percurso em 2011, fruto da visão e dedicação da sua fundadora, Rosimeire Silva. Atuando inicialmente de forma independente em propriedades exclusivas, o seu rigor técnico, honestidade e um perfeccionismo inabalável tornaram-se a sua assinatura de marca. Esta postura de excelência permitiu fidelizar uma carteira de clientes de prestígio, consolidando os alicerces que impulsionaram o crescimento e a solidez que a empresa apresenta hoje.",
+    aboutSectionText: "A Rosimeire Serviços iniciou o seu percurso em 2011, fruto da visão e dedicação da sua fundadora, Rosimeire Silva. Atuando inicialmente de forma independente em propriedades exclusivas, o seu rigor técnico, honestidade e um perfeicionismo inabalável tornaram-se a sua assinatura de marca. Esta postura de excelência permitiu fidelizar uma carteira de clientes de prestígio, consolidando os alicerces que impulsionaram o crescimento e a solidez que a empresa apresenta hoje.",
     missionTitle: "Missão", missionText: "Satisfazer o cliente deixando sua propriedade impecavelmente limpa, conforme sua necessidade.",
     visionTitle: "Visão", visionText: "Brevemente nossos serviços serão disponibilizados em outros países da europa, com o mesmo padrão de qualidade que atendemos atualmente em Portugal, para nossos diferentes tipos de clientes.",
     valuesTitle: "Valores",
@@ -198,7 +199,7 @@ const translations = {
     s3Desc: "Un servicio de limpieza minucioso que va más allá de lo esencial. Intervenimos en los detalles más exigentes y de difícil acceso, garantizando un nivel de perfección y frescura que transforma completamente el ambiente.",
     s4Title: "Limpezas Post-Obra",
     s4Tagline: "Finalización técnica para entrega de espacios listos para habitar.",
-    s4Desc: "Eliminación profunda de polvos y residuos de construcción en chalets, restaurantes o tiendas. Transformamos el escenario de obra en un ambiente limpio y acogedor, garantizando una transición perfecta para la utilización final.",
+    s4Desc: "Eliminación profunda de polvos y residuos de construcción en chalets, restaurantes o tiendas. Transformamos o escenario de obra em um ambiente limpo e acolhedor, garantindo uma transição perfecta para la utilización final.",
     reviewsTitle: "Voces de Confiança",
     partnersTitle: "Alianças de Prestígio",
     quoteTitle: "Contacto",
@@ -224,9 +225,9 @@ const translations = {
     careersWhyTitle: "¿Por qué Rosimeire Serviços?",
     careersAdv1: "Formación Continua", careersAdv1Desc: "Desarrollo técnico en limpeza especializada.",
     careersAdv2: "Ambiente de Respeito", careersAdv2Desc: "Valorizamos el bienestar de nuestro equipo.",
-    careersAdv3: "Reconhecimiento", careersAdv3Desc: "Oportunidades de crescimento no Algarve.",
+    careersAdv3: "Reconhecimento", careersAdv3Desc: "Oportunidades de crescimento no Algarve.",
     careersApplyTitle: "Aplica Hoy",
-    careersApplyDesc: "Si eres una persona dedicada, puntual y con ojo para el detalhe, queremos conocerte.",
+    careersApplyDesc: "Si eres una persona dedicada, puntual y con ojo para o detalhe, queremos conocerte.",
     careersApplyBtn: "Completar Formulario de Candidatura",
     careersFormLink: "https://docs.google.com/forms/d/e/1FAIpQLSdo6NUZsw3gcZhigbPrAafa1zb32hgjQi67dDkEKEEByc1rHg/viewform?usp=sf_link"
   }
@@ -238,14 +239,16 @@ const DEFAULT_SLIDES: Slide[] = [
     description: "Cuidamos da sua casa para que você possa apenas sentir o momento.", 
     image: "https://images.unsplash.com/photo-1600607687940-4e7a6a353d2c?auto=format&fit=crop&q=80&w=1600",
     tag: "A ESSÊNCIA",
-    buttonLink: ""
+    buttonLink: "contact",
+    buttonText: "MARCAR AGORA"
   },
   { 
     id: '2', title: "DETALHES ESSENCIAIS", 
     description: "Uma casa limpa é um refúgio para a alma. Nossa curadoria é invisível, mas sentida.", 
     image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1600",
     tag: "O CUIDADO",
-    buttonLink: ""
+    buttonLink: "about",
+    buttonText: "CONHECER EQUIPA"
   }
 ];
 
@@ -305,6 +308,7 @@ const DEFAULT_REVIEWS: Review[] = [
 
 const INITIAL_GOOGLE_MAPS_LINK = "https://www.google.com/search?q=Rosimeire+Servi%C3%A7os+Quarteira&si=AMgyJEs9DArPE9xmb5yVYVjpG4jqWDEKSIpCRSjmm88XZWnGNakrDl7qyiJLF74BYlGsMcE9Da1nUDIZ5DNa9RlMSKMI70hspYaTqbBEPz7oFQkgC81_ZMtEKchYDA-1FddJnX-cdUqx";
 const FIXED_GAS_URL = "https://script.google.com/macros/s/AKfycbzsOBqT_YLZW576jbHX8vAcuBi4bSNhn4CYdqTwcu7ObX6QcqNIhjXlsOYxlud9nqy6/exec";
+const SIR_URL = "https://sir.rosimeireservicos.com"; // Placeholder para o sistema integrado
 
 // --- Components ---
 const InitialLoader = () => (
@@ -530,9 +534,10 @@ const App = () => {
       return;
     }
     
-    // Se for um dos views internos
-    if (link === 'about' || link === 'careers' || link === 'contact' || link === 'home') {
+    const internalViews: View[] = ['home', 'contact', 'about', 'careers'];
+    if (internalViews.includes(link as View)) {
       setView(link as View);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (link.startsWith('http')) {
       window.open(link, '_blank');
     } else if (link.startsWith('#')) {
@@ -626,6 +631,15 @@ const App = () => {
                 {t.navContact}
               </button>
               <div className="w-[1px] h-3 bg-white/5"></div>
+              
+              {/* Botão SIR - Acesso do Colaborador */}
+              <button 
+                onClick={() => window.open(SIR_URL, '_blank')}
+                className="group flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase text-white/30 hover:text-[#f8c8c4] transition-all"
+              >
+                <Zap size={12} className="group-hover:scale-110 transition-transform"/> SIR
+              </button>
+
               <button onClick={handleAdminAccess} className={`transition-colors ${isAuthenticated ? 'text-[#f8c8c4]' : 'text-white/20 hover:text-[#f8c8c4]'}`}>
                 <Settings size={14} />
               </button>
@@ -637,6 +651,55 @@ const App = () => {
           </div>
         </header>
       </div>
+
+      {/* Mobile Navigation Overlay */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[1050] bg-[#081221] pt-32 px-12 pb-24 flex flex-col justify-between"
+          >
+            <nav className="flex flex-col gap-10">
+              {[
+                { label: t.navHome, view: 'home' },
+                { label: t.footerSobre, view: 'about' },
+                { label: t.footerCarreira, view: 'careers' },
+                { label: t.navContact, view: 'contact' }
+              ].map((item) => (
+                <button 
+                  key={item.view} 
+                  onClick={() => { setView(item.view as View); setIsMenuOpen(false); }}
+                  className="text-left text-3xl font-light tracking-[0.2em] text-white/80 hover:text-[#f8c8c4] uppercase"
+                >
+                  {item.label}
+                </button>
+              ))}
+              
+              {/* SIR Link no Mobile */}
+              <button 
+                onClick={() => window.open(SIR_URL, '_blank')}
+                className="text-left text-sm font-black tracking-[0.4em] text-[#f8c8c4]/40 hover:text-[#f8c8c4] uppercase flex items-center gap-3 pt-6 border-t border-white/5"
+              >
+                <Zap size={16}/> ACESSO SIR (COLABORADORES)
+              </button>
+            </nav>
+
+            <div className="flex flex-col gap-8">
+              <div className="flex gap-8">
+                {['PT', 'EN', 'ES'].map(l => (
+                  <button key={l} onClick={() => setLang(l as Language)} className={`text-xs font-bold tracking-widest ${lang === l ? 'text-[#f8c8c4]' : 'text-white/20'}`}>{l}</button>
+                ))}
+              </div>
+              <button onClick={handleAdminAccess} className="flex items-center gap-4 text-xs font-bold tracking-widest text-white/20 uppercase">
+                <Settings size={16} /> Painel Administrativo
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence mode="wait">
         {!isInitialLoading && view === 'home' && (
@@ -674,7 +737,7 @@ const App = () => {
                       onClick={() => handleHeroButtonClick(slides[currentSlide]?.buttonLink)} 
                       className="btn-serenity !px-8 !py-3"
                     >
-                      {t.navContact}
+                      {slides[currentSlide]?.buttonText || t.navContact}
                     </button>
                   </div>
                 </motion.div>
@@ -901,9 +964,30 @@ const App = () => {
                 </div>
                 <div className="crystal-card p-12 rounded-sm">
                   <form onSubmit={handleContactSubmit} className="space-y-12">
-                    <div className="space-y-2"><label className="tagline block">{t.name}</label><input required className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" /></div>
-                    <div className="space-y-2"><label className="tagline block">{t.message}</label><textarea required rows={4} className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" /></div>
-                    <button className="w-full btn-serenity py-8">{formStatus === 'idle' ? t.send : '...'}</button>
+                    <div className="space-y-2">
+                      <label className="tagline block">{t.name}</label>
+                      <input required className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                      <div className="space-y-2">
+                        <label className="tagline block">{t.email}</label>
+                        <input type="email" required className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="tagline block">{t.phone}</label>
+                        <input type="tel" required className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="tagline block">{t.message}</label>
+                      <textarea required rows={4} className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
+                    </div>
+                    
+                    <button className="w-full btn-serenity py-8">
+                      {formStatus === 'idle' ? t.send : (formStatus === 'sending' ? '...' : t.success)}
+                    </button>
                   </form>
                 </div>
               </div>

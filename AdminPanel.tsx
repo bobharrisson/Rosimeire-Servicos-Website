@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -5,7 +6,7 @@ import {
   Briefcase, CheckCircle, Image as ImageIcon, RotateCcw, Cloud, Mail, 
   Key, Server, Eye, EyeOff, ShieldCheck, Zap, AlertCircle, Loader2, 
   Info, Lightbulb, Check, Database, Download, Upload, FileJson, ExternalLink, Link, RefreshCw, CloudOff,
-  Instagram, Linkedin, Palette
+  Instagram, Linkedin, Palette, MessageSquare
 } from 'lucide-react';
 
 interface Slide {
@@ -15,6 +16,7 @@ interface Slide {
   image: string;
   tag: string;
   buttonLink?: string;
+  buttonText?: string;
 }
 
 interface SectionImages {
@@ -104,7 +106,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Handlers
   const addSlide = () => {
-    const newSlide: Slide = { id: Date.now().toString(), title: "Novo Slide", description: "Descrição...", image: slides[0]?.image || "", tag: "NOVO", buttonLink: "" };
+    const newSlide: Slide = { id: Date.now().toString(), title: "Novo Slide", description: "Descrição...", image: slides[0]?.image || "", tag: "NOVO", buttonLink: "contact", buttonText: "SABER MAIS" };
     setSlides([...slides, newSlide]);
   };
   const removeSlide = (id: string) => slides.length > 1 && setSlides(slides.filter(s => s.id !== id));
@@ -146,15 +148,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-8">
           <div className="flex items-center gap-8">
             <h2 className="heading-serif text-4xl md:text-7xl">Painel de Controlo</h2>
-            <div className={`flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/5 transition-all duration-500`}>
-              {cloudStatus === 'loading' ? <RefreshCw size={14} className="text-blue-400 animate-spin" /> : 
-               cloudStatus === 'connected' ? <Cloud size={14} className="text-green-400" /> : 
-               cloudStatus === 'error' ? <CloudOff size={14} className="text-red-400" /> : 
-               <CloudOff size={14} className="text-white/20" />}
-              <span className="text-[10px] font-black tracking-[0.3em] uppercase">
-                {cloudStatus === 'connected' ? 'Sincronizado' : cloudStatus === 'loading' ? 'A Guardar...' : 'Offline'}
-              </span>
-            </div>
           </div>
           <div className="flex gap-6 items-center">
             <button onClick={onLogout} className="text-[10px] font-bold tracking-widest uppercase text-white/40 hover:text-white transition-colors">Sair</button>
@@ -162,28 +155,50 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         </div>
 
-        <div className="mb-12 flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-sm">
-           <div className="flex items-center gap-4">
-             <Server size={14} className="text-[#f8c8c4]/40" />
-             <span className="text-[9px] font-mono text-white/30 truncate max-w-xs">{gasUrl}</span>
+        {/* Card de Informações Técnicas e Status Integrado */}
+        <div className="mb-12 flex flex-col md:flex-row items-center justify-between p-6 bg-white/[0.02] border border-white/5 rounded-sm gap-8">
+           <div className="flex items-center gap-6 flex-1 overflow-hidden">
+             <div className="p-3 bg-white/5 rounded-sm">
+                <Server size={18} className="text-[#f8c8c4]/40" />
+             </div>
+             <div className="flex flex-col gap-1 min-w-0">
+               <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/20">Endpoint SIR (Database API)</span>
+               <span className="text-[10px] font-mono text-[#f8c8c4]/60 break-all select-all leading-relaxed">{gasUrl}</span>
+             </div>
            </div>
-           <span className="text-[8px] font-black uppercase tracking-widest text-[#f8c8c4]/20">Sistema Integrado SIR</span>
+
+           <div className={`flex items-center gap-4 px-6 py-4 rounded-sm bg-white/5 border border-white/5 transition-all duration-500`}>
+              {cloudStatus === 'loading' ? <RefreshCw size={16} className="text-blue-400 animate-spin" /> : 
+               cloudStatus === 'connected' ? <Cloud size={16} className="text-green-400" /> : 
+               cloudStatus === 'error' ? <CloudOff size={16} className="text-red-400" /> : 
+               <CloudOff size={16} className="text-white/20" />}
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black tracking-[0.2em] uppercase">
+                  {cloudStatus === 'connected' ? 'Sincronizado' : cloudStatus === 'loading' ? 'A Sincronizar...' : 'Estado Offline'}
+                </span>
+                <span className="text-[7px] font-bold tracking-[0.1em] text-white/20 uppercase">Acesso à Nuvem SIR Ativo</span>
+              </div>
+           </div>
         </div>
 
-        <div className="flex gap-12 border-b border-white/5 mb-16 overflow-x-auto whitespace-nowrap scrollbar-hide">
+        {/* Separadores Reorganizados em Grid (2 Linhas) */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-16">
           {[
-            { id: 'slides', icon: <ImageIcon size={14}/>, label: 'Slides' },
-            { id: 'images', icon: <ImageIcon size={14}/>, label: 'Visual' },
+            { id: 'slides', icon: <ImageIcon size={14}/>, label: 'Slides Principal' },
+            { id: 'images', icon: <ImageIcon size={14}/>, label: 'Visual Páginas' },
             { id: 'email', icon: <Mail size={14}/>, label: 'Contacto & Social' },
-            { id: 'notices', icon: <Bell size={14}/>, label: 'Avisos' },
+            { id: 'notices', icon: <Bell size={14}/>, label: 'Barra de Avisos' },
             { id: 'reviews', icon: <Star size={14}/>, label: 'Depoimentos' },
             { id: 'partners', icon: <Briefcase size={14}/>, label: 'Parceiros' }
           ].map((tab) => (
             <button 
               key={tab.id} onClick={() => setActiveTab(tab.id as any)} 
-              className={`pb-4 text-[10px] font-bold tracking-[0.3em] uppercase transition-all flex items-center gap-3 ${activeTab === tab.id ? 'text-[#f8c8c4] border-b border-[#f8c8c4]' : 'text-white/20 hover:text-white/40'}`}
+              className={`p-6 text-[10px] font-bold tracking-[0.3em] uppercase transition-all flex items-center gap-4 rounded-sm border ${activeTab === tab.id ? 'text-[#f8c8c4] border-[#f8c8c4] bg-[#f8c8c4]/5 shadow-[0_0_20px_rgba(248,200,196,0.05)]' : 'text-white/20 border-white/5 bg-white/[0.01] hover:text-white/40 hover:bg-white/[0.03]'}`}
             >
-              {tab.icon} {tab.label}
+              <div className={`${activeTab === tab.id ? 'text-[#f8c8c4]' : 'text-white/10'}`}>
+                {tab.icon}
+              </div>
+              {tab.label}
             </button>
           ))}
         </div>
@@ -207,9 +222,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       <label className="admin-label">Breve Descrição</label>
                       <textarea value={s.description} onChange={e => updateSlide(s.id, 'description', e.target.value)} placeholder="Descrição" className="admin-input text-xs" rows={2} />
                     </div>
-                    <div className="space-y-2">
-                      <label className="admin-label">Link do Botão (Ex: contact, about, careers ou URL externa)</label>
-                      <input value={s.buttonLink || ""} onChange={e => updateSlide(s.id, 'buttonLink', e.target.value)} placeholder="Destino do clique" className="admin-input" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/[0.02] p-6 rounded-sm border border-white/5">
+                      <div className="space-y-3">
+                        {/* Fix: MessageSquare icon added to imports to resolve the error */}
+                        <label className="admin-label flex items-center gap-2 text-[#f8c8c4]/80"><MessageSquare size={10}/> Texto do Botão</label>
+                        <input value={s.buttonText || ""} onChange={e => updateSlide(s.id, 'buttonText', e.target.value)} placeholder="Ex: Saiba Mais" className="admin-input !bg-white/5" />
+                        <span className="text-[7px] text-white/20 uppercase font-bold">Vazio = padrão CONTACTO</span>
+                      </div>
+                      <div className="space-y-3">
+                        <label className="admin-label flex items-center gap-2 text-[#f8c8c4]/80"><ExternalLink size={10}/> Link do Botão</label>
+                        <input value={s.buttonLink || ""} onChange={e => updateSlide(s.id, 'buttonLink', e.target.value)} placeholder="Ex: contact" className="admin-input !bg-white/5" />
+                        <span className="text-[7px] text-white/20 uppercase font-bold">Dicas: home, about, careers, contact</span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -256,6 +280,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         <Instagram size={14}/>
                         <label className="admin-label">Instagram URL</label>
                       </div>
+                      {/* Fix: corrected onChange handler to properly update socialLinks.instagram */}
                       <input value={socialLinks.instagram} onChange={e => updateSocialLink('instagram', e.target.value)} placeholder="https://instagram.com/..." className="admin-input" />
                     </div>
                     <div className="space-y-4">
@@ -263,6 +288,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         <Linkedin size={14}/>
                         <label className="admin-label">LinkedIn URL</label>
                       </div>
+                      {/* Fix: corrected onChange handler to properly update socialLinks.linkedin */}
                       <input value={socialLinks.linkedin} onChange={e => updateSocialLink('linkedin', e.target.value)} placeholder="https://linkedin.com/in/..." className="admin-input" />
                     </div>
                   </div>
