@@ -7,7 +7,8 @@ import {
   Star, CheckCircle2, Briefcase, MapPin, ArrowLeft, Globe, Target, Eye, 
   Heart, ShieldCheck, MessageSquare, Flame, Award, Users, Check,
   ChevronLeft, ChevronRight, Save, RotateCcw, Server, Cloud, CloudOff, RefreshCw, Loader2,
-  Instagram, Linkedin, Code, Zap, Trash2, Search, ChevronDown, MessageCircle, LogIn, Navigation
+  Instagram, Linkedin, Code, Zap, Trash2, Search, ChevronDown, MessageCircle, LogIn, Navigation,
+  Layout
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminPanel from './AdminPanel';
@@ -24,6 +25,15 @@ interface Slide {
   tag: string;
   buttonLink?: string;
   buttonText?: string;
+}
+
+interface SiteConfig {
+  logoUrl: string;
+  companyName: string;
+  companySubtitle: string;
+  footerNote: string;
+  footerCopyright: string;
+  developedBy: string;
 }
 
 interface SectionImages {
@@ -120,7 +130,7 @@ const translations = {
     navHome: "O Início", navServices: "Curadoria", navReviews: "Legado", navContact: "CONTACTO",
     heroSubtitle: "Rosimeire Serviços",
     servicesTitle: "O Rigor do Detalhe",
-    servicesSubtitle: "A excelência técnica que preserva o seu legado.",
+    servicesSubtitle: "A excelência técnica que preserves o seu legado.",
     servicesDescription: "Dedicamo-nodes à preservação e cuidado da sua propriedade com um rigor inigualável. Através de um serviço de limpeza profissional de alto padrão, os nossos técnicos especializados asseguram que cada detalhe do seu imóvel seja tratado com a máxima perícia, garantizando um ambiente absolutamente imaculado. Aliamos a excelência técnica a uma política de transparência e valor justo, oferecendo-lhe a segurança de um património impecavelmente mantido, sempre que necessitar.",
     s1Title: "Alojamentos e Unidades Turísticas",
     s1Tagline: "Higienização rigorosa para a rotatividade do setor.",
@@ -142,7 +152,6 @@ const translations = {
     send: "Enviar Mensagem", success: "Mensagem enviada. Entraremos em contacto brevemente.",
     clearForm: "Limpar Formulário", searchCountry: "Procurar País...",
     whatsappLabel: "WhatsApp Direto",
-    footerNote: "A alma do Algarve bem cuidada.",
     footerSobre: "Sobre", footerCarreira: "Carreira", developedBy: "Desenvolvido & Gerido Por",
     footerSocial: "Social", footerLinks: "A Empresa",
     adminTitle: "Painel Administrativo", adminSlides: "Slides", adminNotices: "Avisos", adminReviews: "Depoimentos", adminPartners: "Parceiros", adminImages: "Visual", adminEmail: "E-mail",
@@ -193,7 +202,6 @@ const translations = {
     send: "Send Message", success: "Message sent. We will contact you shortly.",
     clearForm: "Clear Form", searchCountry: "Search Country...",
     whatsappLabel: "Direct WhatsApp",
-    footerNote: "The soul of a well-kept Algarve.",
     footerSobre: "About", footerCarreira: "Careers", developedBy: "Developed & Managed By",
     footerSocial: "Social", footerLinks: "The Company",
     adminTitle: "Admin Panel", adminSlides: "Slides", adminNotices: "Notices", adminReviews: "Reviews", adminPartners: "Partners", adminImages: "Visual", adminEmail: "Email",
@@ -222,7 +230,7 @@ const translations = {
     navHome: "Inicio", navServices: "Curaduría", navReviews: "Legado", navContact: "CONTACTO",
     heroSubtitle: "Rosimeire Serviços",
     servicesTitle: "El Rigor del Detalle",
-    servicesSubtitle: "La excelencia técnica que preserva su legado.",
+    servicesSubtitle: "La excelencia técnica que preserves su legado.",
     servicesDescription: "Nos dedicamos a la preservación y el cuidado de su propriedade con un rigor inigualável. A través de un serviço de limpeza profesional de alto nivel, nuestros técnicos especializados aseguran que cada detalle de su inmueble sea tratado con la máxima pericia, garantizando un ambiente absolutamente inmaculado. Combinamos la excelencia técnica con una política de transparencia e valor justo, ofreciéndole la segurança de un patrimonio impecablemente mantenido, siempre que lo necesite.",
     s1Title: "Alojamientos y Unidades Turísticas",
     s1Tagline: "Higienização rigorosa para a rotatividade do setor.",
@@ -244,7 +252,6 @@ const translations = {
     send: "Enviar Mensagem", success: "Mensaje enviado. Le contactaremos pronto.",
     clearForm: "Limpar Formulario", searchCountry: "Buscar País...",
     whatsappLabel: "WhatsApp Directo",
-    footerNote: "El alma del Algarve bien cuidada.",
     footerSobre: "Sobre", footerCarreira: "Carrera", developedBy: "Desarrollado y Gestionado Por",
     footerSocial: "Social", footerLinks: "La Empresa",
     adminTitle: "Panel Administrativo", adminSlides: "Slides", adminNotices: "Avisos", adminReviews: "Testimonios", adminPartners: "Socios", adminImages: "Visual", adminEmail: "Email",
@@ -269,6 +276,15 @@ const translations = {
     careersApplyBtn: "Completar Formulário de Candidatura",
     careersFormLink: "https://docs.google.com/forms/d/e/1FAIpQLSdo6NUZsw3gcZhigbPrAafa1zb32hgjQi67dDkEKEEByc1rHg/viewform?usp=sf_link"
   }
+};
+
+const DEFAULT_SITE_CONFIG: SiteConfig = {
+  logoUrl: "",
+  companyName: "ROSIMEIRE",
+  companySubtitle: "SERVIÇOS",
+  footerNote: "A alma do Algarve bem cuidada.",
+  footerCopyright: "© 2025. Rosimeire Serviços - Algarve.",
+  developedBy: "Bob Harrisson Gracindo Madeiro"
 };
 
 const DEFAULT_SLIDES: Slide[] = [
@@ -393,7 +409,7 @@ const App = () => {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeAdminTab, setActiveAdminTab] = useState<'slides' | 'notices' | 'reviews' | 'partners' | 'images' | 'email' | 'user'>('slides');
+  const [activeAdminTab, setActiveAdminTab] = useState<'slides' | 'notices' | 'reviews' | 'partners' | 'images' | 'email' | 'user' | 'site'>('slides');
   const [isSyncing, setIsSyncing] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [cloudStatus, setCloudStatus] = useState<'idle' | 'loading' | 'connected' | 'error'>('idle');
@@ -410,9 +426,10 @@ const App = () => {
   const [adminUsername, setAdminUsername] = useState('admin');
   const [adminPassword, setAdminPassword] = useState('rosimeire2025');
 
-  const STORAGE_KEY_PREFIX = 'rosimeire_config_v12';
+  const STORAGE_KEY_PREFIX = 'rosimeire_config_v13';
 
   // --- Base State Initialization ---
+  const [siteConfig, setSiteConfig] = useState<SiteConfig>(DEFAULT_SITE_CONFIG);
   const [slides, setSlides] = useState<Slide[]>(DEFAULT_SLIDES);
   const [sectionImages, setSectionImages] = useState<SectionImages>(DEFAULT_SECTION_IMAGES);
   const [socialLinks, setSocialLinks] = useState<SocialLinks>(DEFAULT_SOCIAL_LINKS);
@@ -444,6 +461,7 @@ const App = () => {
       
       if (data && data.slides) {
         setSlides(data.slides);
+        setSiteConfig(data.siteConfig || DEFAULT_SITE_CONFIG);
         setSectionImages(data.sectionImages || DEFAULT_SECTION_IMAGES);
         setSocialLinks(data.socialLinks || DEFAULT_SOCIAL_LINKS);
         setEmailConfig(data.emailConfig || DEFAULT_EMAIL_CONFIG);
@@ -475,6 +493,7 @@ const App = () => {
     try {
       const payload = {
         slides, 
+        siteConfig,
         sectionImages, 
         socialLinks, 
         emailConfig, 
@@ -486,7 +505,7 @@ const App = () => {
         addressDetail,
         adminUsername,
         adminPassword,
-        version: "1.2",
+        version: "1.3",
         lastSync: new Date().toISOString()
       };
       
@@ -516,6 +535,7 @@ const App = () => {
 
       if (localSlides) {
         setSlides(JSON.parse(localSlides));
+        setSiteConfig(JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_site_config`) || JSON.stringify(DEFAULT_SITE_CONFIG)));
         setSectionImages(JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_section_images`) || JSON.stringify(DEFAULT_SECTION_IMAGES)));
         setSocialLinks(JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_social_links`) || JSON.stringify(DEFAULT_SOCIAL_LINKS)));
         setEmailConfig(JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_email_config`) || JSON.stringify(DEFAULT_EMAIL_CONFIG)));
@@ -547,6 +567,7 @@ const App = () => {
   useEffect(() => {
     if (!isInitialLoading) {
       localStorage.setItem(`${STORAGE_KEY_PREFIX}_slides`, JSON.stringify(slides));
+      localStorage.setItem(`${STORAGE_KEY_PREFIX}_site_config`, JSON.stringify(siteConfig));
       localStorage.setItem(`${STORAGE_KEY_PREFIX}_section_images`, JSON.stringify(sectionImages));
       localStorage.setItem(`${STORAGE_KEY_PREFIX}_social_links`, JSON.stringify(socialLinks));
       localStorage.setItem(`${STORAGE_KEY_PREFIX}_email_config`, JSON.stringify(emailConfig));
@@ -559,7 +580,7 @@ const App = () => {
       localStorage.setItem(`${STORAGE_KEY_PREFIX}_admin_user`, adminUsername);
       localStorage.setItem(`${STORAGE_KEY_PREFIX}_admin_pass`, adminPassword);
     }
-  }, [slides, sectionImages, socialLinks, emailConfig, notices, reviews, partners, googleMapsLink, contactPhone, addressDetail, adminUsername, adminPassword, isInitialLoading]);
+  }, [slides, siteConfig, sectionImages, socialLinks, emailConfig, notices, reviews, partners, googleMapsLink, contactPhone, addressDetail, adminUsername, adminPassword, isInitialLoading]);
 
   // Close DDI dropdown on click outside
   useEffect(() => {
@@ -723,9 +744,12 @@ const App = () => {
               className="flex items-center gap-4 cursor-pointer group"
               onClick={() => { setView('home'); setIsMenuOpen(false); }}
             >
+              {siteConfig.logoUrl && (
+                <img src={siteConfig.logoUrl} alt="Logo" className="w-8 h-8 md:w-10 md:h-10 object-contain group-hover:scale-110 transition-transform duration-500" />
+              )}
               <div className="flex flex-col">
-                <span className="text-xl md:text-2xl font-light tracking-[0.3em] text-white uppercase leading-none">ROSIMEIRE</span>
-                <span className="text-[8px] font-bold tracking-[0.5em] text-[#f8c8c4] uppercase mt-1">SERVIÇOS</span>
+                <span className="text-xl md:text-2xl font-light tracking-[0.3em] text-white uppercase leading-none">{siteConfig.companyName}</span>
+                <span className="text-[8px] font-bold tracking-[0.5em] text-[#f8c8c4] uppercase mt-1">{siteConfig.companySubtitle}</span>
               </div>
             </motion.div>
             
@@ -1028,7 +1052,7 @@ const App = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
                 <div>
                   <span className="tagline mb-8 block">{t.aboutSectionTitle}</span>
-                  <h2 className="heading-serif text-5xl md:text-8xl text-white mb-12 uppercase leading-none">SOBRE<br/><span className="italic text-[#f8c8c4]/60 font-light">Rosimeire</span></h2>
+                  <h2 className="heading-serif text-5xl md:text-8xl text-white mb-12 uppercase leading-none">SOBRE<br/><span className="italic text-[#f8c8c4]/60 font-light">{siteConfig.companyName}</span></h2>
                   <p className="text-xl font-light text-white/60 leading-relaxed max-w-xl">{t.aboutSectionText}</p>
                 </div>
                 <img src={sectionImages.about} className="w-full h-[600px] object-cover rounded-sm border border-white/5 grayscale hover:grayscale-0 transition-all duration-1000 shadow-2xl" />
@@ -1246,9 +1270,14 @@ const App = () => {
                    >
                      <div className="flex flex-col gap-4">
                         <div className="flex items-center justify-between">
-                           <div className="flex flex-col">
-                             <span className="text-lg font-light tracking-[0.2em] text-white uppercase leading-none">ROSIMEIRE</span>
-                             <span className="text-[7px] font-bold tracking-[0.4em] text-[#f8c8c4] uppercase mt-1">SERVIÇOS</span>
+                           <div className="flex items-center gap-4">
+                             {siteConfig.logoUrl && (
+                               <img src={siteConfig.logoUrl} alt="Logo" className="w-8 h-8 object-contain" />
+                             )}
+                             <div className="flex flex-col">
+                               <span className="text-lg font-light tracking-[0.2em] text-white uppercase leading-none">{siteConfig.companyName}</span>
+                               <span className="text-[7px] font-bold tracking-[0.4em] text-[#f8c8c4] uppercase mt-1">{siteConfig.companySubtitle}</span>
+                             </div>
                            </div>
                            <div className="p-2 bg-[#f8c8c4]/10 rounded-sm">
                              <MapPin size={18} className="text-[#f8c8c4]" />
@@ -1295,6 +1324,7 @@ const App = () => {
 
       <AdminPanel 
         isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} onLogout={() => { setIsAuthenticated(false); setIsAdminOpen(false); }}
+        siteConfig={siteConfig} setSiteConfig={setSiteConfig}
         slides={slides} setSlides={setSlides}
         sectionImages={sectionImages} setSectionImages={setSectionImages}
         socialLinks={socialLinks} setSocialLinks={setSocialLinks}
@@ -1344,11 +1374,16 @@ const App = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-24 items-start">
             {/* Coluna 1: Empresa */}
             <div className="flex flex-col gap-8">
-              <h5 className="text-white font-light tracking-[0.4em] text-lg uppercase leading-none">
-                ROSIMEIRE<br/>
-                <span className="text-[10px] font-bold tracking-[0.6em] text-[#f8c8c4] mt-2 block">SERVIÇOS</span>
-              </h5>
-              <p className="text-[10px] font-bold tracking-[0.5em] text-white/20 uppercase max-w-xs">{t.footerNote}</p>
+              <div className="flex items-center gap-4">
+                {siteConfig.logoUrl && (
+                  <img src={siteConfig.logoUrl} alt="Logo" className="w-8 h-8 object-contain" />
+                )}
+                <h5 className="text-white font-light tracking-[0.4em] text-lg uppercase leading-none">
+                  {siteConfig.companyName}<br/>
+                  <span className="text-[10px] font-bold tracking-[0.6em] text-[#f8c8c4] mt-2 block">{siteConfig.companySubtitle}</span>
+                </h5>
+              </div>
+              <p className="text-[10px] font-bold tracking-[0.5em] text-white/20 uppercase max-w-xs">{siteConfig.footerNote}</p>
             </div>
             
             {/* Coluna 2: Redes Sociais */}
@@ -1371,13 +1406,13 @@ const App = () => {
           </div>
 
           <div className="pt-16 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
-            <p className="text-[9px] font-bold tracking-[0.4em] text-white/10 uppercase italic">© 2025. Rosimeire Serviços - Algarve.</p>
+            <p className="text-[9px] font-bold tracking-[0.4em] text-white/10 uppercase italic">{siteConfig.footerCopyright}</p>
             
             {/* Assinatura do Desenvolvedor */}
             <div className="flex items-center gap-5 text-white/10 group cursor-default">
               <div className="flex flex-col text-right">
                 <span className="text-[7px] font-black tracking-[0.3em] uppercase text-white/20 mb-1">{t.developedBy}</span>
-                <span className="text-[9px] font-bold tracking-[0.1em] text-white/40 uppercase group-hover:text-[#f8c8c4] transition-colors">Bob Harrisson Gracindo Madeiro</span>
+                <span className="text-[9px] font-bold tracking-[0.1em] text-white/40 uppercase group-hover:text-[#f8c8c4] transition-colors">{siteConfig.developedBy}</span>
                 <span className="text-[7px] font-medium tracking-[0.4em] text-[#f8c8c4]/30 uppercase italic">IT Depart.</span>
               </div>
               <div className="w-[1px] h-8 bg-white/5 group-hover:bg-[#f8c8c4]/20 transition-colors"></div>

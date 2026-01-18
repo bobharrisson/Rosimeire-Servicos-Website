@@ -6,7 +6,8 @@ import {
   Briefcase, CheckCircle, Image as ImageIcon, RotateCcw, Cloud, Mail, 
   Key, Server, Eye, EyeOff, ShieldCheck, Zap, AlertCircle, Loader2, 
   Info, Lightbulb, Check, Database, Download, Upload, FileJson, ExternalLink, Link, RefreshCw, CloudOff,
-  Instagram, Linkedin, Palette, MessageSquare, Lock, Phone, MapPin, ToggleLeft, ToggleRight, Shield
+  Instagram, Linkedin, Palette, MessageSquare, Lock, Phone, MapPin, ToggleLeft, ToggleRight, Shield,
+  Layout
 } from 'lucide-react';
 
 interface Slide {
@@ -17,6 +18,15 @@ interface Slide {
   tag: string;
   buttonLink?: string;
   buttonText?: string;
+}
+
+interface SiteConfig {
+  logoUrl: string;
+  companyName: string;
+  companySubtitle: string;
+  footerNote: string;
+  footerCopyright: string;
+  developedBy: string;
 }
 
 interface SectionImages {
@@ -69,6 +79,8 @@ interface AdminPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onLogout: () => void;
+  siteConfig: SiteConfig;
+  setSiteConfig: (config: SiteConfig) => void;
   slides: Slide[];
   setSlides: (slides: Slide[]) => void;
   sectionImages: SectionImages;
@@ -93,7 +105,7 @@ interface AdminPanelProps {
   setAdminUsername: (user: string) => void;
   adminPassword: string;
   setAdminPassword: (pass: string) => void;
-  activeTab: 'slides' | 'notices' | 'reviews' | 'partners' | 'images' | 'email' | 'user';
+  activeTab: 'slides' | 'notices' | 'reviews' | 'partners' | 'images' | 'email' | 'user' | 'site';
   setActiveTab: (tab: any) => void;
   t: any;
   isSyncing: boolean;
@@ -105,7 +117,7 @@ interface AdminPanelProps {
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({
-  isOpen, onClose, onLogout, slides, setSlides, sectionImages, setSectionImages, socialLinks, setSocialLinks, emailConfig, setEmailConfig, notices, setNotices, reviews, setReviews, 
+  isOpen, onClose, onLogout, siteConfig, setSiteConfig, slides, setSlides, sectionImages, setSectionImages, socialLinks, setSocialLinks, emailConfig, setEmailConfig, notices, setNotices, reviews, setReviews, 
   partners, setPartners, googleMapsLink, setGoogleMapsLink, contactPhone, setContactPhone, addressDetail, setAddressDetail, adminUsername, setAdminUsername, adminPassword, setAdminPassword, activeTab, setActiveTab, t, isSyncing, onResetDefaults, gasUrl, setGasUrl, onPublishToCloud, cloudStatus
 }) => {
   const [isSaving, setIsSaving] = useState(false);
@@ -122,13 +134,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const removeSlide = (id: string) => slides.length > 1 && setSlides(slides.filter(s => s.id !== id));
   const updateSlide = (id: string, field: keyof Slide, value: string) => setSlides(slides.map(s => s.id === id ? { ...s, [field]: value } : s));
 
+  const updateSiteConfig = (field: keyof SiteConfig, value: string) => setSiteConfig({ ...siteConfig, [field]: value });
   const updateSectionImage = (key: keyof SectionImages, value: string) => setSectionImages({ ...sectionImages, [key]: value });
-
   const updateSocialLink = (key: keyof SocialLinks, value: string) => setSocialLinks({ ...socialLinks, [key]: value });
-
-  const updateEmailConfig = (key: keyof EmailConfig, value: any) => {
-    setEmailConfig({ ...emailConfig, [key]: value });
-  };
+  const updateEmailConfig = (key: keyof EmailConfig, value: any) => setEmailConfig({ ...emailConfig, [key]: value });
 
   const addNotice = () => setNotices([...notices, { id: Date.now().toString(), text: "Novo aviso...", active: true }]);
   const removeNotice = (id: string) => setNotices(notices.filter(n => n.id !== id));
@@ -165,7 +174,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         </div>
 
-        {/* Card de Informações Técnicas e Status Integrado */}
+        {/* Status e Sincronização */}
         <div className="mb-12 flex flex-col md:flex-row items-center justify-between p-6 bg-white/[0.02] border border-white/5 rounded-sm gap-8">
            <div className="flex items-center gap-6 flex-1 overflow-hidden">
              <div className="p-3 bg-white/5 rounded-sm">
@@ -191,16 +200,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
            </div>
         </div>
 
-        {/* Separadores Reorganizados em Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-16">
+        {/* Separadores Grid de 8 Colunas */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-16">
           {[
+            { id: 'site', icon: <Layout size={14}/>, label: 'Geral' },
             { id: 'slides', icon: <ImageIcon size={14}/>, label: 'Slides' },
             { id: 'images', icon: <Palette size={14}/>, label: 'Visual' },
             { id: 'email', icon: <Mail size={14}/>, label: 'Contacto' },
             { id: 'notices', icon: <Bell size={14}/>, label: 'Avisos' },
-            { id: 'reviews', icon: <Star size={14}/>, label: 'Depoimentos' },
+            { id: 'reviews', icon: <Star size={14}/>, label: 'Legado' },
             { id: 'partners', icon: <Briefcase size={14}/>, label: 'Parceiros' },
-            { id: 'user', icon: <User size={14}/>, label: 'Utilizador' }
+            { id: 'user', icon: <User size={14}/>, label: 'Conta' }
           ].map((tab) => (
             <button 
               key={tab.id} onClick={() => setActiveTab(tab.id as any)} 
@@ -215,6 +225,59 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
 
         <div className="min-h-[50vh]">
+          {activeTab === 'site' && (
+            <div className="space-y-12 max-w-5xl mx-auto">
+              <div className="crystal-card p-12 space-y-10 border-[#f8c8c4]/10">
+                <div className="flex items-center gap-6 text-[#f8c8c4]/60"><Layout size={24}/><h3 className="text-xl font-bold tracking-widest uppercase text-white">Configurações Gerais do Website</h3></div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                   <div className="space-y-6">
+                      <div className="p-4 bg-white/5 border border-white/5 rounded-sm">
+                         <span className="admin-label !mb-4">Identidade de Marca</span>
+                         <div className="space-y-6">
+                            <div className="space-y-2">
+                              <label className="admin-label !text-[8px]">URL da Logomarca (Topo)</label>
+                              <div className="flex gap-4">
+                                {siteConfig.logoUrl && <img src={siteConfig.logoUrl} className="w-10 h-10 object-contain bg-white/5 p-1 rounded" />}
+                                <input value={siteConfig.logoUrl} onChange={e => updateSiteConfig('logoUrl', e.target.value)} placeholder="https://..." className="admin-input" />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="admin-label !text-[8px]">Nome da Empresa</label>
+                              <input value={siteConfig.companyName} onChange={e => updateSiteConfig('companyName', e.target.value)} className="admin-input font-bold" />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="admin-label !text-[8px]">Subtítulo (Slogan)</label>
+                              <input value={siteConfig.companySubtitle} onChange={e => updateSiteConfig('companySubtitle', e.target.value)} className="admin-input" />
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+
+                   <div className="space-y-6">
+                      <div className="p-4 bg-white/5 border border-white/5 rounded-sm">
+                         <span className="admin-label !mb-4">Personalização do Rodapé</span>
+                         <div className="space-y-6">
+                            <div className="space-y-2">
+                              <label className="admin-label !text-[8px]">Nota de Rodapé (Slogan)</label>
+                              <textarea value={siteConfig.footerNote} onChange={e => updateSiteConfig('footerNote', e.target.value)} className="admin-input" rows={2} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="admin-label !text-[8px]">Texto de Copyright</label>
+                              <input value={siteConfig.footerCopyright} onChange={e => updateSiteConfig('footerCopyright', e.target.value)} className="admin-input" />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="admin-label !text-[8px]">Nome do Desenvolvedor (Signature)</label>
+                              <input value={siteConfig.developedBy} onChange={e => updateSiteConfig('developedBy', e.target.value)} className="admin-input" />
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'slides' && (
             <div className="space-y-12">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -237,12 +300,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-3">
                         <label className="admin-label flex items-center gap-2 text-[#f8c8c4]/80"><MessageSquare size={10}/> Texto do Botão</label>
                         <input value={s.buttonText || ""} onChange={e => updateSlide(s.id, 'buttonText', e.target.value)} placeholder="Ex: Saiba Mais" className="admin-input !bg-white/5" />
-                        <span className="text-[7px] text-white/20 uppercase font-bold">Vazio = padrão CONTACTO</span>
                       </div>
                       <div className="space-y-3">
                         <label className="admin-label flex items-center gap-2 text-[#f8c8c4]/80"><ExternalLink size={10}/> Link do Botão</label>
                         <input value={s.buttonLink || ""} onChange={e => updateSlide(s.id, 'buttonLink', e.target.value)} placeholder="Ex: contact" className="admin-input !bg-white/5" />
-                        <span className="text-[7px] text-white/20 uppercase font-bold">Dicas: home, about, careers, contact</span>
                       </div>
                     </div>
                   </div>
@@ -295,7 +356,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     <input value={addressDetail} onChange={e => setAddressDetail(e.target.value)} placeholder="Rua, Número, Localidade, Algarve - Portugal" className="admin-input" />
                   </div>
 
-                  {/* Configurações SMTP Técnicas */}
+                  {/* SMTP Config */}
                   <div className="pt-10 border-t border-white/5 space-y-10">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-6 text-[#f8c8c4]/60">
@@ -409,50 +470,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 {reviews.map(r => (
                   <div key={r.id} className="crystal-card p-10 relative space-y-8">
                     <button onClick={() => removeReview(r.id)} className="absolute top-6 right-6 text-red-500/30 hover:text-red-500"><Trash2 size={16}/></button>
-                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="admin-label">Nome do Cliente</label>
-                        <input value={r.author} onChange={e => updateReview(r.id, 'author', e.target.value)} placeholder="Ex: Maria S." className="admin-input font-bold" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="admin-label">Data/Tempo do Comentário</label>
-                        <input value={r.time} onChange={e => updateReview(r.id, 'time', e.target.value)} placeholder="Ex: 2 meses atrás" className="admin-input" />
-                      </div>
+                      <div className="space-y-2"><label className="admin-label">Cliente</label><input value={r.author} onChange={e => updateReview(r.id, 'author', e.target.value)} className="admin-input font-bold" /></div>
+                      <div className="space-y-2"><label className="admin-label">Data</label><input value={r.time} onChange={e => updateReview(r.id, 'time', e.target.value)} className="admin-input" /></div>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="admin-label">URL da Foto de Perfil (Avatar)</label>
-                        <div className="flex gap-3">
-                          <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-white/5 border border-white/10">
-                            {r.avatar ? <img src={r.avatar} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-white/20">Sem Foto</div>}
-                          </div>
-                          <input value={r.avatar || ""} onChange={e => updateReview(r.id, 'avatar', e.target.value)} placeholder="https://..." className="admin-input" />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="admin-label flex items-center gap-2">Cor do Círculo (Fallback) <Palette size={10}/></label>
-                        <div className="flex gap-3">
-                          <div className="w-12 h-12 rounded-full flex-shrink-0 border border-white/10" style={{ backgroundColor: r.color || '#f8c8c4' }} />
-                          <input value={r.color} onChange={e => updateReview(r.id, 'color', e.target.value)} placeholder="#HEX" className="admin-input font-mono" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="admin-label">Texto do Depoimento</label>
-                      <textarea value={r.text} onChange={e => updateReview(r.id, 'text', e.target.value)} className="admin-input" rows={3} placeholder="Escreva aqui o comentário do cliente..." />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="admin-label">Iniciais (Para quando não há foto)</label>
-                      <input value={r.initials} onChange={e => updateReview(r.id, 'initials', e.target.value)} maxLength={2} className="admin-input w-24 text-center font-bold" />
-                    </div>
+                    <div className="space-y-2"><label className="admin-label">Texto</label><textarea value={r.text} onChange={e => updateReview(r.id, 'text', e.target.value)} className="admin-input" rows={3} /></div>
                   </div>
                 ))}
                </div>
-               <button onClick={addReview} className="admin-btn-add"><Plus size={16}/> Adicionar Depoimento Manual</button>
+               <button onClick={addReview} className="admin-btn-add"><Plus size={16}/> Novo Depoimento</button>
             </div>
           )}
 
@@ -462,127 +488,52 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 {partners.map(p => (
                   <div key={p.id} className="crystal-card p-10 relative space-y-6">
                     <button onClick={() => removePartner(p.id)} className="absolute top-6 right-6 text-red-500/30 hover:text-red-500"><Trash2 size={16}/></button>
-                    <div className="space-y-2">
-                      <label className="admin-label">Nome do Parceiro/Empresa</label>
-                      <input value={p.name} onChange={e => updatePartner(p.id, 'name', e.target.value)} placeholder="Nome" className="admin-input font-bold" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="admin-label">URL do Logótipo (Fundo Transparente)</label>
-                      <input value={p.logo} onChange={e => updatePartner(p.id, 'logo', e.target.value)} placeholder="URL do Logo" className="admin-input" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="admin-label">Link URL do Website</label>
-                      <input value={p.url} onChange={e => updatePartner(p.id, 'url', e.target.value)} placeholder="https://..." className="admin-input" />
-                    </div>
+                    <div className="space-y-2"><label className="admin-label">Nome</label><input value={p.name} onChange={e => updatePartner(p.id, 'name', e.target.value)} className="admin-input font-bold" /></div>
+                    <div className="space-y-2"><label className="admin-label">URL Logo</label><input value={p.logo} onChange={e => updatePartner(p.id, 'logo', e.target.value)} className="admin-input" /></div>
+                    <div className="space-y-2"><label className="admin-label">Link Website</label><input value={p.url} onChange={e => updatePartner(p.id, 'url', e.target.value)} className="admin-input" /></div>
                   </div>
                 ))}
               </div>
-              <button onClick={addPartner} className="admin-btn-add"><Plus size={16}/> Adicionar Novo Parceiro</button>
+              <button onClick={addPartner} className="admin-btn-add"><Plus size={16}/> Novo Parceiro</button>
             </div>
           )}
 
           {activeTab === 'user' && (
             <div className="space-y-12 max-w-4xl mx-auto">
               <div className="crystal-card p-12 space-y-10 border-[#f8c8c4]/10">
-                <div className="flex items-center gap-6 text-[#f8c8c4]/60 mb-4">
-                  <ShieldCheck size={24}/>
-                  <h3 className="text-xl font-bold tracking-widest uppercase text-white">Segurança & Acesso</h3>
-                </div>
-                
-                <div className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="flex items-center gap-6 text-[#f8c8c4]/60 mb-4"><ShieldCheck size={24}/><h3 className="text-xl font-bold tracking-widest uppercase text-white">Acesso Administrador</h3></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3"><label className="admin-label">Utilizador</label><input value={adminUsername} onChange={e => setAdminUsername(e.target.value)} className="admin-input" /></div>
                     <div className="space-y-3">
-                      <label className="admin-label flex items-center gap-2"><User size={12}/> Utilizador Administrador</label>
-                      <input 
-                        value={adminUsername} 
-                        onChange={e => setAdminUsername(e.target.value)} 
-                        placeholder="Nome de utilizador" 
-                        className="admin-input" 
-                      />
-                      <span className="text-[7px] text-white/20 uppercase font-bold">Identificador de acesso ao painel</span>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="admin-label flex items-center gap-2"><Lock size={12}/> Palavra-passe</label>
+                      <label className="admin-label">Password</label>
                       <div className="relative">
-                        <input 
-                          type={showPassword ? "text" : "password"}
-                          value={adminPassword} 
-                          onChange={e => setAdminPassword(e.target.value)} 
-                          placeholder="Password segura" 
-                          className="admin-input pr-12" 
-                        />
-                        <button 
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-[#f8c8c4] transition-colors"
-                        >
+                        <input type={showPassword ? "text" : "password"} value={adminPassword} onChange={e => setAdminPassword(e.target.value)} className="admin-input pr-12" />
+                        <button onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-[#f8c8c4] transition-colors">
                           {showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
                         </button>
                       </div>
-                      <span className="text-[7px] text-white/20 uppercase font-bold">Mantenha esta chave em segurança</span>
                     </div>
-                  </div>
-
-                  <div className="pt-8 border-t border-white/5 space-y-6">
-                    <div className="flex items-center gap-3 text-[#f8c8c4]/40">
-                      <Zap size={14}/>
-                      <span className="text-[9px] font-black uppercase tracking-[0.2em]">Sincronização Database SIR</span>
-                    </div>
-                    <div className="p-6 bg-white/[0.02] border border-white/5 rounded-sm space-y-4">
-                       <p className="text-[10px] font-light text-white/40 leading-relaxed italic">
-                         As suas credenciais de acesso são sincronizadas automaticamente com a base de dados via Google Apps Script (SIR). Isto garante que as definições de acesso sejam consistentes em todos os dispositivos.
-                       </p>
-                       <div className="flex items-center gap-2">
-                         <div className={`w-2 h-2 rounded-full ${cloudStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'}`} />
-                         <span className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/20">Ligação SIR: {cloudStatus === 'connected' ? 'Ativa' : 'Offline'}</span>
-                       </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
           )}
         </div>
 
+        {/* Botões Finais */}
         <div className="mt-32 pt-16 border-t border-white/5 flex flex-col items-center gap-8">
-          <button 
-            onClick={handleFinalize} 
-            disabled={isSaving} 
-            className="btn-serenity px-32 py-8 flex items-center justify-center gap-6 min-w-[400px] group overflow-hidden relative"
-          >
-            {isSaving ? (
-              <div className="flex items-center gap-4">
-                <Loader2 size={16} className="animate-spin text-white"/>
-                <span className="text-white">A SINCRONIZAR COM A NUVEM...</span>
-              </div>
-            ) : (
-              <>
-                <div className="absolute inset-0 bg-[#f8c8c4]/10 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-700" />
-                <Check size={16} className="relative z-10" /> 
-                <span className="relative z-10">GUARDAR & FINALIZAR</span>
-              </>
-            )}
+          <button onClick={handleFinalize} disabled={isSaving} className="btn-serenity px-32 py-8 flex items-center justify-center gap-6 min-w-[400px] group overflow-hidden relative">
+            {isSaving ? <Loader2 size={16} className="animate-spin"/> : <Check size={16} />}
+            <span>{isSaving ? 'A SINCRONIZAR...' : 'GUARDAR & FINALIZAR'}</span>
           </button>
-          
-          <button onClick={onResetDefaults} className="text-[8px] font-bold tracking-[0.5em] text-red-400/20 hover:text-red-400 transition-all uppercase">
-            Resetar cache local
-          </button>
+          <button onClick={onResetDefaults} className="text-[8px] font-bold tracking-[0.5em] text-red-400/20 hover:text-red-400 transition-all uppercase">Resetar cache local</button>
         </div>
       </div>
 
       <style>{`
-        .admin-label {
-          display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(248, 200, 196, 0.4); margin-bottom: 0.5rem;
-        }
-        .admin-input {
-          width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-          padding: 1rem; color: white; font-size: 0.8rem; border-radius: 2px; outline: none; transition: border-color 0.3s ease;
-        }
+        .admin-label { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(248, 200, 196, 0.4); margin-bottom: 0.5rem; }
+        .admin-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; color: white; font-size: 0.8rem; border-radius: 2px; outline: none; transition: border-color 0.3s ease; }
         .admin-input:focus { border-color: #f8c8c4; }
-        .admin-btn-add {
-          width: 100%; padding: 2rem; border: 1px dashed rgba(255,255,255,0.1); color: rgba(255,255,255,0.2);
-          text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.4em; font-weight: bold;
-          display: flex; align-items: center; justify-content: center; gap: 1rem; transition: all 0.3s ease;
-        }
+        .admin-btn-add { width: 100%; padding: 2rem; border: 1px dashed rgba(255,255,255,0.1); color: rgba(255,255,255,0.2); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.4em; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 1rem; transition: all 0.3s ease; }
         .admin-btn-add:hover { color: #f8c8c4; border-color: #f8c8c4; background: rgba(248,200,196,0.02); }
       `}</style>
     </motion.div>
