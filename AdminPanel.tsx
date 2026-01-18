@@ -183,13 +183,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     setIsMagicLoading(true);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const prompt = `Você é um designer web de luxo. Gere APENAS código CSS para um efeito visual imersivo e elegante baseado na descrição: "${magic.prompt}".
-      Regras Estritas:
-      1. Use animações com @keyframes.
-      2. O efeito deve estar em um container fixo (position: fixed) com z-index alto (9999) e pointer-events: none.
-      3. Não altere o layout existente do site.
-      4. Garanta que as cores combinem com o estilo "Midnight & Petal" (tons de azul marinho profundo, dourado suave e rosa pálido).
-      5. Retorne APENAS o código CSS puro, sem tags markdown, sem comentários, sem explicações.`;
+      const prompt = `Você é um designer web de luxo especializado em efeitos atmosféricos. Gere APENAS código CSS para um efeito visual imersivo e elegante baseado na descrição: "${magic.prompt}".
+      
+      REGRAS ESTRITAS DE IMPLEMENTAÇÃO:
+      1. O código CSS deve ser aplicado OBRIGATORIAMENTE ao seletor '.magic-event-layer' e seus pseudo-elementos '::before' e '::after'.
+      2. Use animações complexas com @keyframes para dar vida ao efeito.
+      3. O container '.magic-event-layer' já possui posicionamento fixo e z-index alto, você deve focar na criação visual interna (backgrounds, partículas simuladas com sombras, gradientes animados, etc).
+      4. Não altere o layout existente do site; trabalhe apenas dentro da camada fornecida.
+      5. Cores obrigatórias: Utilize a paleta "Midnight & Petal" (tons de azul marinho profundo #081221, rosa pálido #f8c8c4 e detalhes em dourado suave).
+      6. Retorne APENAS o código CSS puro, pronto para ser injetado. Sem tags markdown, sem comentários, sem explicações.`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -318,7 +320,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         <textarea 
                           value={magicEffect.prompt} 
                           onChange={e => updateMagicEffect('prompt', e.target.value)}
-                          placeholder="Ex: Flocos de neve dourados cainou suavemente, Brilho de estrelas no topo da página..."
+                          placeholder="Ex: Flocos de neve dourados caindo suavemente, Brilho de estrelas no topo da página..."
                           className="admin-input !bg-white/5 min-h-[120px]"
                         />
                       </div>

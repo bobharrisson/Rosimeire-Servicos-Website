@@ -121,8 +121,8 @@ const COUNTRIES: Country[] = [
   { name: "Canada", code: "CA", ddi: "+1", flag: "🇨🇦" },
   { name: "Austria", code: "AT", ddi: "+43", flag: "🇦🇹" },
   { name: "Sweden", code: "SE", ddi: "+46", flag: "🇸🇪" },
-  { name: "Norway", code: "NO", ddi: "+47", flag: "🇳🇴" },
-  { name: "Denmark", code: "DK", ddi: "+45", flag: "🇩🇰" }
+  { name: "Norway", code: "NO", ddi: "+47", flag: "🇳🇱" },
+  { name: "Denmark", code: "DK", ddi: "+45", flag: "🇳🇱" }
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 // --- Visual Elements ---
@@ -284,7 +284,7 @@ const translations = {
     careersAdv2: "Ambiente de Respeito", careersAdv2Desc: "Valorizamos el bienestar de nuestro equipo.",
     careersAdv3: "Reconhecimento", careersAdv3Desc: "Oportunidades de crescimento no Algarve.",
     careersApplyTitle: "Aplica Hoy",
-    careersApplyDesc: "Si eres una persona dedicada, puntual y con ojo para o detalhe, queremos conhecerte.",
+    careersApplyDesc: "Si eres una person dedicad, puntual y con ojo para o detalhe, queremos conhecerte.",
     careersApplyBtn: "Completar Formulário de Candidatura",
     careersFormLink: "https://docs.google.com/forms/for_link"
   }
@@ -427,35 +427,46 @@ const InitialLoader = () => (
 
 const MagicEffectRunner = ({ config }: { config?: MagicEffect }) => {
   useEffect(() => {
-    if (!config) return;
+    const styleId = 'dynamic-magic-effect-style';
+    
+    const cleanup = () => {
+      const el = document.getElementById(styleId);
+      if (el) el.innerHTML = '';
+    };
+
+    if (!config || !config.active || !config.code) {
+      cleanup();
+      return;
+    }
 
     // Verificar expiração
-    if (config.active && config.expiryDate) {
+    if (config.expiryDate) {
       const now = new Date();
       const expiry = new Date(config.expiryDate);
-      if (now > expiry) return; // Não executar se expirou
+      if (now > expiry) {
+        cleanup();
+        return;
+      }
     }
 
-    if (config.active && config.code) {
-      const styleId = 'dynamic-magic-effect-style';
-      let styleElement = document.getElementById(styleId);
-      
-      if (!styleElement) {
-        styleElement = document.createElement('style');
-        styleElement.id = styleId;
-        document.head.appendChild(styleElement);
-      }
-      
-      styleElement.innerHTML = config.code;
-      
-      return () => {
-        const el = document.getElementById(styleId);
-        if (el) el.innerHTML = '';
-      };
+    let styleElement = document.getElementById(styleId);
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = styleId;
+      document.head.appendChild(styleElement);
     }
+    
+    styleElement.innerHTML = config.code;
+    
+    return cleanup;
   }, [config]);
 
-  return null;
+  return (
+    <div 
+      className="magic-event-layer fixed inset-0 z-[9999] pointer-events-none overflow-hidden select-none" 
+      aria-hidden="true" 
+    />
+  );
 };
 
 const App = () => {
@@ -801,7 +812,7 @@ const App = () => {
       </AnimatePresence>
       
       {/* Execução de Efeitos Mágicos Ativos */}
-      {siteConfig?.magicEffect && <MagicEffectRunner config={siteConfig.magicEffect} />}
+      <MagicEffectRunner config={siteConfig?.magicEffect} />
 
       <div className={`fixed top-0 w-full flex flex-col transition-all duration-500 ${isMenuOpen ? 'z-[1000]' : 'z-[900]'}`}>
         <AnimatePresence>

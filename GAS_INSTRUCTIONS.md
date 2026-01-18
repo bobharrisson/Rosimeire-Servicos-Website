@@ -1,44 +1,44 @@
-# Configuração do Banco de Dados Sincronizado (Campos Separados)
+# Configuração do Banco de Dados Sincronizado v1.4 (Suporte a Eventos Mágicos)
 
-Este novo script organiza sua planilha em colunas, facilitando a leitura e removendo a necessidade de gerenciar um único bloco de JSON gigante.
+Este script organiza a sua planilha em colunas dedicadas, permitindo que o site salve e recupere todas as configurações, incluindo os efeitos gerados por IA, dados de contacto e credenciais administrativas.
 
 ## 1. Preparar a Planilha
 1. Crie uma nova **Planilha Google**.
 2. Nomeie a primeira aba como `Database`.
-3. Na linha 1 (cabeçalhos), você pode escrever os nomes das categorias nas colunas A até H para se organizar:
-   - A: Slides
-   - B: SectionImages
-   - C: SocialLinks
-   - D: EmailConfig
-   - E: Notices
-   - F: Reviews
-   - G: Partners
-   - H: MapsLink
+3. Na linha 1 (cabeçalhos), organize as colunas de **A até M**:
+   - A: Slides | B: SiteConfig (Inclui Magia) | C: SectionImages | D: SocialLinks | E: EmailConfig
+   - F: Notices | G: Reviews | H: Partners | I: MapsLink | J: Phone | K: Address 
+   - L: AdminUser | M: AdminPass
 
-## 2. Configurar o Script (Separado por Colunas)
-1. Vá em **Extensões** > **Apps Script**.
-2. Substitua o código antigo por este:
+## 2. Configurar o Script v1.4
+1. Na sua planilha, vá em **Extensões** > **Apps Script**.
+2. Substitua todo o código existente por este:
 
 ```javascript
 /**
- * Google Apps Script - Rosimeire Serviços (Versão Campos Separados)
- * Este script mapeia cada categoria de dados para uma coluna específica.
+ * Google Apps Script - Rosimeire Serviços v1.4
+ * Sincronização completa de Identidade, Contactos e Eventos Mágicos.
  */
 
 function doGet() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Database");
-  const values = sheet.getRange(2, 1, 1, 8).getValues()[0]; // Lê a linha 2, colunas A-H
+  // Lê a linha 2, colunas A até M (13 colunas)
+  const values = sheet.getRange(2, 1, 1, 13).getValues()[0]; 
   
-  // Reconstrói o objeto para o site
   const data = {
     slides: JSON.parse(values[0] || "[]"),
-    sectionImages: JSON.parse(values[1] || "{}"),
-    socialLinks: JSON.parse(values[2] || "{}"),
-    emailConfig: JSON.parse(values[3] || "{}"),
-    notices: JSON.parse(values[4] || "[]"),
-    reviews: JSON.parse(values[5] || "[]"),
-    partners: JSON.parse(values[6] || "[]"),
-    googleMapsLink: values[7] || ""
+    siteConfig: JSON.parse(values[1] || "{}"),
+    sectionImages: JSON.parse(values[2] || "{}"),
+    socialLinks: JSON.parse(values[3] || "{}"),
+    emailConfig: JSON.parse(values[4] || "{}"),
+    notices: JSON.parse(values[5] || "[]"),
+    reviews: JSON.parse(values[6] || "[]"),
+    partners: JSON.parse(values[7] || "[]"),
+    googleMapsLink: values[8] || "",
+    contactPhone: values[9] || "",
+    addressDetail: values[10] || "",
+    adminUsername: values[11] || "admin",
+    adminPassword: values[12] || "rosimeire2025"
   };
   
   return ContentService.createTextOutput(JSON.stringify(data))
@@ -50,32 +50,40 @@ function doPost(e) {
   const payload = JSON.parse(e.postData.contents);
   
   if (payload) {
-    // Mapeia o objeto recebido para as colunas A-H na linha 2
+    // Mapeia o objeto recebido para as colunas A-M
     const row = [
       JSON.stringify(payload.slides || []),
+      JSON.stringify(payload.siteConfig || {}),
       JSON.stringify(payload.sectionImages || {}),
       JSON.stringify(payload.socialLinks || {}),
       JSON.stringify(payload.emailConfig || {}),
       JSON.stringify(payload.notices || []),
       JSON.stringify(payload.reviews || []),
       JSON.stringify(payload.partners || []),
-      payload.googleMapsLink || ""
+      payload.googleMapsLink || "",
+      payload.contactPhone || "",
+      payload.addressDetail || "",
+      payload.adminUsername || "admin",
+      payload.adminPassword || "rosimeire2025"
     ];
     
-    sheet.getRange(2, 1, 1, 8).setValues([row]);
+    sheet.getRange(2, 1, 1, 13).setValues([row]);
   }
   
-  return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
+  return ContentService.createTextOutput(JSON.stringify({ status: "success", version: "1.4" }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 ```
 
 ## 3. Implantar (Deploy)
-1. Clique em **Implantar** > **Nova implantação**.
-2. Tipo: **App da Web**.
-3. Executar como: **Eu**.
-4. Quem tem acesso: **Qualquer pessoa**.
-5. Copie a URL gerada.
+1. Clique no botão azul **Implantar** > **Nova implantação**.
+2. Selecione o tipo **App da Web**.
+3. Descrição: `Sincronização v1.4`.
+4. Executar como: **Eu** (seu e-mail).
+5. Quem tem acesso: **Qualquer pessoa** (essencial para o site comunicar).
+6. Clique em **Implantar**, autorize as permissões e copie a **URL do App da Web**.
 
----
-**Nota Técnica**: Agora, ao clicar em "GUARDAR & FINALIZAR" no painel administrativo, o site enviará os dados automaticamente para esta API, que distribuirá as informações nas colunas da sua planilha. Isso torna o backup muito mais legível e profissional.
+## 4. Ativar no Site
+1. Aceda ao Painel Administrativo do seu site.
+2. No topo, verifique se a URL no campo "Endpoint SIR" corresponde à URL que acabou de copiar.
+3. Clique em **GUARDAR & FINALIZAR**. Agora todos os seus "Eventos Mágicos" e configurações estão seguros na nuvem!
