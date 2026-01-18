@@ -7,8 +7,9 @@ import {
   Key, Server, Eye, EyeOff, ShieldCheck, Zap, AlertCircle, Loader2, 
   Info, Lightbulb, Check, Database, Download, Upload, FileJson, ExternalLink, Link, RefreshCw, CloudOff,
   Instagram, Linkedin, Palette, MessageSquare, Lock, Phone, MapPin, ToggleLeft, ToggleRight, Shield,
-  Layout
+  Layout, Facebook, Youtube, Music, Wand2, Sparkles, Clock, Calendar
 } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
 
 interface Slide {
   id: string;
@@ -20,6 +21,14 @@ interface Slide {
   buttonText?: string;
 }
 
+interface MagicEffect {
+  active: boolean;
+  code: string;
+  prompt: string;
+  expiryDate: string;
+  durationDays: number;
+}
+
 interface SiteConfig {
   logoUrl: string;
   companyName: string;
@@ -27,6 +36,7 @@ interface SiteConfig {
   footerNote: string;
   footerCopyright: string;
   developedBy: string;
+  magicEffect: MagicEffect;
 }
 
 interface SectionImages {
@@ -37,6 +47,9 @@ interface SectionImages {
 interface SocialLinks {
   instagram: string;
   linkedin: string;
+  facebook: string;
+  youtube: string;
+  tiktok: string;
 }
 
 interface EmailConfig {
@@ -123,6 +136,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showSmtpPass, setShowSmtpPass] = useState(false);
+  const [isMagicLoading, setIsMagicLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -134,7 +148,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const removeSlide = (id: string) => slides.length > 1 && setSlides(slides.filter(s => s.id !== id));
   const updateSlide = (id: string, field: keyof Slide, value: string) => setSlides(slides.map(s => s.id === id ? { ...s, [field]: value } : s));
 
-  const updateSiteConfig = (field: keyof SiteConfig, value: string) => setSiteConfig({ ...siteConfig, [field]: value });
+  const updateSiteConfig = (field: keyof SiteConfig, value: any) => setSiteConfig({ ...siteConfig, [field]: value });
   const updateSectionImage = (key: keyof SectionImages, value: string) => setSectionImages({ ...sectionImages, [key]: value });
   const updateSocialLink = (key: keyof SocialLinks, value: string) => setSocialLinks({ ...socialLinks, [key]: value });
   const updateEmailConfig = (key: keyof EmailConfig, value: any) => setEmailConfig({ ...emailConfig, [key]: value });
@@ -152,11 +166,71 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const removePartner = (id: string) => setPartners(partners.filter(p => p.id !== id));
   const updatePartner = (id: string, field: keyof Partner, value: string) => setPartners(partners.map(p => p.id === id ? { ...p, [field]: value } : p));
 
+  const updateMagicEffect = (field: keyof MagicEffect, value: any) => {
+    setSiteConfig({
+      ...siteConfig,
+      magicEffect: {
+        ...(siteConfig.magicEffect || { active: false, code: "", prompt: "", expiryDate: "", durationDays: 7 }),
+        [field]: value
+      }
+    });
+  };
+
+  const handleGenerateMagic = async () => {
+    const magic = siteConfig.magicEffect || { active: false, code: "", prompt: "", expiryDate: "", durationDays: 7 };
+    if (!magic.prompt.trim()) return;
+    
+    setIsMagicLoading(true);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const prompt = `Você é um designer web de luxo. Gere APENAS código CSS para um efeito visual imersivo e elegante baseado na descrição: "${magic.prompt}".
+      Regras Estritas:
+      1. Use animações com @keyframes.
+      2. O efeito deve estar em um container fixo (position: fixed) com z-index alto (9999) e pointer-events: none.
+      3. Não altere o layout existente do site.
+      4. Garanta que as cores combinem com o estilo "Midnight & Petal" (tons de azul marinho profundo, dourado suave e rosa pálido).
+      5. Retorne APENAS o código CSS puro, sem tags markdown, sem comentários, sem explicações.`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: prompt,
+      });
+
+      const generatedCode = response.text || "";
+      const cleanedCode = generatedCode.replace(/```css/g, '').replace(/```/g, '').trim();
+      
+      // Calcular data de expiração
+      const expiry = new Date();
+      expiry.setDate(expiry.getDate() + magic.durationDays);
+
+      updateSiteConfig('magicEffect', {
+        ...magic,
+        code: cleanedCode,
+        active: true,
+        expiryDate: expiry.toISOString()
+      });
+
+    } catch (err) {
+      console.error("Erro ao gerar efeito mágico:", err);
+      alert("Erro ao conectar com a Varinha de IA. Verifique sua conexão.");
+    } finally {
+      setIsMagicLoading(false);
+    }
+  };
+
+  const handleDeactivateMagic = () => {
+    updateMagicEffect('active', false);
+    updateMagicEffect('code', '');
+  };
+
   const handleFinalize = async () => {
     setIsSaving(true);
     await onPublishToCloud();
     setTimeout(() => { setIsSaving(false); onClose(); }, 800);
   };
+
+  // Safe access for UI
+  const magicEffect = siteConfig.magicEffect || { active: false, code: "", prompt: "", expiryDate: "", durationDays: 7 };
 
   return (
     <motion.div 
@@ -174,7 +248,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         </div>
 
-        {/* Status e Sincronização */}
         <div className="mb-12 flex flex-col md:flex-row items-center justify-between p-6 bg-white/[0.02] border border-white/5 rounded-sm gap-8">
            <div className="flex items-center gap-6 flex-1 overflow-hidden">
              <div className="p-3 bg-white/5 rounded-sm">
@@ -200,7 +273,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
            </div>
         </div>
 
-        {/* Separadores Grid de 8 Colunas */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-16">
           {[
             { id: 'site', icon: <Layout size={14}/>, label: 'Geral' },
@@ -227,6 +299,104 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="min-h-[50vh]">
           {activeTab === 'site' && (
             <div className="space-y-12 max-w-5xl mx-auto">
+              
+              {/* SESSÃO EVENTOS MÁGICOS (IA) */}
+              <div className="crystal-card p-12 space-y-10 border-[#f8c8c4]/30 bg-gradient-to-br from-[#f8c8c4]/5 to-transparent relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-12 text-[#f8c8c4]/10 group-hover:text-[#f8c8c4]/20 transition-all duration-1000">
+                  <Wand2 size={120} strokeWidth={0.5} />
+                </div>
+                
+                <div className="flex items-center gap-6 text-[#f8c8c4]">
+                  <Sparkles size={24}/>
+                  <h3 className="text-xl font-bold tracking-widest uppercase text-white">Eventos Mágicos (Varinha de IA)</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
+                   <div className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="admin-label">Descreva o efeito desejado</label>
+                        <textarea 
+                          value={magicEffect.prompt} 
+                          onChange={e => updateMagicEffect('prompt', e.target.value)}
+                          placeholder="Ex: Flocos de neve dourados cainou suavemente, Brilho de estrelas no topo da página..."
+                          className="admin-input !bg-white/5 min-h-[120px]"
+                        />
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-6 items-end">
+                        <div className="flex-1 space-y-2">
+                          <label className="admin-label flex items-center gap-2"><Clock size={10}/> Duração (Dias)</label>
+                          <input 
+                            type="number" 
+                            min="1" 
+                            max="30"
+                            value={magicEffect.durationDays}
+                            onChange={e => updateMagicEffect('durationDays', parseInt(e.target.value))}
+                            className="admin-input" 
+                          />
+                        </div>
+                        <button 
+                          onClick={handleGenerateMagic}
+                          disabled={isMagicLoading || !magicEffect.prompt}
+                          className="btn-serenity !py-4 flex items-center gap-4 disabled:opacity-30 flex-1 justify-center whitespace-nowrap"
+                        >
+                          {isMagicLoading ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}
+                          ATIVAR MAGIA
+                        </button>
+                      </div>
+                   </div>
+
+                   <div className="space-y-6 bg-white/[0.02] border border-white/5 p-8 rounded-sm">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="admin-label">Estado do Evento</span>
+                        <div className={`px-3 py-1 rounded-full text-[8px] font-black tracking-widest uppercase ${magicEffect.active ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-white/20'}`}>
+                          {magicEffect.active ? 'Ativo' : 'Inativo'}
+                        </div>
+                      </div>
+                      
+                      {magicEffect.active ? (
+                        <div className="space-y-6">
+                           <div className="flex items-center gap-4 text-white/40">
+                             <Calendar size={14} className="text-[#f8c8c4]/40" />
+                             <span className="text-[10px] font-bold tracking-widest uppercase">
+                               Expira em: {magicEffect.expiryDate ? new Date(magicEffect.expiryDate).toLocaleDateString() : 'N/A'}
+                             </span>
+                           </div>
+                           <p className="text-[9px] text-white/30 italic">" {magicEffect.prompt} "</p>
+                           <button 
+                            onClick={handleDeactivateMagic}
+                            className="w-full py-4 border border-red-500/20 text-red-400 text-[9px] font-bold tracking-[0.4em] uppercase hover:bg-red-500/10 transition-all rounded-sm"
+                           >
+                             DESATIVAR EVENTO AGORA
+                           </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-center py-10 opacity-20">
+                           <Zap size={32} className="mb-4" />
+                           <p className="text-[10px] font-medium tracking-widest uppercase">Nenhum evento ativo no momento</p>
+                        </div>
+                      )}
+                   </div>
+                </div>
+
+                {magicEffect.code && (
+                  <div className="pt-8 border-t border-white/5">
+                    <button 
+                      onClick={() => {
+                        const el = document.getElementById('magic-code-preview');
+                        if (el) el.classList.toggle('hidden');
+                      }}
+                      className="text-[8px] font-black tracking-widest text-white/10 hover:text-white/40 uppercase transition-colors"
+                    >
+                      Ver Código Gerado pela IA
+                    </button>
+                    <pre id="magic-code-preview" className="hidden mt-4 p-4 bg-black/40 text-[#f8c8c4]/40 text-[9px] font-mono overflow-x-auto rounded-sm border border-white/5 max-h-40">
+                      {magicEffect.code}
+                    </pre>
+                  </div>
+                )}
+              </div>
+
               <div className="crystal-card p-12 space-y-10 border-[#f8c8c4]/10">
                 <div className="flex items-center gap-6 text-[#f8c8c4]/60"><Layout size={24}/><h3 className="text-xl font-bold tracking-widest uppercase text-white">Configurações Gerais do Website</h3></div>
                 
@@ -239,16 +409,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                               <label className="admin-label !text-[8px]">URL da Logomarca (Topo)</label>
                               <div className="flex gap-4">
                                 {siteConfig.logoUrl && <img src={siteConfig.logoUrl} className="w-10 h-10 object-contain bg-white/5 p-1 rounded" />}
-                                <input value={siteConfig.logoUrl} onChange={e => updateSiteConfig('logoUrl', e.target.value)} placeholder="https://..." className="admin-input" />
+                                <input value={siteConfig.logoUrl || ""} onChange={e => updateSiteConfig('logoUrl', e.target.value)} placeholder="https://..." className="admin-input" />
                               </div>
                             </div>
                             <div className="space-y-2">
                               <label className="admin-label !text-[8px]">Nome da Empresa</label>
-                              <input value={siteConfig.companyName} onChange={e => updateSiteConfig('companyName', e.target.value)} className="admin-input font-bold" />
+                              <input value={siteConfig.companyName || ""} onChange={e => updateSiteConfig('companyName', e.target.value)} className="admin-input font-bold" />
                             </div>
                             <div className="space-y-2">
                               <label className="admin-label !text-[8px]">Subtítulo (Slogan)</label>
-                              <input value={siteConfig.companySubtitle} onChange={e => updateSiteConfig('companySubtitle', e.target.value)} className="admin-input" />
+                              <input value={siteConfig.companySubtitle || ""} onChange={e => updateSiteConfig('companySubtitle', e.target.value)} className="admin-input" />
                             </div>
                          </div>
                       </div>
@@ -260,15 +430,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                          <div className="space-y-6">
                             <div className="space-y-2">
                               <label className="admin-label !text-[8px]">Nota de Rodapé (Slogan)</label>
-                              <textarea value={siteConfig.footerNote} onChange={e => updateSiteConfig('footerNote', e.target.value)} className="admin-input" rows={2} />
+                              <textarea value={siteConfig.footerNote || ""} onChange={e => updateSiteConfig('footerNote', e.target.value)} className="admin-input" rows={2} />
                             </div>
                             <div className="space-y-2">
                               <label className="admin-label !text-[8px]">Texto de Copyright</label>
-                              <input value={siteConfig.footerCopyright} onChange={e => updateSiteConfig('footerCopyright', e.target.value)} className="admin-input" />
+                              <input value={siteConfig.footerCopyright || ""} onChange={e => updateSiteConfig('footerCopyright', e.target.value)} className="admin-input" />
                             </div>
                             <div className="space-y-2">
                               <label className="admin-label !text-[8px]">Nome do Desenvolvedor (Signature)</label>
-                              <input value={siteConfig.developedBy} onChange={e => updateSiteConfig('developedBy', e.target.value)} className="admin-input" />
+                              <input value={siteConfig.developedBy || ""} onChange={e => updateSiteConfig('developedBy', e.target.value)} className="admin-input" />
                             </div>
                          </div>
                       </div>
@@ -356,7 +526,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     <input value={addressDetail} onChange={e => setAddressDetail(e.target.value)} placeholder="Rua, Número, Localidade, Algarve - Portugal" className="admin-input" />
                   </div>
 
-                  {/* SMTP Config */}
                   <div className="pt-10 border-t border-white/5 space-y-10">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-6 text-[#f8c8c4]/60">
@@ -428,6 +597,27 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         <label className="admin-label">Instagram URL</label>
                       </div>
                       <input value={socialLinks.instagram} onChange={e => updateSocialLink('instagram', e.target.value)} placeholder="https://instagram.com/..." className="admin-input" />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 text-[#f8c8c4]/60">
+                        <Facebook size={14}/>
+                        <label className="admin-label">Facebook URL</label>
+                      </div>
+                      <input value={socialLinks.facebook} onChange={e => updateSocialLink('facebook', e.target.value)} placeholder="https://facebook.com/..." className="admin-input" />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 text-[#f8c8c4]/60">
+                        <Youtube size={14}/>
+                        <label className="admin-label">YouTube URL</label>
+                      </div>
+                      <input value={socialLinks.youtube} onChange={e => updateSocialLink('youtube', e.target.value)} placeholder="https://youtube.com/..." className="admin-input" />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 text-[#f8c8c4]/60">
+                        <Music size={14}/>
+                        <label className="admin-label">TikTok URL</label>
+                      </div>
+                      <input value={socialLinks.tiktok} onChange={e => updateSocialLink('tiktok', e.target.value)} placeholder="https://tiktok.com/@..." className="admin-input" />
                     </div>
                     <div className="space-y-4">
                       <div className="flex items-center gap-3 text-[#f8c8c4]/60">
@@ -519,7 +709,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           )}
         </div>
 
-        {/* Botões Finais */}
         <div className="mt-32 pt-16 border-t border-white/5 flex flex-col items-center gap-8">
           <button onClick={handleFinalize} disabled={isSaving} className="btn-serenity px-32 py-8 flex items-center justify-center gap-6 min-w-[400px] group overflow-hidden relative">
             {isSaving ? <Loader2 size={16} className="animate-spin"/> : <Check size={16} />}

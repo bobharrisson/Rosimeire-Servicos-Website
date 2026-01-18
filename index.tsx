@@ -8,7 +8,7 @@ import {
   Heart, ShieldCheck, MessageSquare, Flame, Award, Users, Check,
   ChevronLeft, ChevronRight, Save, RotateCcw, Server, Cloud, CloudOff, RefreshCw, Loader2,
   Instagram, Linkedin, Code, Zap, Trash2, Search, ChevronDown, MessageCircle, LogIn, Navigation,
-  Layout
+  Layout, Facebook, Youtube, Music, Wand2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminPanel from './AdminPanel';
@@ -27,6 +27,14 @@ interface Slide {
   buttonText?: string;
 }
 
+interface MagicEffect {
+  active: boolean;
+  code: string;
+  prompt: string;
+  expiryDate: string; // ISO String
+  durationDays: number;
+}
+
 interface SiteConfig {
   logoUrl: string;
   companyName: string;
@@ -34,6 +42,7 @@ interface SiteConfig {
   footerNote: string;
   footerCopyright: string;
   developedBy: string;
+  magicEffect: MagicEffect;
 }
 
 interface SectionImages {
@@ -44,6 +53,9 @@ interface SectionImages {
 interface SocialLinks {
   instagram: string;
   linkedin: string;
+  facebook: string;
+  youtube: string;
+  tiktok: string;
 }
 
 interface EmailConfig {
@@ -157,7 +169,7 @@ const translations = {
     adminTitle: "Painel Administrativo", adminSlides: "Slides", adminNotices: "Avisos", adminReviews: "Depoimentos", adminPartners: "Parceiros", adminImages: "Visual", adminEmail: "E-mail",
     sirTitle: "SIR - Sistema Integrado", logout: "Fechar Panel", back: "Voltar ao Início",
     aboutSectionTitle: "A Nossa Essência",
-    aboutSectionText: "A Rosimeire Serviços iniciou o seu percurso em 2011, fruto da visão e dedicação da sua fundadora, Rosimeire Silva. Atuando inicialmente de forma independente em propriedades exclusivas, o seu rigor técnico, honestidade e um perfeicionismo inabalável tornaram-se a sua assinatura de marca. Esta postura de excelência permitiu fidelizar uma carteira de clientes de prestígio, consolidando os alicerces que impulsionaram o crescimento e a solidez que a empresa apresenta hoje.",
+    aboutSectionText: "A Rosimeire Serviços iniciou o seu percurso em 2011, fruto da visão e dedicação da sua fundadora, Rosimeire Silva. Atuando inicialmente de forma independente em propriedades exclusivas, o seu rigor técnico, honestidade e um perfeccionismo inabalável tornaram-se a sua assinatura de marca. Esta postura de excelência permitiu fidelizar uma carteira de clientes de prestígio, consolidando os alicerces que impulsionaram o crescimento e a solidez que a empresa apresenta hoje.",
     missionTitle: "Missão", missionText: "Satisfazer o cliente deixando sua propriedade impecavelmente limpa, conforme sua necessidade.",
     visionTitle: "Visão", visionText: "Brevemente nossos serviços serão disponibilizados em outros países da europa, com o mesmo padrão de qualidade que atendemos atualmente em Portugal, para nossos diferentes tipos de clientes.",
     valuesTitle: "Valores",
@@ -224,7 +236,7 @@ const translations = {
     careersApplyTitle: "Apply Today",
     careersApplyDesc: "If you are dedicated, punctual, and have an eye for detail, we want to meet you.",
     careersApplyBtn: "Fill Application Form",
-    careersFormLink: "https://docs.google.com/forms/d/e/1FAIpQLSdo6NUZsw3gcZhigbPrAafa1zb32hgjQi67dDkEKEEByc1rHg/viewform?usp=sf_link"
+    careersFormLink: "https://docs.google.com/forms/for_link"
   },
   ES: {
     navHome: "Inicio", navServices: "Curaduría", navReviews: "Legado", navContact: "CONTACTO",
@@ -274,8 +286,16 @@ const translations = {
     careersApplyTitle: "Aplica Hoy",
     careersApplyDesc: "Si eres una persona dedicada, puntual y con ojo para o detalhe, queremos conhecerte.",
     careersApplyBtn: "Completar Formulário de Candidatura",
-    careersFormLink: "https://docs.google.com/forms/d/e/1FAIpQLSdo6NUZsw3gcZhigbPrAafa1zb32hgjQi67dDkEKEEByc1rHg/viewform?usp=sf_link"
+    careersFormLink: "https://docs.google.com/forms/for_link"
   }
+};
+
+const DEFAULT_MAGIC_EFFECT: MagicEffect = {
+  active: false,
+  code: "",
+  prompt: "",
+  expiryDate: "",
+  durationDays: 7
 };
 
 const DEFAULT_SITE_CONFIG: SiteConfig = {
@@ -284,7 +304,8 @@ const DEFAULT_SITE_CONFIG: SiteConfig = {
   companySubtitle: "SERVIÇOS",
   footerNote: "A alma do Algarve bem cuidada.",
   footerCopyright: "© 2025. Rosimeire Serviços - Algarve.",
-  developedBy: "Bob Harrisson Gracindo Madeiro"
+  developedBy: "Bob Harrisson Gracindo Madeiro",
+  magicEffect: DEFAULT_MAGIC_EFFECT
 };
 
 const DEFAULT_SLIDES: Slide[] = [
@@ -313,7 +334,10 @@ const DEFAULT_SECTION_IMAGES: SectionImages = {
 
 const DEFAULT_SOCIAL_LINKS: SocialLinks = {
   instagram: "#",
-  linkedin: "#"
+  linkedin: "#",
+  facebook: "#",
+  youtube: "#",
+  tiktok: "#"
 };
 
 const DEFAULT_EMAIL_CONFIG: EmailConfig = {
@@ -361,10 +385,9 @@ const DEFAULT_REVIEWS: Review[] = [
 ];
 
 const INITIAL_GOOGLE_MAPS_LINK = "https://www.google.com/search?q=Rosimeire+Servi%C3%A7os+Quarteira&si=AMgyJEs9DArPE9xmb5yVYVjpG4jqWDEKSIpCRSjmm88XZWnGNakrDl7qyiJLF74BYlGsMcE9Da1nUDIZ5DNa9RlMSKMI70hspYaTqbBEPz7oFQkgC81_ZMtEKchYDA-1FddJnX-cdUqx";
-// Link direto que traça a rota (Direções)
 const SHARE_MAP_LINK = "https://www.google.com/maps/dir/?api=1&destination=Rosimeire+Servi%C3%A7os+Quarteira";
 const FIXED_GAS_URL = "https://script.google.com/macros/s/AKfycbzsOBqT_YLZW576jbHX8vAcuBi4bSNhn4CYdqTwcu7ObX6QcqNIhjXlsOYxlud9nqy6/exec";
-const SIR_URL = "https://sir.rosimeireservicos.com"; // Placeholder para o sistema integrado
+const SIR_URL = "https://sir.rosimeireservicos.com"; 
 
 // --- Components ---
 const InitialLoader = () => (
@@ -402,6 +425,39 @@ const InitialLoader = () => (
   </motion.div>
 );
 
+const MagicEffectRunner = ({ config }: { config?: MagicEffect }) => {
+  useEffect(() => {
+    if (!config) return;
+
+    // Verificar expiração
+    if (config.active && config.expiryDate) {
+      const now = new Date();
+      const expiry = new Date(config.expiryDate);
+      if (now > expiry) return; // Não executar se expirou
+    }
+
+    if (config.active && config.code) {
+      const styleId = 'dynamic-magic-effect-style';
+      let styleElement = document.getElementById(styleId);
+      
+      if (!styleElement) {
+        styleElement = document.createElement('style');
+        styleElement.id = styleId;
+        document.head.appendChild(styleElement);
+      }
+      
+      styleElement.innerHTML = config.code;
+      
+      return () => {
+        const el = document.getElementById(styleId);
+        if (el) el.innerHTML = '';
+      };
+    }
+  }, [config]);
+
+  return null;
+};
+
 const App = () => {
   const [lang, setLang] = useState<Language>('PT');
   const [view, setView] = useState<View>('home');
@@ -426,7 +482,7 @@ const App = () => {
   const [adminUsername, setAdminUsername] = useState('admin');
   const [adminPassword, setAdminPassword] = useState('rosimeire2025');
 
-  const STORAGE_KEY_PREFIX = 'rosimeire_config_v13';
+  const STORAGE_KEY_PREFIX = 'rosimeire_config_v14_magic';
 
   // --- Base State Initialization ---
   const [siteConfig, setSiteConfig] = useState<SiteConfig>(DEFAULT_SITE_CONFIG);
@@ -461,7 +517,25 @@ const App = () => {
       
       if (data && data.slides) {
         setSlides(data.slides);
-        setSiteConfig(data.siteConfig || DEFAULT_SITE_CONFIG);
+        
+        // Garantir que incomingSiteConfig tenha a estrutura mínima correta
+        let incomingSiteConfig = { ...DEFAULT_SITE_CONFIG, ...(data.siteConfig || {}) };
+        
+        // Garantir que magicEffect exista (em caso de dados antigos no cloud)
+        if (!incomingSiteConfig.magicEffect) {
+          incomingSiteConfig.magicEffect = { ...DEFAULT_MAGIC_EFFECT };
+        }
+        
+        // Verificar e aplicar lógica de expiração automática para efeitos mágicos
+        if (incomingSiteConfig.magicEffect.active && incomingSiteConfig.magicEffect.expiryDate) {
+          const now = new Date();
+          const expiry = new Date(incomingSiteConfig.magicEffect.expiryDate);
+          if (now > expiry) {
+            incomingSiteConfig.magicEffect.active = false;
+          }
+        }
+        
+        setSiteConfig(incomingSiteConfig);
         setSectionImages(data.sectionImages || DEFAULT_SECTION_IMAGES);
         setSocialLinks(data.socialLinks || DEFAULT_SOCIAL_LINKS);
         setEmailConfig(data.emailConfig || DEFAULT_EMAIL_CONFIG);
@@ -505,7 +579,7 @@ const App = () => {
         addressDetail,
         adminUsername,
         adminPassword,
-        version: "1.3",
+        version: "1.4",
         lastSync: new Date().toISOString()
       };
       
@@ -535,7 +609,15 @@ const App = () => {
 
       if (localSlides) {
         setSlides(JSON.parse(localSlides));
-        setSiteConfig(JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_site_config`) || JSON.stringify(DEFAULT_SITE_CONFIG)));
+        
+        // Garantir merge com defaults ao ler do local storage
+        const localConfig = JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_site_config`) || "{}");
+        setSiteConfig({
+          ...DEFAULT_SITE_CONFIG,
+          ...localConfig,
+          magicEffect: { ...DEFAULT_MAGIC_EFFECT, ...(localConfig.magicEffect || {}) }
+        });
+
         setSectionImages(JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_section_images`) || JSON.stringify(DEFAULT_SECTION_IMAGES)));
         setSocialLinks(JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_social_links`) || JSON.stringify(DEFAULT_SOCIAL_LINKS)));
         setEmailConfig(JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_email_config`) || JSON.stringify(DEFAULT_EMAIL_CONFIG)));
@@ -718,6 +800,9 @@ const App = () => {
         {isInitialLoading && <InitialLoader />}
       </AnimatePresence>
       
+      {/* Execução de Efeitos Mágicos Ativos */}
+      {siteConfig?.magicEffect && <MagicEffectRunner config={siteConfig.magicEffect} />}
+
       <div className={`fixed top-0 w-full flex flex-col transition-all duration-500 ${isMenuOpen ? 'z-[1000]' : 'z-[900]'}`}>
         <AnimatePresence>
           {notices.filter(n => n.active).map((notice) => (
@@ -765,7 +850,6 @@ const App = () => {
               </button>
               <div className="w-[1px] h-3 bg-white/5"></div>
               
-              {/* Botão SIR - Acesso do Colaborador */}
               <button 
                 onClick={() => window.open(SIR_URL, '_blank')}
                 className="group flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase text-white/30 hover:text-[#f8c8c4] transition-all"
@@ -785,7 +869,6 @@ const App = () => {
         </header>
       </div>
 
-      {/* Mobile Navigation Overlay */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div 
@@ -811,7 +894,6 @@ const App = () => {
                 </button>
               ))}
               
-              {/* SIR Link no Mobile */}
               <button 
                 onClick={() => window.open(SIR_URL, '_blank')}
                 className="text-left text-sm font-black tracking-[0.4em] text-[#f8c8c4]/40 hover:text-[#f8c8c4] uppercase flex items-center gap-3 pt-6 border-t border-white/5"
@@ -969,14 +1051,13 @@ const App = () => {
 
             <GlassDivider />
 
-            {/* PARTNERS Section - CARROSSEL "SHOWCASE" PROPORCIONAL (TAMANHO REDUZIDO) */}
+            {/* PARTNERS Section */}
             {partners.length > 0 && (
               <section id="partners" className="py-32 md:py-64 relative bg-[#040911]/30">
                 <div className="container mx-auto px-8 md:px-16 text-center">
                   <span className="tagline mb-24 block">{t.partnersTitle}</span>
                   
                   <div className="relative max-w-3xl mx-auto flex items-center">
-                    {/* Botões de Navegação Manual */}
                     <button 
                       onClick={handlePrevPartner} 
                       className="absolute -left-4 md:-left-28 z-30 p-4 text-white/10 hover:text-[#f8c8c4] transition-all transform hover:scale-125"
@@ -1007,18 +1088,15 @@ const App = () => {
                             rel="noopener noreferrer"
                             className="crystal-card p-0 rounded-sm flex flex-col overflow-hidden group max-w-xl w-full border-[#f8c8c4]/10 shadow-2xl"
                           >
-                            {/* Contentor de Imagem com escala reduzida e preenchimento total */}
                             <div className="w-full h-48 md:h-72 relative overflow-hidden bg-white/[0.02]">
                               <img 
                                 src={partners[currentPartnerIndex].logo} 
                                 alt={partners[currentPartnerIndex].name} 
                                 className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 brightness-110 group-hover:brightness-100 group-hover:scale-110" 
                               />
-                              {/* Overlay sofisticado */}
                               <div className="absolute inset-0 bg-gradient-to-t from-[#081221]/80 via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-700" />
                             </div>
                             
-                            {/* Nome e Detalhe Inferior - Proporção reduzida */}
                             <div className="p-6 md:p-8 text-center space-y-4 border-t border-white/5 bg-[#081221]/60 backdrop-blur-md">
                               <h4 className="text-lg md:text-xl font-light text-white tracking-[0.3em] uppercase transition-all duration-500 group-hover:text-[#f8c8c4] group-hover:tracking-[0.4em]">{partners[currentPartnerIndex].name}</h4>
                               <div className="w-12 h-[1px] bg-[#f8c8c4]/20 mx-auto transition-all duration-700 group-hover:w-32 group-hover:bg-[#f8c8c4]" />
@@ -1029,7 +1107,6 @@ const App = () => {
                     </div>
                   </div>
 
-                  {/* Indicadores de Carrossel - Reduzidos proporcionalmente */}
                   <div className="flex justify-center gap-3 mt-12">
                     {partners.map((_, idx) => (
                       <button
@@ -1100,13 +1177,12 @@ const App = () => {
                          <a href={`tel:${contactPhone.replace(/\s+/g, '')}`} className="text-xl font-light text-white/60 hover:text-[#f8c8c4] transition-colors">{contactPhone}</a>
                        </div>
                        
-                       {/* WhatsApp Button */}
-                       <div className="flex items-center gap-6 ml-12">
+                       <div className="flex flex-col gap-6 ml-12">
                          <a 
                            href={`https://wa.me/${contactPhone.replace(/\D/g, '')}`} 
                            target="_blank" 
                            rel="noopener noreferrer" 
-                           className="btn-serenity !py-3 !px-5 !text-[9px] flex items-center gap-4 border-[#25D366]/30 text-white/70 hover:bg-[#25D366]/10 hover:border-[#25D366] hover:text-white transition-all group"
+                           className="btn-serenity !py-3 !px-5 !text-[9px] flex items-center gap-4 border-[#25D366]/30 text-white/70 hover:bg-[#25D366]/10 hover:border-[#25D366] hover:text-white transition-all group w-fit"
                          >
                            <div className="relative">
                              <MessageCircle size={16} className="text-[#25D366]" />
@@ -1114,6 +1190,15 @@ const App = () => {
                            </div>
                            <span className="font-bold tracking-[0.3em] uppercase">{t.whatsappLabel}</span>
                          </a>
+
+                         {/* Novas Redes Sociais na Página de Contacto */}
+                         <div className="flex gap-6 mt-4">
+                            {socialLinks.instagram && socialLinks.instagram !== '#' && <a href={socialLinks.instagram} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all"><Instagram size={20}/></a>}
+                            {socialLinks.facebook && socialLinks.facebook !== '#' && <a href={socialLinks.facebook} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all"><Facebook size={20}/></a>}
+                            {socialLinks.youtube && socialLinks.youtube !== '#' && <a href={socialLinks.youtube} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all"><Youtube size={20}/></a>}
+                            {socialLinks.tiktok && socialLinks.tiktok !== '#' && <a href={socialLinks.tiktok} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all"><Music size={20}/></a>}
+                            {socialLinks.linkedin && socialLinks.linkedin !== '#' && <a href={socialLinks.linkedin} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all"><Linkedin size={20}/></a>}
+                         </div>
                        </div>
                      </div>
                    </div>
@@ -1195,9 +1280,6 @@ const App = () => {
                                       <span className="text-[10px] font-bold text-[#f8c8c4]/40">{c.ddi}</span>
                                     </button>
                                   ))}
-                                  {filteredCountries.length === 0 && (
-                                    <div className="p-8 text-center text-white/10 text-[10px] uppercase tracking-widest font-bold">Nenhum resultado</div>
-                                  )}
                                 </div>
                               </motion.div>
                             )}
@@ -1242,14 +1324,12 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Google Maps Section with Trust Card */}
               <motion.div 
                 initial={{ opacity: 0, scale: 0.98 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 className="relative w-full h-[500px] rounded-sm overflow-hidden border border-white/5 group shadow-2xl"
               >
-                {/* Custom Google Map Embed */}
                 <iframe 
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3184.8210385906814!2d-8.1039869!3d37.0734005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd1acb4a39b36965%3A0x6b44558e0a7865c6!2sR.%2025%20de%20Abril%2049%2C%208125-234%20Quarteira!5e0!3m2!1spt!2spt!4v1715800000000!5m2!1spt!2spt" 
                   width="100%" 
@@ -1260,7 +1340,6 @@ const App = () => {
                   referrerPolicy="no-referrer-when-downgrade"
                 ></iframe>
 
-                {/* Floating Trust Card Overlay */}
                 <div className="absolute top-8 left-8 z-10 hidden md:block">
                    <motion.div 
                     initial={{ x: -20, opacity: 0 }}
@@ -1310,7 +1389,6 @@ const App = () => {
                    </motion.div>
                 </div>
 
-                {/* Mobile Button Overlay (Correct Label 'COMO CHEGAR') */}
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[80%] md:hidden z-10">
                    <a href={SHARE_MAP_LINK} target="_blank" rel="noopener noreferrer" className="btn-serenity !bg-[#081221] !py-4 w-full flex justify-center items-center gap-3">
                      COMO CHEGAR
@@ -1372,7 +1450,6 @@ const App = () => {
       <footer className="py-24 bg-[#040911] border-t border-white/5">
         <div className="container mx-auto px-8 md:px-16">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-24 items-start">
-            {/* Coluna 1: Empresa */}
             <div className="flex flex-col gap-8">
               <div className="flex items-center gap-4">
                 {siteConfig.logoUrl && (
@@ -1386,16 +1463,17 @@ const App = () => {
               <p className="text-[10px] font-bold tracking-[0.5em] text-white/20 uppercase max-w-xs">{siteConfig.footerNote}</p>
             </div>
             
-            {/* Coluna 2: Redes Sociais */}
             <div className="flex flex-col gap-6 md:items-center">
               <h6 className="text-[9px] font-black tracking-[0.4em] uppercase text-white/10 md:text-center w-full">{t.footerSocial}</h6>
               <div className="flex gap-8">
-                <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110 active:scale-95"><Instagram size={22} /></a>
-                <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110 active:scale-95"><Linkedin size={22} /></a>
+                {socialLinks.instagram && socialLinks.instagram !== '#' && <a href={socialLinks.instagram} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110 active:scale-95"><Instagram size={22} /></a>}
+                {socialLinks.facebook && socialLinks.facebook !== '#' && <a href={socialLinks.facebook} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110 active:scale-95"><Facebook size={22} /></a>}
+                {socialLinks.youtube && socialLinks.youtube !== '#' && <a href={socialLinks.youtube} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110 active:scale-95"><Youtube size={22} /></a>}
+                {socialLinks.tiktok && socialLinks.tiktok !== '#' && <a href={socialLinks.tiktok} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110 active:scale-95"><Music size={22} /></a>}
+                {socialLinks.linkedin && socialLinks.linkedin !== '#' && <a href={socialLinks.linkedin} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110 active:scale-95"><Linkedin size={22} /></a>}
               </div>
             </div>
 
-            {/* Coluna 3: Links Úteis */}
             <div className="flex flex-col gap-6 md:items-end">
               <h6 className="text-[9px] font-black tracking-[0.4em] uppercase text-white/10 md:text-right w-full">{t.footerLinks}</h6>
               <div className="flex flex-col gap-4 md:items-end">
@@ -1408,7 +1486,6 @@ const App = () => {
           <div className="pt-16 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
             <p className="text-[9px] font-bold tracking-[0.4em] text-white/10 uppercase italic">{siteConfig.footerCopyright}</p>
             
-            {/* Assinatura do Desenvolvedor */}
             <div className="flex items-center gap-5 text-white/10 group cursor-default">
               <div className="flex flex-col text-right">
                 <span className="text-[7px] font-black tracking-[0.3em] uppercase text-white/20 mb-1">{t.developedBy}</span>
