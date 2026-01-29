@@ -155,7 +155,7 @@ const translations = {
     s3Desc: "Um serviço de limpeza minucioso que vai além do essencial. Intervimos nos detalhes mais exigentes e de difícil acesso, garantindo um nível de perfeição e frescura que transforma completamente o ambiente.",
     s4Title: "Limpezas Pós-Obra",
     s4Tagline: "Finalização técnica para entrega de espaços prontos a habitar.",
-    s4Desc: "Remoção profunda de poeiras e resíduos de construção em moradias, restaurantes ou lojas. Transformamos o cenário de obra num ambiente limpo e acolhedor, garantindo uma transição perfeita para a utilização final.",
+    s4Desc: "Remoção profunda de poeiras e resíduos de construção em moradias, restaurantes ou lojas. Transformamos o cenário de obra num ambiente limpo e acolhedor, garantizando uma transição perfeita para a utilização final.",
     reviewsTitle: "Vozes de Confiança",
     partnersTitle: "Alianças de Prestígio",
     quoteTitle: "Contacto",
@@ -271,7 +271,7 @@ const translations = {
     aboutSectionTitle: "Nuestra Esencia",
     aboutSectionText: "Rosimeire Serviços iniciou su trajetória em 2011, fruto da visão e dedicação de sua fundadora, Rosimeire Silva. Actuando inicialmente de forma independente em propriedades exclusivas, su rigor técnico, honestidade e um perfeccionismo inaquebrantável se convirtieron em su sello distintivo. Esta postura de excelencia permitió fidelizar una cartera de clientes de prestigio, consolidando los cimientos que impulsaron el crescimento y la solidez que la empresa apresenta hoy.",
     missionTitle: "Misión", missionText: "Satisfacer al cliente dejando su propiedad impecablemente limpia, según su necesidad.",
-    visionTitle: "Vision", visionText: "Próximamente nuestros serviços estarán disponibles en otros países de Europa, con el mesmo estándar de calidad que atendemos actualmente em Portugal.",
+    visionTitle: "Vision", visionText: "Próximamente nuestros serviços estarán disponibles en otros países de Europa, con el mesmo estándar de qualidade que atendemos actualmente em Portugal.",
     valuesTitle: "Valores",
     val1: "Empatia com los clientes", val2: "Qualidad", val3: "Integridad e Honestidad", val4: "Abertura e Respeto", val5: "Coraje",
     careersTitle: "Carreras",
@@ -376,7 +376,7 @@ const DEFAULT_REVIEWS: Review[] = [
   { 
     id: '2', 
     author: "Alex Alcivar", 
-    text: "Auténtico profesionales en el sector, sin duda muito por encima de la competencia!! Cuidan cada detalhe.", 
+    text: "Auténtico profesionales en el sector, sin duda muito por encima de la competence!! Cuidan cada detalhe.", 
     time: "12 meses atrás",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200",
     initials: "AA",
@@ -390,17 +390,31 @@ const FIXED_GAS_URL = "https://script.google.com/macros/s/AKfycbzsOBqT_YLZW576jb
 const SIR_URL = "https://sir.rosimeireservicos.com"; 
 
 // --- Components ---
-const InitialLoader = () => (
+const InitialLoader = ({ logoUrl }: { logoUrl?: string }) => (
   <motion.div 
     initial={{ opacity: 1 }} 
     exit={{ opacity: 0 }} 
     className="fixed inset-0 z-[2000] bg-[#081221] flex flex-col items-center justify-center gap-8"
   >
     <div className="flex flex-col items-center">
+      {/* Logomarca no Splash Screen */}
+      <AnimatePresence>
+        {logoUrl && (
+          <motion.img 
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            src={logoUrl} 
+            alt="Logo" 
+            className="w-20 h-20 md:w-24 md:h-24 object-contain mb-8"
+          />
+        )}
+      </AnimatePresence>
+
       <motion.span 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: logoUrl ? 0.4 : 0.2 }}
         className="text-2xl md:text-3xl font-light tracking-[0.4em] text-white uppercase"
       >
         ROSIMEIRE
@@ -408,7 +422,7 @@ const InitialLoader = () => (
       <motion.span 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
+        transition={{ delay: logoUrl ? 0.6 : 0.4 }}
         className="text-[10px] font-bold tracking-[0.6em] text-[#f8c8c4] uppercase mt-2"
       >
         SERVIÇOS
@@ -834,7 +848,7 @@ const App = () => {
   return (
     <div className="min-h-screen selection:bg-[#f8c8c4] selection:text-[#081221]">
       <AnimatePresence>
-        {isInitialLoading && <InitialLoader />}
+        {isInitialLoading && <InitialLoader logoUrl={siteConfig.logoUrl} />}
       </AnimatePresence>
       
       {/* Execução de Efeitos Mágicos Ativos */}
@@ -1051,6 +1065,7 @@ const App = () => {
                           {reviews[currentReviewIndex].avatar ? (
                             <img src={reviews[currentReviewIndex].avatar} className="w-24 h-24 rounded-full object-cover border-2 border-[#f8c8c4]/30" />
                           ) : (
+                            // Use the designated color for background instead of initials string
                             <div className="w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-xl" style={{ backgroundColor: reviews[currentReviewIndex].color }}>
                               {reviews[currentReviewIndex].initials}
                             </div>
@@ -1451,6 +1466,7 @@ const App = () => {
         addressDetail={addressDetail} setAddressDetail={setAddressDetail}
         adminUsername={adminUsername} setAdminUsername={setAdminUsername}
         adminPassword={adminPassword} setAdminPassword={setAdminPassword}
+        // Corrected prop to pass the setter for AdminPanel to manage its own tab state if needed
         activeTab={activeAdminTab} setActiveTab={setActiveAdminTab} t={t}
         isSyncing={isSyncing} onResetDefaults={handleResetDefaults}
         gasUrl={gasUrl} setGasUrl={setGasUrl} onPublishToCloud={() => publishToCloud(gasUrl)}
