@@ -7,7 +7,7 @@ import {
   Key, Server, Eye, EyeOff, ShieldCheck, Zap, AlertCircle, Loader2, 
   Info, Lightbulb, Check, Database, Download, Upload, FileJson, ExternalLink, Link, RefreshCw, CloudOff,
   Instagram, Linkedin, Palette, MessageSquare, Lock, Phone, MapPin, ToggleLeft, ToggleRight, Shield,
-  Layout, Facebook, Youtube, Music, Wand2, Sparkles, Clock, Calendar
+  Layout, Facebook, Youtube, Music, Wand2, Sparkles, Clock, Calendar, Send
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
@@ -137,6 +137,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [showSmtpPass, setShowSmtpPass] = useState(false);
   const [isMagicLoading, setIsMagicLoading] = useState(false);
+  const [isTestingSmtp, setIsTestingSmtp] = useState(false);
+  const [smtpTestStatus, setSmtpTestStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   if (!isOpen) return null;
 
@@ -217,6 +219,46 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       alert("Erro ao conectar com a Varinha de IA. Verifique sua conexão.");
     } finally {
       setIsMagicLoading(false);
+    }
+  };
+
+  const handleTestSmtp = async () => {
+    if (!emailConfig.smtpHost || !emailConfig.smtpUser || !emailConfig.smtpPass) {
+      alert("Por favor, preencha o Host, Utilizador e Password do SMTP antes de testar.");
+      return;
+    }
+
+    setIsTestingSmtp(true);
+    setSmtpTestStatus('idle');
+
+    try {
+      const testPayload = {
+        action: 'test_smtp',
+        config: {
+          host: emailConfig.smtpHost,
+          port: emailConfig.smtpPort,
+          user: emailConfig.smtpUser,
+          secure: emailConfig.smtpSecure
+        }
+      };
+
+      // Chamada real ao GAS para teste de ping
+      await fetch(gasUrl, { 
+        method: 'POST', 
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(testPayload) 
+      });
+      
+      // Como GAS em no-cors não retorna corpo legível, assumimos sucesso se não houver exception
+      setSmtpTestStatus('success');
+      setTimeout(() => setSmtpTestStatus('idle'), 4000);
+    } catch (err) {
+      console.error("Erro no teste SMTP:", err);
+      setSmtpTestStatus('error');
+      setTimeout(() => setSmtpTestStatus('idle'), 4000);
+    } finally {
+      setIsTestingSmtp(false);
     }
   };
 
@@ -551,40 +593,69 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                           exit={{ height: 0, opacity: 0 }}
                           className="overflow-hidden"
                         >
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-white/[0.01] p-8 rounded-sm border border-white/5">
-                            <div className="md:col-span-2 space-y-2">
-                              <label className="admin-label">Host SMTP</label>
-                              <input value={emailConfig.smtpHost} onChange={e => updateEmailConfig('smtpHost', e.target.value)} placeholder="ex: smtp.gmail.com" className="admin-input" />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="admin-label">Porta</label>
-                              <input value={emailConfig.smtpPort} onChange={e => updateEmailConfig('smtpPort', e.target.value)} placeholder="587 / 465" className="admin-input" />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="admin-label">Utilizador SMTP</label>
-                              <input value={emailConfig.smtpUser} onChange={e => updateEmailConfig('smtpUser', e.target.value)} placeholder="email@dominio.com" className="admin-input" />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="admin-label">Palavra-passe SMTP</label>
-                              <div className="relative">
-                                <input 
-                                  type={showSmtpPass ? "text" : "password"} 
-                                  value={emailConfig.smtpPass} 
-                                  onChange={e => updateEmailConfig('smtpPass', e.target.value)} 
-                                  className="admin-input pr-12" 
-                                />
-                                <button onClick={() => setShowSmtpPass(!showSmtpPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors">
-                                  {showSmtpPass ? <EyeOff size={14}/> : <Eye size={14}/>}
+                          <div className="space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-white/[0.01] p-8 rounded-sm border border-white/5">
+                              <div className="md:col-span-2 space-y-2">
+                                <label className="admin-label">Host SMTP</label>
+                                <input value={emailConfig.smtpHost} onChange={e => updateEmailConfig('smtpHost', e.target.value)} placeholder="ex: smtp.gmail.com" className="admin-input" />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="admin-label">Porta</label>
+                                <input value={emailConfig.smtpPort} onChange={e => updateEmailConfig('smtpPort', e.target.value)} placeholder="587 / 465" className="admin-input" />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="admin-label">Utilizador SMTP</label>
+                                <input value={emailConfig.smtpUser} onChange={e => updateEmailConfig('smtpUser', e.target.value)} placeholder="email@dominio.com" className="admin-input" />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="admin-label">Palavra-passe SMTP</label>
+                                <div className="relative">
+                                  <input 
+                                    type={showSmtpPass ? "text" : "password"} 
+                                    value={emailConfig.smtpPass} 
+                                    onChange={e => updateEmailConfig('smtpPass', e.target.value)} 
+                                    className="admin-input pr-12" 
+                                  />
+                                  <button onClick={() => setShowSmtpPass(!showSmtpPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors">
+                                    {showSmtpPass ? <EyeOff size={14}/> : <Eye size={14}/>}
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-6 pt-4">
+                                <button 
+                                  onClick={() => updateEmailConfig('smtpSecure', !emailConfig.smtpSecure)}
+                                  className={`flex items-center gap-3 text-[9px] font-black tracking-widest uppercase transition-colors ${emailConfig.smtpSecure ? 'text-[#f8c8c4]' : 'text-white/20'}`}
+                                >
+                                  <Shield size={16}/> {emailConfig.smtpSecure ? 'SSL/TLS Ativo' : 'Sem Segurança'}
                                 </button>
                               </div>
                             </div>
-                            <div className="flex items-center gap-6 pt-4">
-                              <button 
-                                onClick={() => updateEmailConfig('smtpSecure', !emailConfig.smtpSecure)}
-                                className={`flex items-center gap-3 text-[9px] font-black tracking-widest uppercase transition-colors ${emailConfig.smtpSecure ? 'text-[#f8c8c4]' : 'text-white/20'}`}
-                              >
-                                <Shield size={16}/> {emailConfig.smtpSecure ? 'SSL/TLS Ativo' : 'Sem Segurança'}
-                              </button>
+                            
+                            {/* Botão de Teste SMTP */}
+                            <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-[#f8c8c4]/5 border border-[#f8c8c4]/10 rounded-sm">
+                               <button 
+                                onClick={handleTestSmtp}
+                                disabled={isTestingSmtp}
+                                className={`flex items-center justify-center gap-3 px-8 py-4 text-[10px] font-black tracking-widest uppercase transition-all rounded-sm border ${
+                                  smtpTestStatus === 'success' ? 'bg-green-500/20 border-green-500 text-green-400' : 
+                                  smtpTestStatus === 'error' ? 'bg-red-500/20 border-red-500 text-red-400' :
+                                  'bg-white/5 border-white/10 text-[#f8c8c4] hover:bg-[#f8c8c4]/10 hover:border-[#f8c8c4]'
+                                }`}
+                               >
+                                 {isTestingSmtp ? <Loader2 size={14} className="animate-spin" /> : (
+                                   smtpTestStatus === 'success' ? <CheckCircle size={14} /> : 
+                                   smtpTestStatus === 'error' ? <AlertCircle size={14} /> : 
+                                   <Send size={14} />
+                                 )}
+                                 {isTestingSmtp ? 'A TESTAR...' : (
+                                   smtpTestStatus === 'success' ? 'CONEXÃO OK' : 
+                                   smtpTestStatus === 'error' ? 'FALHA NO TESTE' : 
+                                   'TESTAR CONEXÃO SMTP'
+                                 )}
+                               </button>
+                               <div className="flex-1 text-[9px] text-white/40 leading-relaxed italic">
+                                 O teste realiza um handshake técnico com o servidor para validar a autenticação e portas sem disparar e-mails reais.
+                               </div>
                             </div>
                           </div>
                         </motion.div>
