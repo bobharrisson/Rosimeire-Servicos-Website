@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { 
@@ -234,7 +233,7 @@ const translations = {
     heroSubtitle: "Rosimeire Serviços",
     servicesTitle: "El Rigor del Detalle",
     servicesSubtitle: "La excelencia técnica que preserves su legado.",
-    servicesDescription: "Nos dedicamos a la preservación y el cuidado de su propriedade con un rigor inigualável. A través de un serviço de limpeza profesional de alto nivel, nuestros técnicos especializados aseguran que cada detalhe de su inmueble sea tratado con la máxima pericia, garantizando un ambiente absolutamente inmaculado. Combinamos la excelencia técnica con una política de transparencia e valor justo, ofreciéndole la segurança de un patrimonio impecablemente mantenido, siempre que lo necesite.",
+    servicesDescription: "Nos dedicamos a la preservación y el cuidado de su propriedade con un rigor inigualável. A través de un serviço de limpeza profesional de alto nivel, nuestros técnicos especializados aseguran que cada detalhe de su inmueble sea tratado con la máxima pericia, garantizando un ambiente absolutamente inmaculado. Combinamos la excelencia técnica con uma política de transparencia e valor justo, ofreciéndole la segurança de un patrimonio impecablemente mantenido, siempre que lo necesite.",
     s1Title: "Alojamientos y Unidades Turísticas",
     s1Tagline: "Higienização rigorosa para a rotatividade do setor.",
     s1Desc: "Especialistas en la preparación de alojamientos locales, hostales y unidades hoteleras. Garantizamos una limpeza profunda e eficiente entre estadias, aseguran que cada nuevo huésped encuentre un inmueble con estándares de limpeza impecables.",
@@ -260,10 +259,10 @@ const translations = {
     adminTitle: "Panel Administrativo", adminSlides: "Slides", adminNotices: "Avisos", adminReviews: "Testimonios", adminPartners: "Socios", adminImages: "Visual", adminEmail: "Email",
     sirTitle: "SIR - Sistema Integrado", logout: "Cerrar Panel", back: "Volver al Inicio",
     aboutSectionTitle: "Nuestra Esencia",
-    aboutSectionText: "Rosimeire Serviços iniciou su trajetória em 2011, fruto da visão e dedicação de sua fundadora, Rosimeire Silva. Actuando inicialmente de forma independente em propriedades exclusivas, su rigor técnico, honestidade e um perfeccionismo inaquebrantável se convirtieron em su sello distintivo. Esta postura de excelencia permitió fidelizar una cartera de clientes de prestigio, consolidando los cimientos que impulsaron el crescimento y la solidez que la empresa apresenta hoy.",
+    aboutSectionText: "Rosimeire Serviços iniciou su trajetória em 2011, fruto da visão e dedicação de sua fundadora, Rosimeire Silva. Actuando inicialmente de forma independente em propriedades exclusivas, su rigor técnico, honestidade e um perfeccionismo inaquebrantável se convirtieron em su sello distintivo. Esta postura de excelencia permitió fidelizar una cartera de clientes de prestigio, consolidando los cimientos que impulsaron el crescimento y la solidez que a empresa apresenta hoy.",
     missionTitle: "Misión", missionText: "Satisfacer al cliente dejando su property impecablemente limpia, según su necesidad.",
     visionTitle: "Vision", visionText: "Próximamente nuestros serviços estarán disponibles en outros países de Europa, con el mesmo estándar de qualidade que atendemos actualmente em Portugal.",
-    valuesTitle: "Values",
+    valuesTitle: "Valores",
     val1: "Empatia com los clientes", val2: "Qualidad", val3: "Integridad e Honestidad", val4: "Abertura e Respeto", val5: "Coraje",
     careersTitle: "Carreras",
     careersHeroTitle: "Únete a Nuestro Legado",
@@ -767,14 +766,6 @@ const App = () => {
     } else setLoginError(true);
   };
 
-  const handleDemoAccess = () => {
-    setUsername(adminUsername);
-    setPassword(adminPassword);
-    setIsAuthenticated(true);
-    setIsLoginOpen(false);
-    setIsAdminOpen(true);
-  };
-
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormStatus('sending');
@@ -1015,7 +1006,7 @@ const App = () => {
                        <div className="space-y-10">
                          <div className="text-[#f8c8c4]/60 group-hover:scale-110 transition-transform duration-700">{s.icon}</div>
                          <h3 className="text-3xl md:text-4xl font-light text-white tracking-tighter uppercase leading-tight">{s.title}</h3>
-                         <p className="text-[#f8c8c4]/80 text-[11px] font-bold uppercase tracking-[0.4em] leading-relaxed italic">{s.tagline}</p>
+                         <p className="text-[#f8c8c4]/80 text-[11px] font-bold uppercase tracking-[0.4em] padding-relaxed italic">{s.tagline}</p>
                          <p className="text-white/50 text-base font-light leading-relaxed">{s.desc}</p>
                        </div>
                     </div>
@@ -1330,9 +1321,6 @@ const App = () => {
                 <button type="submit" className="w-full btn-serenity flex items-center justify-center gap-3"><Lock size={12}/> Entrar</button>
               </form>
               <div className="mt-8 pt-8 border-t border-white/5 flex flex-col gap-4">
-                <button onClick={handleDemoAccess} className="w-full py-3 border border-dashed border-[#f8c8c4]/30 text-[9px] font-black tracking-[0.4em] uppercase text-[#f8c8c4] hover:bg-[#f8c8c4]/5 transition-all flex items-center justify-center gap-3">
-                  <Zap size={10}/> Acesso Direto
-                </button>
                 <button onClick={() => setIsLoginOpen(false)} className="w-full text-[9px] font-bold tracking-[0.3em] text-white/20 uppercase hover:text-white/40 transition-colors">Cancelar</button>
               </div>
               {loginError && <p className="text-red-400 text-[10px] font-bold text-center mt-6 uppercase tracking-widest">Credenciais incorretas.</p>}

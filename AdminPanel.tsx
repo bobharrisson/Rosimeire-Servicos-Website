@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -157,9 +156,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     if (!magic.prompt.trim()) return;
     setIsMagicLoading(true);
     try {
+      // Initialize GoogleGenAI with the API key from environment variables before the request
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const prompt = `Você é um designer web de luxo especializado em efeitos atmosféricos. Gere APENAS código CSS para um efeito visual imersivo e elegante baseado na descrição: "${magic.prompt}". Cores: #081221, #f8c8c4, dourado suave. Alvo: .magic-event-layer.`;
-      const response = await ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: prompt });
+      // Use gemini-3-pro-preview for complex coding and reasoning tasks
+      const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt });
       const cleanedCode = (response.text || "").replace(/```css/g, '').replace(/```/g, '').trim();
       const expiry = new Date(); expiry.setDate(expiry.getDate() + magic.durationDays);
       updateSiteConfig('magicEffect', { ...magic, code: cleanedCode, active: true, expiryDate: expiry.toISOString() });
