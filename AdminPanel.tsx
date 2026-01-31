@@ -54,15 +54,6 @@ interface SocialLinks {
 
 interface EmailConfig {
   recipientEmail: string;
-  serviceId: string;
-  templateId: string;
-  publicKey: string;
-  smtpHost: string;
-  smtpPort: string;
-  smtpUser: string;
-  smtpPass: string;
-  smtpSecure: boolean;
-  useSmtp: boolean;
 }
 
 interface Notice {
@@ -135,186 +126,60 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showSmtpPass, setShowSmtpPass] = useState(false);
   const [isMagicLoading, setIsMagicLoading] = useState(false);
-  const [isTestingSmtp, setIsTestingSmtp] = useState(false);
-  const [smtpTestStatus, setSmtpTestStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   if (!isOpen) return null;
 
-  // Handlers
   const addSlide = () => {
     const newSlide: Slide = { id: Date.now().toString(), title: "Novo Slide", description: "Descrição...", image: slides[0]?.image || "", tag: "NOVO", buttonLink: "contact", buttonText: "SABER MAIS" };
     setSlides([...slides, newSlide]);
   };
   const removeSlide = (id: string) => slides.length > 1 && setSlides(slides.filter(s => s.id !== id));
   const updateSlide = (id: string, field: keyof Slide, value: string) => setSlides(slides.map(s => s.id === id ? { ...s, [field]: value } : s));
-
   const updateSiteConfig = (field: keyof SiteConfig, value: any) => setSiteConfig({ ...siteConfig, [field]: value });
   const updateSectionImage = (key: keyof SectionImages, value: string) => setSectionImages({ ...sectionImages, [key]: value });
   const updateSocialLink = (key: keyof SocialLinks, value: string) => setSocialLinks({ ...socialLinks, [key]: value });
   const updateEmailConfig = (key: keyof EmailConfig, value: any) => setEmailConfig({ ...emailConfig, [key]: value });
-
   const addNotice = () => setNotices([...notices, { id: Date.now().toString(), text: "Novo aviso...", active: true }]);
   const removeNotice = (id: string) => setNotices(notices.filter(n => n.id !== id));
   const updateNotice = (id: string, text: string) => setNotices(notices.map(n => n.id === id ? { ...n, text } : n));
   const toggleNotice = (id: string) => setNotices(notices.map(n => n.id === id ? { ...n, active: !n.active } : n));
-
   const addReview = () => setReviews([...reviews, { id: Date.now().toString(), author: "Novo Autor", text: "Conteúdo...", time: "1 mês atrás", initials: "NA", color: "#f8c8c4", avatar: "" }]);
   const removeReview = (id: string) => setReviews(reviews.filter(r => r.id !== id));
   const updateReview = (id: string, field: keyof Review, value: string) => setReviews(reviews.map(r => r.id === id ? { ...r, [field]: value } : r));
-
   const addPartner = () => setPartners([...partners, { id: Date.now().toString(), name: "Novo Parceiro", logo: "", url: "https://" }]);
   const removePartner = (id: string) => setPartners(partners.filter(p => p.id !== id));
   const updatePartner = (id: string, field: keyof Partner, value: string) => setPartners(partners.map(p => p.id === id ? { ...p, [field]: value } : p));
-
-  const updateMagicEffect = (field: keyof MagicEffect, value: any) => {
-    setSiteConfig({
-      ...siteConfig,
-      magicEffect: {
-        ...(siteConfig.magicEffect || { active: false, code: "", prompt: "", expiryDate: "", durationDays: 7 }),
-        [field]: value
-      }
-    });
-  };
+  const updateMagicEffect = (field: keyof MagicEffect, value: any) => { setSiteConfig({ ...siteConfig, magicEffect: { ...(siteConfig.magicEffect || { active: false, code: "", prompt: "", expiryDate: "", durationDays: 7 }), [field]: value } }); };
 
   const handleGenerateMagic = async () => {
     const magic = siteConfig.magicEffect || { active: false, code: "", prompt: "", expiryDate: "", durationDays: 7 };
     if (!magic.prompt.trim()) return;
-    
     setIsMagicLoading(true);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const prompt = `Você é um designer web de luxo especializado em efeitos atmosféricos. Gere APENAS código CSS para um efeito visual imersivo e elegante baseado na descrição: "${magic.prompt}".
-      
-      REGRAS ESTRITAS DE IMPLEMENTAÇÃO:
-      1. O código CSS deve ser aplicado OBRIGATORIAMENTE ao seletor '.magic-event-layer' e seus pseudo-elementos '::before' e '::after'.
-      2. Use animações complexas com @keyframes para dar vida ao efeito.
-      3. O container '.magic-event-layer' já possui posicionamento fixo e z-index alto, você deve focar na criação visual interna (backgrounds, partículas simuladas com sombras, gradientes animados, etc).
-      4. Não altere o layout existente do site; trabalhe apenas dentro da camada fornecida.
-      5. Cores obrigatórias: Utilize a paleta "Midnight & Petal" (tons de azul marinho profundo #081221, rosa pálido #f8c8c4 e detalhes em dourado suave).
-      6. Retorne APENAS o código CSS puro, pronto para ser injetado. Sem tags markdown, sem comentários, sem explicações.`;
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: prompt,
-      });
-
-      const generatedCode = response.text || "";
-      const cleanedCode = generatedCode.replace(/```css/g, '').replace(/```/g, '').trim();
-      
-      // Calcular data de expiração
-      const expiry = new Date();
-      expiry.setDate(expiry.getDate() + magic.durationDays);
-
-      updateSiteConfig('magicEffect', {
-        ...magic,
-        code: cleanedCode,
-        active: true,
-        expiryDate: expiry.toISOString()
-      });
-
-    } catch (err) {
-      console.error("Erro ao gerar efeito mágico:", err);
-      alert("Erro ao conectar com a Varinha de IA. Verifique sua conexão.");
-    } finally {
-      setIsMagicLoading(false);
-    }
+      const prompt = `Você é um designer web de luxo especializado em efeitos atmosféricos. Gere APENAS código CSS para um efeito visual imersivo e elegante baseado na descrição: "${magic.prompt}". Cores: #081221, #f8c8c4, dourado suave. Alvo: .magic-event-layer.`;
+      const response = await ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: prompt });
+      const cleanedCode = (response.text || "").replace(/```css/g, '').replace(/```/g, '').trim();
+      const expiry = new Date(); expiry.setDate(expiry.getDate() + magic.durationDays);
+      updateSiteConfig('magicEffect', { ...magic, code: cleanedCode, active: true, expiryDate: expiry.toISOString() });
+    } catch (err) { alert("Erro ao conectar com a IA."); } finally { setIsMagicLoading(false); }
   };
 
-  const handleTestSmtp = async () => {
-    if (!emailConfig.smtpHost || !emailConfig.smtpUser || !emailConfig.smtpPass) {
-      alert("Por favor, preencha o Host, Utilizador e Password do SMTP antes de testar.");
-      return;
-    }
+  const handleDeactivateMagic = () => { updateMagicEffect('active', false); updateMagicEffect('code', ''); };
+  const handleFinalize = async () => { setIsSaving(true); await onPublishToCloud(); setIsSaving(false); onClose(); };
 
-    setIsTestingSmtp(true);
-    setSmtpTestStatus('idle');
-
-    try {
-      const testPayload = {
-        action: 'test_smtp',
-        config: {
-          host: emailConfig.smtpHost,
-          port: emailConfig.smtpPort,
-          user: emailConfig.smtpUser,
-          secure: emailConfig.smtpSecure
-        }
-      };
-
-      // Chamada real ao GAS para teste de ping
-      await fetch(gasUrl, { 
-        method: 'POST', 
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(testPayload) 
-      });
-      
-      // Como GAS em no-cors não retorna corpo legível, assumimos sucesso se não houver exception
-      setSmtpTestStatus('success');
-      setTimeout(() => setSmtpTestStatus('idle'), 4000);
-    } catch (err) {
-      console.error("Erro no teste SMTP:", err);
-      setSmtpTestStatus('error');
-      setTimeout(() => setSmtpTestStatus('idle'), 4000);
-    } finally {
-      setIsTestingSmtp(false);
-    }
-  };
-
-  const handleDeactivateMagic = () => {
-    updateMagicEffect('active', false);
-    updateMagicEffect('code', '');
-  };
-
-  const handleFinalize = async () => {
-    setIsSaving(true);
-    await onPublishToCloud();
-    setTimeout(() => { setIsSaving(false); onClose(); }, 800);
-  };
-
-  // Safe access for UI
   const magicEffect = siteConfig.magicEffect || { active: false, code: "", prompt: "", expiryDate: "", durationDays: 7 };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: '100%' }}
-      className="fixed inset-0 z-[1000] bg-[#081221] text-white overflow-y-auto"
-    >
+    <motion.div initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: '100%' }} className="fixed inset-0 z-[1000] bg-[#081221] text-white overflow-y-auto">
       <div className="container mx-auto px-8 md:px-32 py-24 pb-32">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-8">
-          <div className="flex items-center gap-8">
-            <h2 className="heading-serif text-4xl md:text-7xl">Painel de Controlo</h2>
-          </div>
+          <h2 className="heading-serif text-4xl md:text-7xl">Painel de Controlo</h2>
           <div className="flex gap-6 items-center">
             <button onClick={onLogout} className="text-[10px] font-bold tracking-widest uppercase text-white/40 hover:text-white transition-colors">Sair</button>
             <button onClick={onClose} className="text-white/20 hover:text-white transition-colors ml-4"><X size={32}/></button>
           </div>
-        </div>
-
-        <div className="mb-12 flex flex-col md:flex-row items-center justify-between p-6 bg-white/[0.02] border border-white/5 rounded-sm gap-8">
-           <div className="flex items-center gap-6 flex-1 overflow-hidden">
-             <div className="p-3 bg-white/5 rounded-sm">
-                <Server size={18} className="text-[#f8c8c4]/40" />
-             </div>
-             <div className="flex flex-col gap-1 min-w-0">
-               <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/20">Endpoint SIR (Database API)</span>
-               <span className="text-[10px] font-mono text-[#f8c8c4]/60 break-all select-all leading-relaxed">{gasUrl}</span>
-             </div>
-           </div>
-
-           <div className={`flex items-center gap-4 px-6 py-4 rounded-sm bg-white/5 border border-white/5 transition-all duration-500`}>
-              {cloudStatus === 'loading' ? <RefreshCw size={16} className="text-blue-400 animate-spin" /> : 
-               cloudStatus === 'connected' ? <Cloud size={16} className="text-green-400" /> : 
-               cloudStatus === 'error' ? <CloudOff size={16} className="text-red-400" /> : 
-               <CloudOff size={16} className="text-white/20" />}
-              <div className="flex flex-col">
-                <span className="text-[10px] font-black tracking-[0.2em] uppercase">
-                  {cloudStatus === 'connected' ? 'Sincronizado' : cloudStatus === 'loading' ? 'A Sincronizar...' : 'Estado Offline'}
-                </span>
-                <span className="text-[7px] font-bold tracking-[0.1em] text-white/20 uppercase">Acesso à Nuvem SIR Ativo</span>
-              </div>
-           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-16">
@@ -328,13 +193,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             { id: 'partners', icon: <Briefcase size={14}/>, label: 'Parceiros' },
             { id: 'user', icon: <User size={14}/>, label: 'Conta' }
           ].map((tab) => (
-            <button 
-              key={tab.id} onClick={() => setActiveTab(tab.id as any)} 
-              className={`p-6 text-[10px] font-bold tracking-[0.3em] uppercase transition-all flex flex-col items-center justify-center gap-4 rounded-sm border ${activeTab === tab.id ? 'text-[#f8c8c4] border-[#f8c8c4] bg-[#f8c8c4]/5 shadow-[0_0_20px_rgba(248,200,196,0.05)]' : 'text-white/20 border-white/5 bg-white/[0.01] hover:text-white/40 hover:bg-white/[0.03]'}`}
-            >
-              <div className={`${activeTab === tab.id ? 'text-[#f8c8c4]' : 'text-white/10'}`}>
-                {tab.icon}
-              </div>
+            <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`p-6 text-[10px] font-bold tracking-[0.3em] uppercase transition-all flex flex-col items-center justify-center gap-4 rounded-sm border ${activeTab === tab.id ? 'text-[#f8c8c4] border-[#f8c8c4] bg-[#f8c8c4]/5' : 'text-white/20 border-white/5 bg-white/[0.01] hover:text-white/40'}`}>
+              {tab.icon}
               <span className="text-center">{tab.label}</span>
             </button>
           ))}
@@ -343,148 +203,46 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="min-h-[50vh]">
           {activeTab === 'site' && (
             <div className="space-y-12 max-w-5xl mx-auto">
-              
-              {/* SESSÃO EVENTOS MÁGICOS (IA) */}
               <div className="crystal-card p-12 space-y-10 border-[#f8c8c4]/30 bg-gradient-to-br from-[#f8c8c4]/5 to-transparent relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-12 text-[#f8c8c4]/10 group-hover:text-[#f8c8c4]/20 transition-all duration-1000">
-                  <Wand2 size={120} strokeWidth={0.5} />
-                </div>
-                
-                <div className="flex items-center gap-6 text-[#f8c8c4]">
-                  <Sparkles size={24}/>
-                  <h3 className="text-xl font-bold tracking-widest uppercase text-white">Eventos Mágicos (Varinha de IA)</h3>
-                </div>
-
+                <div className="absolute top-0 right-0 p-12 text-[#f8c8c4]/10"><Wand2 size={120} strokeWidth={0.5} /></div>
+                <div className="flex items-center gap-6 text-[#f8c8c4]"><Sparkles size={24}/><h3 className="text-xl font-bold tracking-widest uppercase text-white">Eventos Mágicos</h3></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label className="admin-label">Descreva o efeito desejado</label>
-                        <textarea 
-                          value={magicEffect.prompt} 
-                          onChange={e => updateMagicEffect('prompt', e.target.value)}
-                          placeholder="Ex: Flocos de neve dourados caindo suavemente, Brilho de estrelas no topo da página..."
-                          className="admin-input !bg-white/5 min-h-[120px]"
-                        />
-                      </div>
-                      
-                      <div className="flex flex-col sm:flex-row gap-6 items-end">
-                        <div className="flex-1 space-y-2">
-                          <label className="admin-label flex items-center gap-2"><Clock size={10}/> Duração (Dias)</label>
-                          <input 
-                            type="number" 
-                            min="1" 
-                            max="30"
-                            value={magicEffect.durationDays}
-                            onChange={e => updateMagicEffect('durationDays', parseInt(e.target.value))}
-                            className="admin-input" 
-                          />
-                        </div>
-                        <button 
-                          onClick={handleGenerateMagic}
-                          disabled={isMagicLoading || !magicEffect.prompt}
-                          className="btn-serenity !py-4 flex items-center gap-4 disabled:opacity-30 flex-1 justify-center whitespace-nowrap"
-                        >
-                          {isMagicLoading ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}
-                          ATIVAR MAGIA
-                        </button>
-                      </div>
+                      <label className="admin-label">Descreva o efeito visual desejado</label>
+                      <textarea value={magicEffect.prompt} onChange={e => updateMagicEffect('prompt', e.target.value)} placeholder="Ex: Neve rosa caindo..." className="admin-input !bg-white/5 min-h-[120px]" />
+                      <button onClick={handleGenerateMagic} disabled={isMagicLoading || !magicEffect.prompt} className="btn-serenity !py-4 flex items-center gap-4 w-full justify-center">
+                        {isMagicLoading ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />} ATIVAR MAGIA
+                      </button>
                    </div>
-
                    <div className="space-y-6 bg-white/[0.02] border border-white/5 p-8 rounded-sm">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="admin-label">Estado do Evento</span>
-                        <div className={`px-3 py-1 rounded-full text-[8px] font-black tracking-widest uppercase ${magicEffect.active ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-white/20'}`}>
-                          {magicEffect.active ? 'Ativo' : 'Inativo'}
-                        </div>
-                      </div>
-                      
                       {magicEffect.active ? (
                         <div className="space-y-6">
-                           <div className="flex items-center gap-4 text-white/40">
-                             <Calendar size={14} className="text-[#f8c8c4]/40" />
-                             <span className="text-[10px] font-bold tracking-widest uppercase">
-                               Expira em: {magicEffect.expiryDate ? new Date(magicEffect.expiryDate).toLocaleDateString() : 'N/A'}
-                             </span>
-                           </div>
-                           <p className="text-[9px] text-white/30 italic">" {magicEffect.prompt} "</p>
-                           <button 
-                            onClick={handleDeactivateMagic}
-                            className="w-full py-4 border border-red-500/20 text-red-400 text-[9px] font-bold tracking-[0.4em] uppercase hover:bg-red-500/10 transition-all rounded-sm"
-                           >
-                             DESATIVAR EVENTO AGORA
-                           </button>
+                           <div className="flex items-center gap-4 text-white/40"><Calendar size={14}/><span className="text-[10px] font-bold uppercase">Expira em: {magicEffect.expiryDate ? new Date(magicEffect.expiryDate).toLocaleDateString() : 'N/A'}</span></div>
+                           <button onClick={handleDeactivateMagic} className="w-full py-4 border border-red-500/20 text-red-400 text-[9px] font-bold tracking-[0.4em] uppercase hover:bg-red-500/10">DESATIVAR EVENTO</button>
                         </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center py-10 opacity-20">
-                           <Zap size={32} className="mb-4" />
-                           <p className="text-[10px] font-medium tracking-widest uppercase">Nenhum evento ativo no momento</p>
-                        </div>
-                      )}
+                      ) : <p className="text-[10px] text-center opacity-20 py-10 uppercase">Nenhum evento ativo</p>}
                    </div>
                 </div>
-
-                {magicEffect.code && (
-                  <div className="pt-8 border-t border-white/5">
-                    <button 
-                      onClick={() => {
-                        const el = document.getElementById('magic-code-preview');
-                        if (el) el.classList.toggle('hidden');
-                      }}
-                      className="text-[8px] font-black tracking-widest text-white/10 hover:text-white/40 uppercase transition-colors"
-                    >
-                      Ver Código Gerado pela IA
-                    </button>
-                    <pre id="magic-code-preview" className="hidden mt-4 p-4 bg-black/40 text-[#f8c8c4]/40 text-[9px] font-mono overflow-x-auto rounded-sm border border-white/5 max-h-40">
-                      {magicEffect.code}
-                    </pre>
-                  </div>
-                )}
               </div>
-
               <div className="crystal-card p-12 space-y-10 border-[#f8c8c4]/10">
-                <div className="flex items-center gap-6 text-[#f8c8c4]/60"><Layout size={24}/><h3 className="text-xl font-bold tracking-widest uppercase text-white">Configurações Gerais do Website</h3></div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                    <div className="space-y-6">
                       <div className="p-4 bg-white/5 border border-white/5 rounded-sm">
-                         <span className="admin-label !mb-4">Identidade de Marca</span>
-                         <div className="space-y-6">
-                            <div className="space-y-2">
-                              <label className="admin-label !text-[8px]">URL da Logomarca (Topo)</label>
-                              <div className="flex gap-4">
-                                {siteConfig.logoUrl && <img src={siteConfig.logoUrl} className="w-10 h-10 object-contain bg-white/5 p-1 rounded" />}
-                                <input value={siteConfig.logoUrl || ""} onChange={e => updateSiteConfig('logoUrl', e.target.value)} placeholder="https://..." className="admin-input" />
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <label className="admin-label !text-[8px]">Nome da Empresa</label>
-                              <input value={siteConfig.companyName || ""} onChange={e => updateSiteConfig('companyName', e.target.value)} className="admin-input font-bold" />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="admin-label !text-[8px]">Subtítulo (Slogan)</label>
-                              <input value={siteConfig.companySubtitle || ""} onChange={e => updateSiteConfig('companySubtitle', e.target.value)} className="admin-input" />
-                            </div>
-                         </div>
+                        <label className="admin-label">Identidade de Marca</label>
+                        <div className="space-y-6">
+                           <input value={siteConfig.logoUrl || ""} onChange={e => updateSiteConfig('logoUrl', e.target.value)} placeholder="URL Logomarca" className="admin-input" />
+                           <input value={siteConfig.companyName || ""} onChange={e => updateSiteConfig('companyName', e.target.value)} placeholder="Nome Empresa" className="admin-input font-bold" />
+                           <input value={siteConfig.companySubtitle || ""} onChange={e => updateSiteConfig('companySubtitle', e.target.value)} placeholder="Slogan" className="admin-input" />
+                        </div>
                       </div>
                    </div>
-
                    <div className="space-y-6">
                       <div className="p-4 bg-white/5 border border-white/5 rounded-sm">
-                         <span className="admin-label !mb-4">Personalização do Rodapé</span>
-                         <div className="space-y-6">
-                            <div className="space-y-2">
-                              <label className="admin-label !text-[8px]">Nota de Rodapé (Slogan)</label>
-                              <textarea value={siteConfig.footerNote || ""} onChange={e => updateSiteConfig('footerNote', e.target.value)} className="admin-input" rows={2} />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="admin-label !text-[8px]">Texto de Copyright</label>
-                              <input value={siteConfig.footerCopyright || ""} onChange={e => updateSiteConfig('footerCopyright', e.target.value)} className="admin-input" />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="admin-label !text-[8px]">Nome do Desenvolvedor (Signature)</label>
-                              <input value={siteConfig.developedBy || ""} onChange={e => updateSiteConfig('developedBy', e.target.value)} className="admin-input" />
-                            </div>
-                         </div>
+                        <label className="admin-label">Personalização Rodapé</label>
+                        <div className="space-y-6">
+                           <textarea value={siteConfig.footerNote || ""} onChange={e => updateSiteConfig('footerNote', e.target.value)} className="admin-input" rows={2} />
+                           <input value={siteConfig.footerCopyright || ""} onChange={e => updateSiteConfig('footerCopyright', e.target.value)} className="admin-input" />
+                        </div>
                       </div>
                    </div>
                 </div>
@@ -498,27 +256,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 {slides.map(s => (
                   <div key={s.id} className="crystal-card p-10 relative space-y-6">
                     <button onClick={() => removeSlide(s.id)} className="absolute top-6 right-6 text-red-500/30 hover:text-red-500"><Trash2 size={16}/></button>
-                    <div className="space-y-2">
-                      <label className="admin-label">URL da Imagem de Fundo</label>
-                      <input value={s.image} onChange={e => updateSlide(s.id, 'image', e.target.value)} placeholder="https://..." className="admin-input" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="admin-label">Título Principal</label>
-                      <input value={s.title} onChange={e => updateSlide(s.id, 'title', e.target.value)} placeholder="Título" className="admin-input font-bold" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="admin-label">Breve Descrição</label>
-                      <textarea value={s.description} onChange={e => updateSlide(s.id, 'description', e.target.value)} placeholder="Descrição" className="admin-input text-xs" rows={2} />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/[0.02] p-6 rounded-sm border border-white/5">
-                      <div className="space-y-3">
-                        <label className="admin-label flex items-center gap-2 text-[#f8c8c4]/80"><MessageSquare size={10}/> Texto do Botão</label>
-                        <input value={s.buttonText || ""} onChange={e => updateSlide(s.id, 'buttonText', e.target.value)} placeholder="Ex: Saiba Mais" className="admin-input !bg-white/5" />
-                      </div>
-                      <div className="space-y-3">
-                        <label className="admin-label flex items-center gap-2 text-[#f8c8c4]/80"><ExternalLink size={10}/> Link do Botão</label>
-                        <input value={s.buttonLink || ""} onChange={e => updateSlide(s.id, 'buttonLink', e.target.value)} placeholder="Ex: contact" className="admin-input !bg-white/5" />
-                      </div>
+                    <input value={s.image} onChange={e => updateSlide(s.id, 'image', e.target.value)} placeholder="URL Imagem" className="admin-input" />
+                    <input value={s.title} onChange={e => updateSlide(s.id, 'title', e.target.value)} placeholder="Título" className="admin-input font-bold" />
+                    <textarea value={s.description} onChange={e => updateSlide(s.id, 'description', e.target.value)} placeholder="Descrição" className="admin-input text-xs" rows={2} />
+                    <div className="grid grid-cols-2 gap-6">
+                      <input value={s.buttonText || ""} onChange={e => updateSlide(s.id, 'buttonText', e.target.value)} placeholder="Texto Botão" className="admin-input !bg-white/5" />
+                      <input value={s.buttonLink || ""} onChange={e => updateSlide(s.id, 'buttonLink', e.target.value)} placeholder="Link Botão" className="admin-input !bg-white/5" />
                     </div>
                   </div>
                 ))}
@@ -527,178 +270,33 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           )}
 
-          {activeTab === 'images' && (
-            <div className="space-y-12 max-w-4xl mx-auto">
-              <div className="crystal-card p-12 space-y-10 border-[#f8c8c4]/10">
-                <div className="flex items-center gap-6 text-[#f8c8c4]/60 mb-4">
-                  <ImageIcon size={24}/>
-                  <h3 className="text-xl font-bold tracking-widest uppercase text-white">Visual das Páginas</h3>
-                </div>
-                <div className="space-y-8">
-                  <div className="space-y-2 group">
-                    <label className="admin-label">Foto da Página Sobre (Equipa/Essência)</label>
-                    <input value={sectionImages.about} onChange={e => updateSectionImage('about', e.target.value)} placeholder="URL da foto" className="admin-input" />
-                  </div>
-                  <div className="space-y-2 group">
-                    <label className="admin-label">Foto da Página Carreiras (Escritório/Fardas)</label>
-                    <input value={sectionImages.careers} onChange={e => updateSectionImage('careers', e.target.value)} placeholder="URL da foto" className="admin-input" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {activeTab === 'email' && (
             <div className="space-y-12 max-w-5xl mx-auto">
                <div className="crystal-card p-12 space-y-10 border-[#f8c8c4]/10">
                 <div className="flex items-center gap-6 text-[#f8c8c4]/60"><Mail size={24}/><h3 className="text-xl font-bold tracking-widest uppercase text-white">Configurações de Contacto</h3></div>
-                
                 <div className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
                       <label className="admin-label flex items-center gap-2"><Mail size={12}/> E-mail de Recebimento</label>
                       <input type="email" value={emailConfig.recipientEmail} onChange={e => updateEmailConfig('recipientEmail', e.target.value)} className="admin-input" />
+                      <p className="text-[7px] text-white/20 uppercase tracking-widest mt-2">Destino das mensagens enviadas pelo formulário do site.</p>
                     </div>
                     <div className="space-y-2">
-                      <label className="admin-label flex items-center gap-2"><Phone size={12}/> Número de Telefone (Geral & WhatsApp)</label>
+                      <label className="admin-label flex items-center gap-2"><Phone size={12}/> Telemóvel (Geral & WhatsApp)</label>
                       <input type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value)} className="admin-input" />
                     </div>
                   </div>
-
                   <div className="space-y-2">
-                    <label className="admin-label flex items-center gap-2"><MapPin size={12}/> Morada / Endereço Completo</label>
-                    <input value={addressDetail} onChange={e => setAddressDetail(e.target.value)} placeholder="Rua, Número, Localidade, Algarve - Portugal" className="admin-input" />
+                    <label className="admin-label flex items-center gap-2"><MapPin size={12}/> Morada Completa</label>
+                    <input value={addressDetail} onChange={e => setAddressDetail(e.target.value)} placeholder="Rua, Algarve - Portugal" className="admin-input" />
                   </div>
-
-                  <div className="pt-10 border-t border-white/5 space-y-10">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-6 text-[#f8c8c4]/60">
-                        <Server size={20}/>
-                        <h4 className="text-sm font-bold tracking-[0.2em] uppercase text-white">Infraestrutura de Envio (SMTP)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-10 border-t border-white/5">
+                    {Object.keys(socialLinks).map(platform => (
+                      <div key={platform} className="space-y-2">
+                        <label className="admin-label uppercase">{platform} URL</label>
+                        <input value={(socialLinks as any)[platform]} onChange={e => updateSocialLink(platform as any, e.target.value)} className="admin-input text-xs" />
                       </div>
-                      <button 
-                        onClick={() => updateEmailConfig('useSmtp', !emailConfig.useSmtp)}
-                        className={`flex items-center gap-3 px-4 py-2 rounded-sm border transition-all ${emailConfig.useSmtp ? 'bg-[#f8c8c4]/10 border-[#f8c8c4] text-[#f8c8c4]' : 'bg-white/5 border-white/10 text-white/20'}`}
-                      >
-                        {emailConfig.useSmtp ? <ToggleRight size={20}/> : <ToggleLeft size={20}/>}
-                        <span className="text-[9px] font-black uppercase tracking-widest">{emailConfig.useSmtp ? 'SMTP ATIVO' : 'ATIVAR SMTP'}</span>
-                      </button>
-                    </div>
-
-                    <AnimatePresence>
-                      {emailConfig.useSmtp && (
-                        <motion.div 
-                          initial={{ height: 0, opacity: 0 }} 
-                          animate={{ height: 'auto', opacity: 1 }} 
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-white/[0.01] p-8 rounded-sm border border-white/5">
-                              <div className="md:col-span-2 space-y-2">
-                                <label className="admin-label">Host SMTP</label>
-                                <input value={emailConfig.smtpHost} onChange={e => updateEmailConfig('smtpHost', e.target.value)} placeholder="ex: smtp.gmail.com" className="admin-input" />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="admin-label">Porta</label>
-                                <input value={emailConfig.smtpPort} onChange={e => updateEmailConfig('smtpPort', e.target.value)} placeholder="587 / 465" className="admin-input" />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="admin-label">Utilizador SMTP</label>
-                                <input value={emailConfig.smtpUser} onChange={e => updateEmailConfig('smtpUser', e.target.value)} placeholder="email@dominio.com" className="admin-input" />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="admin-label">Palavra-passe SMTP</label>
-                                <div className="relative">
-                                  <input 
-                                    type={showSmtpPass ? "text" : "password"} 
-                                    value={emailConfig.smtpPass} 
-                                    onChange={e => updateEmailConfig('smtpPass', e.target.value)} 
-                                    className="admin-input pr-12" 
-                                  />
-                                  <button onClick={() => setShowSmtpPass(!showSmtpPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors">
-                                    {showSmtpPass ? <EyeOff size={14}/> : <Eye size={14}/>}
-                                  </button>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-6 pt-4">
-                                <button 
-                                  onClick={() => updateEmailConfig('smtpSecure', !emailConfig.smtpSecure)}
-                                  className={`flex items-center gap-3 text-[9px] font-black tracking-widest uppercase transition-colors ${emailConfig.smtpSecure ? 'text-[#f8c8c4]' : 'text-white/20'}`}
-                                >
-                                  <Shield size={16}/> {emailConfig.smtpSecure ? 'SSL/TLS Ativo' : 'Sem Segurança'}
-                                </button>
-                              </div>
-                            </div>
-                            
-                            {/* Botão de Teste SMTP */}
-                            <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-[#f8c8c4]/5 border border-[#f8c8c4]/10 rounded-sm">
-                               <button 
-                                onClick={handleTestSmtp}
-                                disabled={isTestingSmtp}
-                                className={`flex items-center justify-center gap-3 px-8 py-4 text-[10px] font-black tracking-widest uppercase transition-all rounded-sm border ${
-                                  smtpTestStatus === 'success' ? 'bg-green-500/20 border-green-500 text-green-400' : 
-                                  smtpTestStatus === 'error' ? 'bg-red-500/20 border-red-500 text-red-400' :
-                                  'bg-white/5 border-white/10 text-[#f8c8c4] hover:bg-[#f8c8c4]/10 hover:border-[#f8c8c4]'
-                                }`}
-                               >
-                                 {isTestingSmtp ? <Loader2 size={14} className="animate-spin" /> : (
-                                   smtpTestStatus === 'success' ? <CheckCircle size={14} /> : 
-                                   smtpTestStatus === 'error' ? <AlertCircle size={14} /> : 
-                                   <Send size={14} />
-                                 )}
-                                 {isTestingSmtp ? 'A TESTAR...' : (
-                                   smtpTestStatus === 'success' ? 'CONEXÃO OK' : 
-                                   smtpTestStatus === 'error' ? 'FALHA NO TESTE' : 
-                                   'TESTAR CONEXÃO SMTP'
-                                 )}
-                               </button>
-                               <div className="flex-1 text-[9px] text-white/40 leading-relaxed italic">
-                                 O teste realiza um handshake técnico com o servidor para validar a autenticação e portas sem disparar e-mails reais.
-                               </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-10 border-t border-white/5">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-[#f8c8c4]/60">
-                        <Instagram size={14}/>
-                        <label className="admin-label">Instagram URL</label>
-                      </div>
-                      <input value={socialLinks.instagram} onChange={e => updateSocialLink('instagram', e.target.value)} placeholder="https://instagram.com/..." className="admin-input" />
-                    </div>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-[#f8c8c4]/60">
-                        <Facebook size={14}/>
-                        <label className="admin-label">Facebook URL</label>
-                      </div>
-                      <input value={socialLinks.facebook} onChange={e => updateSocialLink('facebook', e.target.value)} placeholder="https://facebook.com/..." className="admin-input" />
-                    </div>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-[#f8c8c4]/60">
-                        <Youtube size={14}/>
-                        <label className="admin-label">YouTube URL</label>
-                      </div>
-                      <input value={socialLinks.youtube} onChange={e => updateSocialLink('youtube', e.target.value)} placeholder="https://youtube.com/..." className="admin-input" />
-                    </div>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-[#f8c8c4]/60">
-                        <Music size={14}/>
-                        <label className="admin-label">TikTok URL</label>
-                      </div>
-                      <input value={socialLinks.tiktok} onChange={e => updateSocialLink('tiktok', e.target.value)} placeholder="https://tiktok.com/@..." className="admin-input" />
-                    </div>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-[#f8c8c4]/60">
-                        <Linkedin size={14}/>
-                        <label className="admin-label">LinkedIn URL</label>
-                      </div>
-                      <input value={socialLinks.linkedin} onChange={e => updateSocialLink('linkedin', e.target.value)} placeholder="https://linkedin.com/in/..." className="admin-input" />
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -708,14 +306,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           {activeTab === 'notices' && (
             <div className="space-y-8 max-w-4xl mx-auto">
               {notices.map(n => (
-                <div key={n.id} className="crystal-card p-8 flex flex-col gap-4">
-                  <label className="admin-label">Mensagem do Aviso</label>
-                  <div className="flex items-center justify-between gap-8">
-                    <input value={n.text} onChange={e => updateNotice(n.id, e.target.value)} className="admin-input flex-1" />
-                    <div className="flex gap-4">
-                      <button onClick={() => toggleNotice(n.id)} className={`p-4 border transition-all ${n.active ? 'border-[#f8c8c4] text-[#f8c8c4]' : 'border-white/5 text-white/10'}`}><Bell size={18}/></button>
-                      <button onClick={() => removeNotice(n.id)} className="p-4 text-red-500/20 hover:text-red-500"><Trash2 size={18}/></button>
-                    </div>
+                <div key={n.id} className="crystal-card p-8 flex items-center justify-between gap-8">
+                  <input value={n.text} onChange={e => updateNotice(n.id, e.target.value)} className="admin-input flex-1" />
+                  <div className="flex gap-4">
+                    <button onClick={() => toggleNotice(n.id)} className={`p-4 border ${n.active ? 'border-[#f8c8c4] text-[#f8c8c4]' : 'border-white/5 text-white/10'}`}><Bell size={18}/></button>
+                    <button onClick={() => removeNotice(n.id)} className="p-4 text-red-500/20 hover:text-red-500"><Trash2 size={18}/></button>
                   </div>
                 </div>
               ))}
@@ -725,19 +320,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
           {activeTab === 'reviews' && (
             <div className="space-y-12">
-               <div className="crystal-card p-8 border-[#f8c8c4]/20 border-dashed space-y-2">
-                  <label className="admin-label">Link Completo de Avaliações Google Maps</label>
-                  <input value={googleMapsLink} onChange={e => setGoogleMapsLink(e.target.value)} className="admin-input" />
-               </div>
+               <input value={googleMapsLink} onChange={e => setGoogleMapsLink(e.target.value)} placeholder="Link Google Maps Reviews" className="admin-input mb-8" />
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {reviews.map(r => (
-                  <div key={r.id} className="crystal-card p-10 relative space-y-8">
+                  <div key={r.id} className="crystal-card p-10 relative space-y-6">
                     <button onClick={() => removeReview(r.id)} className="absolute top-6 right-6 text-red-500/30 hover:text-red-500"><Trash2 size={16}/></button>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2"><label className="admin-label">Cliente</label><input value={r.author} onChange={e => updateReview(r.id, 'author', e.target.value)} className="admin-input font-bold" /></div>
-                      <div className="space-y-2"><label className="admin-label">Data</label><input value={r.time} onChange={e => updateReview(r.id, 'time', e.target.value)} className="admin-input" /></div>
-                    </div>
-                    <div className="space-y-2"><label className="admin-label">Texto</label><textarea value={r.text} onChange={e => updateReview(r.id, 'text', e.target.value)} className="admin-input" rows={3} /></div>
+                    <input value={r.author} onChange={e => updateReview(r.id, 'author', e.target.value)} placeholder="Cliente" className="admin-input font-bold" />
+                    <textarea value={r.text} onChange={e => updateReview(r.id, 'text', e.target.value)} className="admin-input" rows={3} />
                   </div>
                 ))}
                </div>
@@ -745,58 +334,32 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           )}
 
-          {activeTab === 'partners' && (
-            <div className="space-y-12">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {partners.map(p => (
-                  <div key={p.id} className="crystal-card p-10 relative space-y-6">
-                    <button onClick={() => removePartner(p.id)} className="absolute top-6 right-6 text-red-500/30 hover:text-red-500"><Trash2 size={16}/></button>
-                    <div className="space-y-2"><label className="admin-label">Nome</label><input value={p.name} onChange={e => updatePartner(p.id, 'name', e.target.value)} className="admin-input font-bold" /></div>
-                    <div className="space-y-2"><label className="admin-label">URL Logo</label><input value={p.logo} onChange={e => updatePartner(p.id, 'logo', e.target.value)} className="admin-input" /></div>
-                    <div className="space-y-2"><label className="admin-label">Link Website</label><input value={p.url} onChange={e => updatePartner(p.id, 'url', e.target.value)} className="admin-input" /></div>
-                  </div>
-                ))}
-              </div>
-              <button onClick={addPartner} className="admin-btn-add"><Plus size={16}/> Novo Parceiro</button>
-            </div>
-          )}
-
           {activeTab === 'user' && (
-            <div className="space-y-12 max-w-4xl mx-auto">
-              <div className="crystal-card p-12 space-y-10 border-[#f8c8c4]/10">
-                <div className="flex items-center gap-6 text-[#f8c8c4]/60 mb-4"><ShieldCheck size={24}/><h3 className="text-xl font-bold tracking-widest uppercase text-white">Acesso Administrador</h3></div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-3"><label className="admin-label">Utilizador</label><input value={adminUsername} onChange={e => setAdminUsername(e.target.value)} className="admin-input" /></div>
-                    <div className="space-y-3">
-                      <label className="admin-label">Password</label>
-                      <div className="relative">
-                        <input type={showPassword ? "text" : "password"} value={adminPassword} onChange={e => setAdminPassword(e.target.value)} className="admin-input pr-12" />
-                        <button onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-[#f8c8c4] transition-colors">
-                          {showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
-                        </button>
-                      </div>
-                    </div>
-                </div>
+            <div className="max-w-md mx-auto space-y-8">
+              <input value={adminUsername} onChange={e => setAdminUsername(e.target.value)} placeholder="Utilizador" className="admin-input" />
+              <div className="relative">
+                <input type={showPassword ? "text" : "password"} value={adminPassword} onChange={e => setAdminPassword(e.target.value)} className="admin-input" />
+                <button onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20">{showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}</button>
               </div>
             </div>
           )}
         </div>
 
         <div className="mt-32 pt-16 border-t border-white/5 flex flex-col items-center gap-8">
-          <button onClick={handleFinalize} disabled={isSaving} className="btn-serenity px-32 py-8 flex items-center justify-center gap-6 min-w-[400px] group overflow-hidden relative">
+          <button onClick={handleFinalize} disabled={isSaving} className="btn-serenity px-32 py-8 flex items-center justify-center gap-6 min-w-[400px]">
             {isSaving ? <Loader2 size={16} className="animate-spin"/> : <Check size={16} />}
-            <span>{isSaving ? 'A SINCRONIZAR...' : 'GUARDAR & FINALIZAR'}</span>
+            <span>GUARDAR & FINALIZAR</span>
           </button>
-          <button onClick={onResetDefaults} className="text-[8px] font-bold tracking-[0.5em] text-red-400/20 hover:text-red-400 transition-all uppercase">Resetar cache local</button>
+          <button onClick={onResetDefaults} className="text-[8px] font-bold text-red-400/20 hover:text-red-400 uppercase tracking-widest">Resetar cache local</button>
         </div>
       </div>
 
       <style>{`
         .admin-label { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(248, 200, 196, 0.4); margin-bottom: 0.5rem; }
-        .admin-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; color: white; font-size: 0.8rem; border-radius: 2px; outline: none; transition: border-color 0.3s ease; }
+        .admin-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; color: white; font-size: 0.8rem; border-radius: 2px; outline: none; }
         .admin-input:focus { border-color: #f8c8c4; }
-        .admin-btn-add { width: 100%; padding: 2rem; border: 1px dashed rgba(255,255,255,0.1); color: rgba(255,255,255,0.2); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.4em; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 1rem; transition: all 0.3s ease; }
-        .admin-btn-add:hover { color: #f8c8c4; border-color: #f8c8c4; background: rgba(248,200,196,0.02); }
+        .admin-btn-add { width: 100%; padding: 2rem; border: 1px dashed rgba(255,255,255,0.1); color: rgba(255,255,255,0.2); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.4em; display: flex; align-items: center; justify-content: center; gap: 1rem; }
+        .admin-btn-add:hover { color: #f8c8c4; border-color: #f8c8c4; }
       `}</style>
     </motion.div>
   );

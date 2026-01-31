@@ -1,38 +1,33 @@
 
-# Configuração do SIR Backend v2.1 (Destino Dinâmico & Entrega Prioritária)
+# Configuração do SIR Backend v2.2 (Motor Nativo Gmail)
 
-Esta versão garante que o e-mail seja enviado para o endereço definido por você no **Painel Administrativo do Site** (sessão SMTP/E-mail).
+Esta versão foca na simplicidade e confiabilidade, utilizando a sua conta Google autorizada para enviar as mensagens, sem depender de servidores externos.
 
-## 1. O Código SIR v2.1
+## 1. O Código SIR v2.2 (Limpo)
 Substitua todo o conteúdo do seu Apps Script por este:
 
 ```javascript
 /**
- * Google Apps Script - Rosimeire Serviços v2.1
- * Bridge de Dados + Data Loss Protection + Dynamic Destination
+ * Google Apps Script - Rosimeire Serviços v2.2
+ * Bridge de Dados + GmailApp Native Mailer
  */
 
-// FUNÇÃO CRÍTICA: Clique em EXECUTAR nesta função após colar o código!
+// FUNÇÃO DE ATIVAÇÃO: Execute uma vez após colar para dar permissão ao Gmail.
 function MANUAL_AUTH_AND_TEST() {
-  Logger.log("Iniciando Teste de Entrega...");
   const userEmail = Session.getActiveUser().getEmail();
-  
   try {
-    GmailApp.sendEmail(userEmail, "Teste de Autorização SIR v2.1", "O seu motor de e-mail está autorizado e pronto para processar contactos do site.");
-    Logger.log("E-mail de teste enviado para: " + userEmail);
-    return "SUCESSO: E-mail enviado. Verifique sua caixa de entrada.";
+    GmailApp.sendEmail(userEmail, "Motor de E-mail SIR v2.2 Ativo", "O seu website agora utiliza o motor nativo do Google para contactos.");
+    return "SUCESSO: E-mail de teste enviado para " + userEmail;
   } catch(e) {
-    Logger.log("ERRO: " + e.toString());
-    return "FALHA: " + e.toString();
+    return "ERRO: " + e.toString();
   }
 }
 
 function doGet() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Database");
   if (!sheet) return ContentService.createTextOutput("Erro: Aba 'Database' não encontrada").setMimeType(ContentService.MimeType.TEXT);
-  
   const values = sheet.getRange(2, 1, 1, 13).getValues()[0]; 
-  const data = {
+  return ContentService.createTextOutput(JSON.stringify({
     slides: JSON.parse(values[0] || "[]"),
     siteConfig: JSON.parse(values[1] || "{}"),
     sectionImages: JSON.parse(values[2] || "{}"),
@@ -46,9 +41,7 @@ function doGet() {
     addressDetail: values[10] || "",
     adminUsername: values[11] || "admin",
     adminPassword: values[12] || "rosimeire2025"
-  };
-  
-  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+  })).setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
@@ -56,56 +49,44 @@ function doPost(e) {
   try {
     payload = JSON.parse(e.postData.contents);
   } catch (err) {
-    logToSheet("Erro no Payload", "JSON corrompido");
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "JSON Inválido" })).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput("JSON Erro").setMimeType(ContentService.MimeType.TEXT);
   }
 
-  // AÇÃO: Envio de Contacto do Site
+  // AÇÃO: Envio de Contacto
   if (payload.action === 'send_contact') {
     try {
-      const formData = payload.formData || {};
-      const config = payload.emailConfig || {};
+      const form = payload.formData || {};
+      const recipient = payload.recipient || "atendimento@rosimeireservicos.com";
       
-      const name = formData.name || "Cliente";
-      const clientEmail = formData.email || "Sem e-mail";
-      const phone = formData.phone || "Sem contacto";
-      const message = formData.message || "";
-      
-      // PRIORIDADE: O e-mail configurado no Admin do site
-      const recipient = payload.recipient || config.recipientEmail || "atendimento@rosimeireservicos.com";
-      
-      const subject = "⚠️ NOVO CONTACTO: " + name;
+      const subject = "Website Rosimeire: Contacto de " + (form.name || "Cliente");
       const htmlBody = `
-        <div style="font-family: sans-serif; max-width: 600px; border: 1px solid #f8c8c4; padding: 20px; border-radius: 8px;">
-          <h2 style="color: #081221; border-bottom: 2px solid #f8c8c4; padding-bottom: 10px;">Rosimeire Serviços - Contacto</h2>
-          <p><strong>Nome:</strong> ${name}</p>
-          <p><strong>E-mail do Cliente:</strong> ${clientEmail}</p>
-          <p><strong>Telemóvel:</strong> ${phone}</p>
-          <div style="background: #fdf2f2; padding: 15px; border-left: 4px solid #f8c8c4; margin-top: 20px;">
-            <strong>Mensagem:</strong><br>
-            ${message.replace(/\n/g, '<br>')}
+        <div style="font-family: sans-serif; max-width: 600px; border: 2px solid #f8c8c4; padding: 30px; border-radius: 4px; color: #081221;">
+          <h2 style="margin-top:0; border-bottom: 1px solid #f8c8c4; padding-bottom: 10px;">Novo Contacto Website</h2>
+          <p><strong>Nome:</strong> ${form.name}</p>
+          <p><strong>E-mail:</strong> ${form.email}</p>
+          <p><strong>Contacto:</strong> ${form.phone}</p>
+          <div style="background: #fdf2f2; padding: 20px; border-left: 5px solid #f8c8c4; margin: 20px 0;">
+            <strong>Mensagem:</strong><br>${(form.message || "").replace(/\n/g, '<br>')}
           </div>
-          <p style="font-size: 10px; color: #999; margin-top: 30px;">Mensagem enviada via formulário do website.</p>
+          <p style="font-size: 10px; color: #999;">Enviado via Website - Rosimeire Serviços</p>
         </div>
       `;
       
-      // Envio Real
       GmailApp.sendEmail(recipient, subject, "", { 
-        htmlBody: htmlBody,
-        replyTo: clientEmail,
+        htmlBody: htmlBody, 
+        replyTo: form.email,
         name: "Website Rosimeire"
       });
       
-      logToSheet("E-mail Enviado", "Destino: " + recipient + " | Remetente: " + clientEmail);
+      logToSheet("Enviado", recipient);
       return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
-      
     } catch (err) {
-      logToSheet("Falha no E-mail", err.toString());
-      return ContentService.createTextOutput(JSON.stringify({ status: "error", details: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+      logToSheet("Erro", err.toString());
+      return ContentService.createTextOutput(JSON.stringify({ status: "error" })).setMimeType(ContentService.MimeType.JSON);
     }
   }
 
-  // AÇÃO: Salvar Dados da Planilha
+  // AÇÃO: Salvar Dados
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Database");
   if (payload && sheet && payload.slides) {
     const row = [
@@ -124,27 +105,25 @@ function doPost(e) {
       payload.adminPassword || "rosimeire2025"
     ];
     sheet.getRange(2, 1, 1, 13).setValues([row]);
-    return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput("Saved").setMimeType(ContentService.MimeType.TEXT);
   }
 }
 
-function logToSheet(status, message) {
+function logToSheet(status, info) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let logSheet = ss.getSheetByName("Logs");
-    if (!logSheet) { logSheet = ss.insertSheet("Logs"); logSheet.appendRow(["Hora", "Estado", "Info"]); }
-    logSheet.appendRow([new Date(), status, message]);
+    let log = ss.getSheetByName("Logs");
+    if (!log) { log = ss.insertSheet("Logs"); log.appendRow(["Hora", "Status", "Info"]); }
+    log.appendRow([new Date(), status, info]);
   } catch(e) {}
 }
 ```
 
-## 2. Instruções de Ativação (Não Pule!)
+## 2. Passo Final de Ativação
+1.  Cole o código e salve.
+2.  Selecione `MANUAL_AUTH_AND_TEST` no topo e clique em **Executar**.
+3.  Aceite as permissões.
+4.  **Implantar** -> **Gerenciar Implantações** -> **Editar (lápis)** -> Versão: **Nova Versão** -> **Implantar**.
+5.  No site (Painel Admin), verifique se o **E-mail de Recebimento** está preenchido e clique em **Guardar & Finalizar**.
 
-1.  **Cole o código** v2.1 no editor do Script.
-2.  Na barra superior do editor, selecione a função **`MANUAL_AUTH_AND_TEST`**.
-3.  Clique em **Executar**.
-4.  Dê todas as permissões necessárias (Avançado -> Aceder a Rosimeire Serviços).
-5.  **IMPORTANTE**: Vá ao site, entre no **Painel Admin**, vá à aba **E-mail** e verifique se o campo **"E-mail de Recebimento"** tem o seu e-mail correto. Clique em **Guardar & Finalizar**.
-6.  Agora, faça um teste real na página de Contactos.
-
-O script agora sabe que deve olhar para o campo "E-mail de Recebimento" da planilha antes de disparar.
+Agora o sistema é 100% Google-to-Google, sem intermediários.

@@ -60,15 +60,6 @@ interface SocialLinks {
 
 interface EmailConfig {
   recipientEmail: string;
-  serviceId: string;
-  templateId: string;
-  publicKey: string;
-  smtpHost: string;
-  smtpPort: string;
-  smtpUser: string;
-  smtpPass: string;
-  smtpSecure: boolean;
-  useSmtp: boolean;
 }
 
 interface Notice {
@@ -272,7 +263,7 @@ const translations = {
     aboutSectionText: "Rosimeire Serviços iniciou su trajetória em 2011, fruto da visão e dedicação de sua fundadora, Rosimeire Silva. Actuando inicialmente de forma independente em propriedades exclusivas, su rigor técnico, honestidade e um perfeccionismo inaquebrantável se convirtieron em su sello distintivo. Esta postura de excelencia permitió fidelizar una cartera de clientes de prestigio, consolidando los cimientos que impulsaron el crescimento y la solidez que la empresa apresenta hoy.",
     missionTitle: "Misión", missionText: "Satisfacer al cliente dejando su property impecablemente limpia, según su necesidad.",
     visionTitle: "Vision", visionText: "Próximamente nuestros serviços estarán disponibles en outros países de Europa, con el mesmo estándar de qualidade que atendemos actualmente em Portugal.",
-    valuesTitle: "Valores",
+    valuesTitle: "Values",
     val1: "Empatia com los clientes", val2: "Qualidad", val3: "Integridad e Honestidad", val4: "Abertura e Respeto", val5: "Coraje",
     careersTitle: "Carreras",
     careersHeroTitle: "Únete a Nuestro Legado",
@@ -341,16 +332,7 @@ const DEFAULT_SOCIAL_LINKS: SocialLinks = {
 };
 
 const DEFAULT_EMAIL_CONFIG: EmailConfig = {
-  recipientEmail: "atendimento@rosimeireservicos.com",
-  serviceId: "",
-  templateId: "",
-  publicKey: "",
-  smtpHost: "smtp.exemplo.com",
-  smtpPort: "587",
-  smtpUser: "",
-  smtpPass: "",
-  smtpSecure: true,
-  useSmtp: false
+  recipientEmail: "atendimento@rosimeireservicos.com"
 };
 
 const DEFAULT_PARTNERS: Partner[] = [
@@ -543,15 +525,11 @@ const App = () => {
       if (data && data.slides && data.slides.length > 0) {
         setSlides(data.slides);
         
-        // Garantir que incomingSiteConfig tenha a estrutura mínima correta
         let incomingSiteConfig = { ...DEFAULT_SITE_CONFIG, ...(data.siteConfig || {}) };
-        
-        // Garantir que magicEffect exista (em caso de dados antigos no cloud)
         if (!incomingSiteConfig.magicEffect) {
           incomingSiteConfig.magicEffect = { ...DEFAULT_MAGIC_EFFECT };
         }
         
-        // Verificar e aplicar lógica de expiração automática para efeitos mágicos
         if (incomingSiteConfig.magicEffect.active && incomingSiteConfig.magicEffect.expiryDate) {
           const now = new Date();
           const expiry = new Date(incomingSiteConfig.magicEffect.expiryDate);
@@ -577,7 +555,6 @@ const App = () => {
         setCloudStatus('connected');
         return true;
       } else {
-        // Se a nuvem retornou algo inesperado ou vazio, não sobrescrevemos o local
         console.warn("Nuvem retornou dados vazios ou inválidos. Ignorando sincronização de entrada.");
         setCloudStatus('error');
         return false;
@@ -592,7 +569,6 @@ const App = () => {
   const publishToCloud = async (url: string) => {
     if (!url) return;
     
-    // TRAVA DE SEGURANÇA: Não publicar se o estado atual parece estar "limpo" ou inválido
     if (slides.length === 0 || !siteConfig.companyName) {
       console.error("Segurança: Tentativa de publicar dados vazios bloqueada.");
       alert("Erro de Segurança: Os dados atuais parecem estar vazios. Recarregue a página antes de guardar.");
@@ -616,7 +592,7 @@ const App = () => {
         addressDetail,
         adminUsername,
         adminPassword,
-        version: "2.1",
+        version: "2.2",
         lastSync: new Date().toISOString()
       };
       
@@ -646,8 +622,6 @@ const App = () => {
 
       if (localSlides) {
         setSlides(JSON.parse(localSlides));
-        
-        // Garantir merge com defaults ao ler do local storage
         const localConfig = JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_site_config`) || "{}");
         setSiteConfig({
           ...DEFAULT_SITE_CONFIG,
@@ -673,7 +647,6 @@ const App = () => {
         setTimeout(() => setIsInitialLoading(false), 800);
       }
 
-      // Tenta carregar da nuvem, mas com cautela
       fetchFromCloud(FIXED_GAS_URL).then(success => {
         if (!hasLocalData) {
           setIsInitialLoading(false);
@@ -762,7 +735,6 @@ const App = () => {
       setView('contact');
       return;
     }
-    
     const internalViews: View[] = ['home', 'contact', 'about', 'careers'];
     if (internalViews.includes(link as View)) {
       setView(link as View);
@@ -807,16 +779,9 @@ const App = () => {
     e.preventDefault();
     setFormStatus('sending');
     
-    // Verificando se há e-mail configurado no Admin
     const targetEmail = emailConfig.recipientEmail && emailConfig.recipientEmail.includes('@') 
       ? emailConfig.recipientEmail 
-      : null;
-
-    if (!targetEmail) {
-      alert("Aviso: Nenhum e-mail de recebimento foi configurado no Painel Administrativo. O formulário não pode ser enviado.");
-      setFormStatus('error');
-      return;
-    }
+      : "atendimento@rosimeireservicos.com";
 
     try {
       const payload = {
@@ -827,11 +792,9 @@ const App = () => {
           phone: `${contactForm.ddi} ${contactForm.phone}`,
           message: contactForm.message
         },
-        recipient: targetEmail,
-        emailConfig: emailConfig // Enviando config completa para debug no backend
+        recipient: targetEmail
       };
 
-      // Chamada via POST para o Google Apps Script
       await fetch(gasUrl, {
         method: 'POST',
         mode: 'no-cors',
@@ -839,9 +802,8 @@ const App = () => {
         body: JSON.stringify(payload)
       });
 
-      // Feedback de Sucesso
       setFormStatus('success');
-      setTimeout(() => setFormStatus('idle'), 10000);
+      setTimeout(() => setFormStatus('idle'), 8000);
       handleClearForm();
 
     } catch (err) {
@@ -876,7 +838,6 @@ const App = () => {
         {isInitialLoading && <InitialLoader logoUrl={siteConfig.logoUrl} />}
       </AnimatePresence>
       
-      {/* Execução de Efeitos Mágicos Ativos */}
       <MagicEffectRunner config={siteConfig?.magicEffect} />
 
       <div className={`fixed top-0 w-full flex flex-col transition-all duration-500 ${isMenuOpen ? 'z-[1000]' : 'z-[900]'}`}>
@@ -969,7 +930,6 @@ const App = () => {
                   {item.label}
                 </button>
               ))}
-              
               <button 
                 onClick={() => window.open(SIR_URL, '_blank')}
                 className="text-left text-sm font-black tracking-[0.4em] text-[#f8c8c4]/40 hover:text-[#f8c8c4] uppercase flex items-center gap-3 pt-6 border-t border-white/5"
@@ -995,7 +955,6 @@ const App = () => {
       <AnimatePresence mode="wait">
         {!isInitialLoading && view === 'home' && (
           <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            {/* HERO Section */}
             <section id="home" className="min-h-screen h-screen relative flex overflow-hidden group/hero">
                <AnimatePresence mode="wait">
                 <motion.div key={currentSlide} initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 2 }} className="absolute inset-0">
@@ -1024,10 +983,7 @@ const App = () => {
                   </h1>
                   <p className="text-xs md:text-lg font-light text-white/50 max-w-lg leading-relaxed mb-8">{slides[currentSlide]?.description}</p>
                   <div className="flex flex-col sm:flex-row gap-4 md:gap-8 items-start sm:items-center">
-                    <button 
-                      onClick={() => handleHeroButtonClick(slides[currentSlide]?.buttonLink)} 
-                      className="btn-serenity !px-8 !py-3"
-                    >
+                    <button onClick={() => handleHeroButtonClick(slides[currentSlide]?.buttonLink)} className="btn-serenity !px-8 !py-3">
                       {slides[currentSlide]?.buttonText || t.navContact}
                     </button>
                   </div>
@@ -1037,7 +993,6 @@ const App = () => {
 
             <GlassDivider />
 
-            {/* SERVICES Section */}
             <section id="services" className="py-32 md:py-64 relative">
               <div className="container mx-auto px-8 md:px-16">
                 <div className="flex flex-col md:flex-row justify-between items-start mb-32 gap-16 md:gap-24">
@@ -1071,7 +1026,6 @@ const App = () => {
 
             <GlassDivider />
 
-            {/* REVIEWS Section */}
             {reviews.length > 0 && (
               <section id="reviews" className="py-32 md:py-64 relative overflow-hidden">
                 <div className="container mx-auto px-8 md:px-16 text-center">
@@ -1109,12 +1063,10 @@ const App = () => {
                         </div>
                       </motion.div>
                     </AnimatePresence>
-                    
                     <div className="flex justify-center gap-12 mt-16">
                        <button onClick={() => setCurrentReviewIndex(p => (p - 1 + reviews.length) % reviews.length)} className="text-white/20 hover:text-[#f8c8c4] transition-colors"><ChevronLeft size={32}/></button>
                        <button onClick={() => setCurrentReviewIndex(p => (p + 1) % reviews.length)} className="text-white/20 hover:text-[#f8c8c4] transition-colors"><ChevronRight size={32}/></button>
                     </div>
-
                     {googleMapsLink && (
                       <a href={googleMapsLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 mt-16 text-[9px] font-black uppercase tracking-[0.5em] text-white/30 hover:text-[#f8c8c4] transition-all group">
                         Ver todas no Google <ExternalLink size={12} className="group-hover:translate-x-1 transition-transform"/>
@@ -1127,52 +1079,21 @@ const App = () => {
 
             <GlassDivider />
 
-            {/* PARTNERS Section */}
             {partners.length > 0 && (
               <section id="partners" className="py-32 md:py-64 relative bg-[#040911]/30">
                 <div className="container mx-auto px-8 md:px-16 text-center">
                   <span className="tagline mb-24 block">{t.partnersTitle}</span>
-                  
                   <div className="relative max-w-3xl mx-auto flex items-center">
-                    <button 
-                      onClick={handlePrevPartner} 
-                      className="absolute -left-4 md:-left-28 z-30 p-4 text-white/10 hover:text-[#f8c8c4] transition-all transform hover:scale-125"
-                    >
-                      <ChevronLeft size={64} strokeWidth={1} />
-                    </button>
-                    
-                    <button 
-                      onClick={handleNextPartner} 
-                      className="absolute -right-4 md:-right-28 z-30 p-4 text-white/10 hover:text-[#f8c8c4] transition-all transform hover:scale-125"
-                    >
-                      <ChevronRight size={64} strokeWidth={1} />
-                    </button>
-
+                    <button onClick={handlePrevPartner} className="absolute -left-4 md:-left-28 z-30 p-4 text-white/10 hover:text-[#f8c8c4] transition-all transform hover:scale-125"><ChevronLeft size={64} strokeWidth={1} /></button>
+                    <button onClick={handleNextPartner} className="absolute -right-4 md:-right-28 z-30 p-4 text-white/10 hover:text-[#f8c8c4] transition-all transform hover:scale-125"><ChevronRight size={64} strokeWidth={1} /></button>
                     <div className="w-full overflow-hidden px-4">
                       <AnimatePresence mode="wait">
-                        <motion.div
-                          key={currentPartnerIndex}
-                          initial={{ opacity: 0, scale: 0.98, x: 20 }}
-                          animate={{ opacity: 1, scale: 1, x: 0 }}
-                          exit={{ opacity: 0, scale: 0.98, x: -20 }}
-                          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                          className="flex justify-center"
-                        >
-                          <a 
-                            href={partners[currentPartnerIndex].url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="crystal-card p-0 rounded-sm flex flex-col overflow-hidden group max-w-xl w-full border-[#f8c8c4]/10 shadow-2xl"
-                          >
+                        <motion.div key={currentPartnerIndex} initial={{ opacity: 0, scale: 0.98, x: 20 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.98, x: -20 }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} className="flex justify-center">
+                          <a href={partners[currentPartnerIndex].url} target="_blank" rel="noopener noreferrer" className="crystal-card p-0 rounded-sm flex flex-col overflow-hidden group max-w-xl w-full border-[#f8c8c4]/10 shadow-2xl">
                             <div className="w-full h-48 md:h-72 relative overflow-hidden bg-white/[0.02]">
-                              <img 
-                                src={partners[currentPartnerIndex].logo} 
-                                alt={partners[currentPartnerIndex].name} 
-                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 brightness-110 group-hover:brightness-100 group-hover:scale-110" 
-                              />
+                              <img src={partners[currentPartnerIndex].logo} alt={partners[currentPartnerIndex].name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 brightness-110 group-hover:brightness-100 group-hover:scale-110" />
                               <div className="absolute inset-0 bg-gradient-to-t from-[#081221]/80 via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-700" />
                             </div>
-                            
                             <div className="p-6 md:p-8 text-center space-y-4 border-t border-white/5 bg-[#081221]/60 backdrop-blur-md">
                               <h4 className="text-lg md:text-xl font-light text-white tracking-[0.3em] uppercase transition-all duration-500 group-hover:text-[#f8c8c4] group-hover:tracking-[0.4em]">{partners[currentPartnerIndex].name}</h4>
                               <div className="w-12 h-[1px] bg-[#f8c8c4]/20 mx-auto transition-all duration-700 group-hover:w-32 group-hover:bg-[#f8c8c4]" />
@@ -1182,14 +1103,9 @@ const App = () => {
                       </AnimatePresence>
                     </div>
                   </div>
-
                   <div className="flex justify-center gap-3 mt-12">
                     {partners.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentPartnerIndex(idx)}
-                        className={`h-[1px] transition-all duration-700 ${idx === currentPartnerIndex ? 'w-16 bg-[#f8c8c4]' : 'w-4 bg-white/10 hover:bg-white/30'}`}
-                      />
+                      <button key={idx} onClick={() => setCurrentPartnerIndex(idx)} className={`h-[1px] transition-all duration-700 ${idx === currentPartnerIndex ? 'w-16 bg-[#f8c8c4]' : 'w-4 bg-white/10 hover:bg-white/30'}`} />
                     ))}
                   </div>
                 </div>
@@ -1234,7 +1150,6 @@ const App = () => {
           <motion.div key="contact" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="pt-48 pb-64">
             <div className="container mx-auto px-8 md:px-16">
               <button onClick={() => setView('home')} className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.4em] text-white/20 hover:text-[#f8c8c4] transition-all mb-16 group"><ArrowLeft size={16} /> {t.back}</button>
-              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 mb-24">
                 <div className="space-y-12">
                    <h2 className="heading-serif text-6xl text-white">{t.quoteTitle}</h2>
@@ -1252,22 +1167,14 @@ const App = () => {
                          <Phone className="text-[#f8c8c4]/40" />
                          <a href={`tel:${contactPhone.replace(/\s+/g, '')}`} className="text-xl font-light text-white/60 hover:text-[#f8c8c4] transition-colors">{contactPhone}</a>
                        </div>
-                       
                        <div className="flex flex-col gap-6 ml-12">
-                         <a 
-                           href={`https://wa.me/${contactPhone.replace(/\D/g, '')}`} 
-                           target="_blank" 
-                           rel="noopener noreferrer" 
-                           className="btn-serenity !py-3 !px-5 !text-[9px] flex items-center gap-4 border-[#25D366]/30 text-white/70 hover:bg-[#25D366]/10 hover:border-[#25D366] hover:text-white transition-all group w-fit"
-                         >
+                         <a href={`https://wa.me/${contactPhone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="btn-serenity !py-3 !px-5 !text-[9px] flex items-center gap-4 border-[#25D366]/30 text-white/70 hover:bg-[#25D366]/10 hover:border-[#25D366] hover:text-white transition-all group w-fit">
                            <div className="relative">
                              <MessageCircle size={16} className="text-[#25D366]" />
                              <div className="absolute inset-0 bg-[#25D366]/40 blur-md scale-150 animate-pulse rounded-full -z-10" />
                            </div>
                            <span className="font-bold tracking-[0.3em] uppercase">{t.whatsappLabel}</span>
                          </a>
-
-                         {/* Novas Redes Sociais na Página de Contacto */}
                          <div className="flex gap-6 mt-4">
                             {socialLinks.instagram && socialLinks.instagram !== '#' && <a href={socialLinks.instagram} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all"><Instagram size={20}/></a>}
                             {socialLinks.facebook && socialLinks.facebook !== '#' && <a href={socialLinks.facebook} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all"><Facebook size={20}/></a>}
@@ -1279,76 +1186,37 @@ const App = () => {
                      </div>
                    </div>
                 </div>
-                
                 <div className="crystal-card p-12 rounded-sm">
                   <form onSubmit={handleContactSubmit} className="space-y-12">
                     <div className="space-y-2">
                       <label className="tagline block">{t.name}</label>
-                      <input 
-                        required 
-                        value={contactForm.name}
-                        onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
-                        className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" 
-                      />
+                      <input required value={contactForm.name} onChange={(e) => setContactForm({...contactForm, name: e.target.value})} className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
                     </div>
-                    
                     <div className="space-y-2">
                       <label className="tagline block">{t.email}</label>
-                      <input 
-                        type="email" 
-                        required 
-                        value={contactForm.email}
-                        onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
-                        className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" 
-                      />
+                      <input type="email" required value={contactForm.email} onChange={(e) => setContactForm({...contactForm, email: e.target.value})} className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
                     </div>
-
                     <div className="space-y-2">
                       <label className="tagline block">{t.phone}</label>
                       <div className="flex gap-4 items-end relative">
                         <div ref={ddiRef} className="relative">
-                          <button 
-                            type="button"
-                            onClick={() => setIsDDIOpen(!isDDIOpen)}
-                            className="bg-transparent border-b border-white/10 py-4 text-lg font-light outline-none focus:border-[#f8c8c4] transition-all cursor-pointer flex items-center gap-2 min-w-[100px]"
-                          >
+                          <button type="button" onClick={() => setIsDDIOpen(!isDDIOpen)} className="bg-transparent border-b border-white/10 py-4 text-lg font-light outline-none focus:border-[#f8c8c4] transition-all cursor-pointer flex items-center gap-2 min-w-[100px]">
                             <span className="text-2xl">{selectedCountry.flag}</span>
                             <span className="text-white/60">{selectedCountry.ddi}</span>
                             <ChevronDown size={14} className={`text-white/20 transition-transform duration-300 ${isDDIOpen ? 'rotate-180' : ''}`} />
                           </button>
-
                           <AnimatePresence>
                             {isDDIOpen && (
-                              <motion.div 
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 10 }}
-                                className="absolute left-0 bottom-full mb-4 w-72 bg-[#081221] border border-white/10 shadow-2xl rounded-sm z-50 overflow-hidden"
-                              >
+                              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute left-0 bottom-full mb-4 w-72 bg-[#081221] border border-white/10 shadow-2xl rounded-sm z-50 overflow-hidden">
                                 <div className="p-4 border-b border-white/5 bg-white/[0.02]">
                                   <div className="relative">
                                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
-                                    <input 
-                                      autoFocus
-                                      placeholder={t.searchCountry}
-                                      value={ddiSearch}
-                                      onChange={(e) => setDDISearch(e.target.value)}
-                                      className="w-full bg-white/5 border border-white/5 p-3 pl-10 text-xs text-white outline-none rounded-sm"
-                                    />
+                                    <input autoFocus placeholder={t.searchCountry} value={ddiSearch} onChange={(e) => setDDISearch(e.target.value)} className="w-full bg-white/5 border border-white/5 p-3 pl-10 text-xs text-white outline-none rounded-sm" />
                                   </div>
                                 </div>
                                 <div className="max-h-60 overflow-y-auto scrollbar-thin">
                                   {filteredCountries.map((c) => (
-                                    <button
-                                      key={`${c.code}-${c.ddi}`}
-                                      type="button"
-                                      onClick={() => {
-                                        setContactForm({...contactForm, ddi: c.ddi});
-                                        setIsDDIOpen(false);
-                                        setDDISearch("");
-                                      }}
-                                      className="w-full text-left p-4 hover:bg-[#f8c8c4]/10 transition-colors flex items-center justify-between group"
-                                    >
+                                    <button key={`${c.code}-${c.ddi}`} type="button" onClick={() => { setContactForm({...contactForm, ddi: c.ddi}); setIsDDIOpen(false); setDDISearch(""); }} className="w-full text-left p-4 hover:bg-[#f8c8c4]/10 transition-colors flex items-center justify-between group">
                                       <div className="flex items-center gap-3">
                                         <span className="text-2xl">{c.flag}</span>
                                         <span className="text-xs text-white/60 group-hover:text-white transition-colors">{c.name}</span>
@@ -1361,75 +1229,33 @@ const App = () => {
                             )}
                           </AnimatePresence>
                         </div>
-
-                        <input 
-                          type="tel" 
-                          required 
-                          placeholder="912 345 678"
-                          value={contactForm.phone}
-                          onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
-                          className="flex-1 bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" 
-                        />
+                        <input type="tel" required placeholder="912 345 678" value={contactForm.phone} onChange={(e) => setContactForm({...contactForm, phone: e.target.value})} className="flex-1 bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
                       </div>
                     </div>
-
                     <div className="space-y-2">
                       <label className="tagline block">{t.message}</label>
-                      <textarea 
-                        required 
-                        rows={4} 
-                        value={contactForm.message}
-                        onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
-                        className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" 
-                      />
+                      <textarea required rows={4} value={contactForm.message} onChange={(e) => setContactForm({...contactForm, message: e.target.value})} className="w-full bg-transparent border-b border-white/10 py-4 text-xl font-light outline-none focus:border-[#f8c8c4] transition-all" />
                     </div>
-                    
                     <div className="flex flex-col gap-6">
                       <button className="w-full btn-serenity py-8" disabled={formStatus === 'sending'}>
                         {formStatus === 'idle' ? t.send : (formStatus === 'sending' ? 'A Enviar...' : (formStatus === 'error' ? 'Erro no Envio' : t.success))}
                       </button>
-                      
                       {formStatus === 'error' && (
                         <p className="text-red-400 text-[9px] font-bold text-center uppercase tracking-widest flex items-center justify-center gap-2">
                           <AlertTriangle size={12}/> Verifique se preencheu o "E-mail de Recebimento" no Painel Admin.
                         </p>
                       )}
-
-                      <button 
-                        type="button"
-                        onClick={handleClearForm}
-                        className="flex items-center justify-center gap-3 text-[9px] font-bold tracking-[0.4em] text-white/10 hover:text-white/40 uppercase transition-all group"
-                      >
+                      <button type="button" onClick={handleClearForm} className="flex items-center justify-center gap-3 text-[9px] font-bold tracking-[0.4em] text-white/10 hover:text-white/40 uppercase transition-all group">
                         <Trash2 size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" /> {t.clearForm}
                       </button>
                     </div>
                   </form>
                 </div>
               </div>
-
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.98 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="relative w-full h-[500px] rounded-sm overflow-hidden border border-white/5 group shadow-2xl"
-              >
-                <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3184.8210385906814!2d-8.1039869!3d37.0734005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd1acb4a39b36965%3A0x6b44558e0a7865c6!2sR.%2025%20de%20Abril%2049%2C%208125-234%20Quarteira!5e0!3m2!1spt!2spt!4v1715800000000!5m2!1spt!2spt" 
-                  width="100%" 
-                  height="100%" 
-                  style={{ border: 0, filter: 'grayscale(1) contrast(1.2) opacity(0.5) invert(0.9) hue-rotate(180deg)' }} 
-                  allowFullScreen={true} 
-                  loading="lazy" 
-                  referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
-
+              <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="relative w-full h-[500px] rounded-sm overflow-hidden border border-white/5 group shadow-2xl">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3184.8210385906814!2d-8.1039869!3d37.0734005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd1acb4a39b36965%3A0x6b44558e0a7865c6!2sR.%2025%20de%20Abril%2049%2C%208125-234%20Quarteira!5e0!3m2!1spt!2spt!4v1715800000000!5m2!1spt!2spt" width="100%" height="100%" style={{ border: 0, filter: 'grayscale(1) contrast(1.2) opacity(0.5) invert(0.9) hue-rotate(180deg)' }} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                 <div className="absolute top-8 left-8 z-10 hidden md:block">
-                   <motion.div 
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="crystal-card p-6 min-w-[320px] !bg-[#081221]/80 border-[#f8c8c4]/20 backdrop-blur-xl"
-                   >
+                   <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="crystal-card p-6 min-w-[320px] !bg-[#081221]/80 border-[#f8c8c4]/20 backdrop-blur-xl">
                      <div className="flex flex-col gap-4">
                         <div className="flex items-center justify-between">
                            <div className="flex items-center gap-4">
@@ -1445,9 +1271,7 @@ const App = () => {
                              <MapPin size={18} className="text-[#f8c8c4]" />
                            </div>
                         </div>
-                        
                         <div className="h-[1px] w-full bg-white/5" />
-                        
                         <div className="flex items-center gap-4">
                            <div className="flex items-center gap-1">
                              {[...Array(5)].map((_, i) => (
@@ -1457,21 +1281,13 @@ const App = () => {
                            <span className="text-xs font-bold text-white tracking-widest">5.0</span>
                            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[#f8c8c4]/40">Google Reviews</span>
                         </div>
-
                         <p className="text-[10px] text-white/40 leading-relaxed font-medium uppercase tracking-wider">{addressDetail}</p>
-
-                        <a 
-                          href={SHARE_MAP_LINK} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="btn-serenity !py-4 !px-4 !text-[8px] flex items-center justify-center gap-3 w-full group/map"
-                        >
+                        <a href={SHARE_MAP_LINK} target="_blank" rel="noopener noreferrer" className="btn-serenity !py-4 !px-4 !text-[8px] flex items-center justify-center gap-3 w-full group/map">
                           <Navigation size={12} className="group-hover/map:rotate-12 transition-transform" /> COMO CHEGAR
                         </a>
                      </div>
                    </motion.div>
                 </div>
-
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[80%] md:hidden z-10">
                    <a href={SHARE_MAP_LINK} target="_blank" rel="noopener noreferrer" className="btn-serenity !bg-[#081221] !py-4 w-full flex justify-center items-center gap-3">
                      COMO CHEGAR
@@ -1513,17 +1329,12 @@ const App = () => {
                 <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-white/5 border border-white/10 p-4 rounded outline-none text-sm placeholder:text-white/20" />
                 <button type="submit" className="w-full btn-serenity flex items-center justify-center gap-3"><Lock size={12}/> Entrar</button>
               </form>
-              
               <div className="mt-8 pt-8 border-t border-white/5 flex flex-col gap-4">
-                <button 
-                  onClick={handleDemoAccess} 
-                  className="w-full py-3 border border-dashed border-[#f8c8c4]/30 text-[9px] font-black tracking-[0.4em] uppercase text-[#f8c8c4] hover:bg-[#f8c8c4]/5 transition-all flex items-center justify-center gap-3"
-                >
+                <button onClick={handleDemoAccess} className="w-full py-3 border border-dashed border-[#f8c8c4]/30 text-[9px] font-black tracking-[0.4em] uppercase text-[#f8c8c4] hover:bg-[#f8c8c4]/5 transition-all flex items-center justify-center gap-3">
                   <Zap size={10}/> Acesso Direto
                 </button>
                 <button onClick={() => setIsLoginOpen(false)} className="w-full text-[9px] font-bold tracking-[0.3em] text-white/20 uppercase hover:text-white/40 transition-colors">Cancelar</button>
               </div>
-
               {loginError && <p className="text-red-400 text-[10px] font-bold text-center mt-6 uppercase tracking-widest">Credenciais incorretas.</p>}
             </motion.div>
           </motion.div>
@@ -1545,7 +1356,6 @@ const App = () => {
               </div>
               <p className="text-[10px] font-bold tracking-[0.5em] text-white/20 uppercase max-w-xs">{siteConfig.footerNote}</p>
             </div>
-            
             <div className="flex flex-col gap-6 md:items-center">
               <h6 className="text-[9px] font-black tracking-[0.4em] uppercase text-white/10 md:text-center w-full">{t.footerSocial}</h6>
               <div className="flex gap-8">
@@ -1556,7 +1366,6 @@ const App = () => {
                 {socialLinks.linkedin && socialLinks.linkedin !== '#' && <a href={socialLinks.linkedin} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110 active:scale-95"><Linkedin size={22} /></a>}
               </div>
             </div>
-
             <div className="flex flex-col gap-6 md:items-end">
               <h6 className="text-[9px] font-black tracking-[0.4em] uppercase text-white/10 md:text-right w-full">{t.footerLinks}</h6>
               <div className="flex flex-col gap-4 md:items-end">
@@ -1565,10 +1374,8 @@ const App = () => {
               </div>
             </div>
           </div>
-
           <div className="pt-16 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
             <p className="text-[9px] font-bold tracking-[0.4em] text-white/10 uppercase italic">{siteConfig.footerCopyright}</p>
-            
             <div className="flex items-center gap-5 text-white/10 group cursor-default">
               <div className="flex flex-col text-right">
                 <span className="text-[7px] font-black tracking-[0.3em] uppercase text-white/20 mb-1">{t.developedBy}</span>
