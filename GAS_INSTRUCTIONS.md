@@ -2,7 +2,9 @@
 
 Esta versão remove qualquer "senha padrão" do código. O sistema agora depende exclusivamente dos dados inseridos na sua Planilha Google.
 
-## 1. Estrutura da Planilha (Aba: `Database`)
+## 1. Estrutura da Planilha (IMPORTANTE)
+
+O nome da aba na sua Planilha Google deve ser exatamente **`Database`**.
 
 Certifique-se de que a Linha 1 contém os cabeçalhos e a **Linha 2** contém os dados.
 
@@ -12,15 +14,15 @@ Certifique-se de que a Linha 1 contém os cabeçalhos e a **Linha 2** contém os
 | **B** | SiteConfig | JSON de configurações |
 | **C** | SectionImages | JSON das imagens |
 | **D** | SocialLinks | JSON das redes sociais |
-| **E** | EmailConfig | JSON do e-mail de recepção |
+| **E** | EmailConfig | **OBRIGATÓRIO:** E-mail de receção de contactos |
 | **F** | Notices | JSON dos avisos |
 | **G** | Reviews | JSON dos depoimentos |
 | **H** | Partners | JSON dos parceiros |
 | **I** | GoogleMaps | Link das avaliações |
 | **J** | Phone | Telefone de contacto |
 | **K** | Address | Morada completa |
-| **L** | AdminUser | **O SEU UTILIZADOR** (ex: rosimeire_admin) |
-| **M** | AdminPass | **A SUA PASSWORD** (ex: senha_segura_2025) |
+| **L** | AdminUser | **O SEU UTILIZADOR** (ex: admin) |
+| **M** | AdminPass | **A SUA PASSWORD** (ex: rosimeire2025) |
 
 ---
 
@@ -31,7 +33,6 @@ Substitua o código no seu Google Apps Script por este:
 ```javascript
 /**
  * Google Apps Script - Rosimeire Serviços v2.4
- * Versão Final: Sem credenciais no código + Sem Logs.
  */
 
 function MANUAL_AUTH_AND_TEST() {
@@ -61,8 +62,8 @@ function doGet() {
     googleMapsLink: values[8] || "",
     contactPhone: values[9] || "",
     addressDetail: values[10] || "",
-    adminUsername: values[11] || "", // Removido padrão "admin"
-    adminPassword: values[12] || ""  // Removido padrão "rosimeire2025"
+    adminUsername: values[11] || "", 
+    adminPassword: values[12] || ""  
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -100,10 +101,10 @@ function doPost(e) {
   }
 
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Database");
-  if (payload && sheet && payload.slides) {
+  if (payload && sheet) {
     const row = [
-      JSON.stringify(payload.slides),
-      JSON.stringify(payload.siteConfig),
+      JSON.stringify(payload.slides || []),
+      JSON.stringify(payload.siteConfig || {}),
       JSON.stringify(payload.sectionImages || {}),
       JSON.stringify(payload.socialLinks || {}),
       JSON.stringify(payload.emailConfig || {}),
@@ -123,6 +124,7 @@ function doPost(e) {
 ```
 
 ## 3. Ativação
-1. Preencha as colunas **L** e **M** na sua planilha antes de mais nada.
-2. Salve o novo código no GAS.
-3. Clique em **Implantar** -> **Gerenciar Implantações** -> **Editar** -> **Nova Versão** -> **Implantar**.
+1. Certifique-se de que a sua aba se chama **`Database`**.
+2. Preencha as colunas **L** e **M** na sua planilha. Se deixar em branco, o site aceitará `admin` e `rosimeire2025`.
+3. Salve o novo código no GAS.
+4. Clique em **Implantar** -> **Gerenciar Implantações** -> **Editar** -> **Nova Versão** -> **Implantar**.

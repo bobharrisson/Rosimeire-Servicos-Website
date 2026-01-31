@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { 
@@ -7,7 +8,7 @@ import {
   Heart, ShieldCheck, MessageSquare, Flame, Award, Users, Check,
   ChevronLeft, ChevronRight, Save, RotateCcw, Server, Cloud, CloudOff, RefreshCw, Loader2,
   Instagram, Linkedin, Code, Zap, Trash2, Search, ChevronDown, MessageCircle, LogIn, Navigation,
-  Layout, Facebook, Youtube, Music, Wand2, AlertTriangle
+  Layout, Facebook, Youtube, Music, Wand2, AlertTriangle, Calendar, PlayCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminPanel from './AdminPanel';
@@ -26,12 +27,18 @@ interface Slide {
   buttonText?: string;
 }
 
-interface MagicEffect {
-  active: boolean;
+interface MagicEvent {
+  id: string;
+  name: string;
   code: string;
   prompt: string;
-  expiryDate: string; // ISO String
-  durationDays: number;
+  startDate: string;
+  endDate: string;
+}
+
+interface MagicEffectManager {
+  activeId: string | null;
+  items: MagicEvent[];
 }
 
 interface SiteConfig {
@@ -41,7 +48,7 @@ interface SiteConfig {
   footerNote: string;
   footerCopyright: string;
   developedBy: string;
-  magicEffect: MagicEffect;
+  magicEffect: MagicEffectManager;
 }
 
 interface SectionImages {
@@ -162,7 +169,7 @@ const translations = {
     aboutSectionText: "A Rosimeire Serviços iniciou o seu percurso em 2011, fruto da visão e dedicação da sua fundadora, Rosimeire Silva. Atuando inicialmente de forma independente em propriedades exclusivas, o seu rigor técnico, honestidade e um perfeccionismo inabalável tornaram-se a sua assinatura de marca. Esta postura de excelência permitiu fidelizar uma carteira de clientes de prestígio, consolidando os alicerces que impulsionaram o crescimento e a solidez que a empresa apresenta hoje.",
     missionTitle: "Missão", missionText: "Satisfazer o cliente deixando sua propriedade impecavelmente limpa, conforme sua necessidade.",
     visionTitle: "Visão", visionText: "Brevemente nossos serviços serão disponibilizados em outros países da europa, com o mesmo padrão de qualidade que atendemos atualmente em Portugal, para nossos diferentes tipos de clientes.",
-    valuesTitle: "Valores",
+    valuesTitle: "Values",
     val1: "Empatia com os clientes", val2: "Qualidade", val3: "Integridade e Honestidade", val4: "Abertura e Respecto", val5: "Coragem",
     careersTitle: "Carreiras",
     careersHeroTitle: "Join Our Legacy",
@@ -280,12 +287,9 @@ const translations = {
   }
 };
 
-const DEFAULT_MAGIC_EFFECT: MagicEffect = {
-  active: false,
-  code: "",
-  prompt: "",
-  expiryDate: "",
-  durationDays: 7
+const DEFAULT_MAGIC_EFFECT: MagicEffectManager = {
+  activeId: null,
+  items: []
 };
 
 const DEFAULT_SITE_CONFIG: SiteConfig = {
@@ -420,7 +424,7 @@ const InitialLoader = ({ logoUrl }: { logoUrl?: string }) => (
   </motion.div>
 );
 
-const MagicEffectRunner = ({ config }: { config?: MagicEffect }) => {
+const MagicEffectRunner = ({ manager }: { manager?: MagicEffectManager }) => {
   useEffect(() => {
     const styleId = 'dynamic-magic-effect-style';
     
@@ -429,16 +433,33 @@ const MagicEffectRunner = ({ config }: { config?: MagicEffect }) => {
       if (el) el.innerHTML = '';
     };
 
-    if (!config || !config.active || !config.code) {
+    if (!manager || !manager.activeId || !manager.items) {
       cleanup();
       return;
     }
 
-    // Verificar expiração
-    if (config.expiryDate) {
-      const now = new Date();
-      const expiry = new Date(config.expiryDate);
-      if (now > expiry) {
+    const activeItem = manager.items.find(i => i.id === manager.activeId);
+    if (!activeItem || !activeItem.code) {
+      cleanup();
+      return;
+    }
+
+    // Lógica Avançada de Verificação Temporal (Início e Fim)
+    const now = new Date();
+    
+    // Validar Início (Start Date)
+    if (activeItem.startDate) {
+      const start = new Date(activeItem.startDate + "T00:00:00");
+      if (now < start) {
+        cleanup();
+        return;
+      }
+    }
+
+    // Validar Fim (End Date)
+    if (activeItem.endDate) {
+      const end = new Date(activeItem.endDate + "T23:59:59");
+      if (now > end) {
         cleanup();
         return;
       }
@@ -451,10 +472,10 @@ const MagicEffectRunner = ({ config }: { config?: MagicEffect }) => {
       document.head.appendChild(styleElement);
     }
     
-    styleElement.innerHTML = config.code;
+    styleElement.innerHTML = activeItem.code;
     
     return cleanup;
-  }, [config]);
+  }, [manager]);
 
   return (
     <div 
@@ -473,6 +494,7 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeAdminTab, setActiveAdminTab] = useState<'slides' | 'notices' | 'reviews' | 'partners' | 'images' | 'email' | 'user' | 'site'>('slides');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [cloudStatus, setCloudStatus] = useState<'idle' | 'loading' | 'connected' | 'error'>('idle');
   
@@ -488,7 +510,7 @@ const App = () => {
   const [adminUsername, setAdminUsername] = useState('admin');
   const [adminPassword, setAdminPassword] = useState('rosimeire2025');
 
-  const STORAGE_KEY_PREFIX = 'rosimeire_config_v14_magic';
+  const STORAGE_KEY_PREFIX = 'rosimeire_config_v15_manager';
 
   // --- Base State Initialization ---
   const [siteConfig, setSiteConfig] = useState<SiteConfig>(DEFAULT_SITE_CONFIG);
@@ -521,59 +543,68 @@ const App = () => {
       const response = await fetch(url, { cache: 'no-store' });
       const data = await response.json();
       
-      if (data && data.slides && data.slides.length > 0) {
-        setSlides(data.slides);
-        
-        let incomingSiteConfig = { ...DEFAULT_SITE_CONFIG, ...(data.siteConfig || {}) };
-        if (!incomingSiteConfig.magicEffect) {
-          incomingSiteConfig.magicEffect = { ...DEFAULT_MAGIC_EFFECT };
-        }
-        
-        if (incomingSiteConfig.magicEffect.active && incomingSiteConfig.magicEffect.expiryDate) {
-          const now = new Date();
-          const expiry = new Date(incomingSiteConfig.magicEffect.expiryDate);
-          if (now > expiry) {
-            incomingSiteConfig.magicEffect.active = false;
+      if (data) {
+        const cloudUser = data.adminUsername != null ? String(data.adminUsername).trim() : "";
+        const cloudPass = data.adminPassword != null ? String(data.adminPassword).trim() : "";
+
+        if (cloudUser !== "") setAdminUsername(cloudUser);
+        if (cloudPass !== "") setAdminPassword(cloudPass);
+
+        if (data.slides && data.slides.length > 0) {
+          setSlides(data.slides);
+          
+          let incomingSiteConfig = { ...DEFAULT_SITE_CONFIG, ...(data.siteConfig || {}) };
+          
+          // Migração de estrutura antiga se necessário
+          if (!incomingSiteConfig.magicEffect || Array.isArray(incomingSiteConfig.magicEffect)) {
+             incomingSiteConfig.magicEffect = { ...DEFAULT_MAGIC_EFFECT };
+          } else if (!incomingSiteConfig.magicEffect.items) {
+             // Provavelmente a estrutura do prompt anterior (simples)
+             const old = incomingSiteConfig.magicEffect as any;
+             if (old.prompt || old.code) {
+                incomingSiteConfig.magicEffect = {
+                  activeId: old.active ? 'legacy' : null,
+                  items: [{
+                    id: 'legacy',
+                    name: 'Evento Legado',
+                    prompt: old.prompt || '',
+                    code: old.code || '',
+                    startDate: old.startDate || '',
+                    endDate: old.endDate || ''
+                  }]
+                };
+             } else {
+                incomingSiteConfig.magicEffect = { ...DEFAULT_MAGIC_EFFECT };
+             }
           }
+          
+          setSiteConfig(incomingSiteConfig);
+          setSectionImages(data.sectionImages || DEFAULT_SECTION_IMAGES);
+          setSocialLinks(data.socialLinks || DEFAULT_SOCIAL_LINKS);
+          setEmailConfig(data.emailConfig || DEFAULT_EMAIL_CONFIG);
+          setNotices(data.notices || DEFAULT_NOTICES);
+          setReviews(data.reviews || DEFAULT_REVIEWS);
+          setPartners(data.partners || DEFAULT_PARTNERS);
+          setGoogleMapsLink(data.googleMapsLink || INITIAL_GOOGLE_MAPS_LINK);
+          setContactPhone(data.contactPhone || '+351 912 525 649');
+          setAddressDetail(data.addressDetail || 'R. 25 de Abril 49, 8125-234, Quarteira, Faro Algarve – Portugal');
         }
-        
-        setSiteConfig(incomingSiteConfig);
-        setSectionImages(data.sectionImages || DEFAULT_SECTION_IMAGES);
-        setSocialLinks(data.socialLinks || DEFAULT_SOCIAL_LINKS);
-        setEmailConfig(data.emailConfig || DEFAULT_EMAIL_CONFIG);
-        setNotices(data.notices || DEFAULT_NOTICES);
-        setReviews(data.reviews || DEFAULT_REVIEWS);
-        setPartners(data.partners || DEFAULT_PARTNERS);
-        setGoogleMapsLink(data.googleMapsLink || INITIAL_GOOGLE_MAPS_LINK);
-        setContactPhone(data.contactPhone || '+351 912 525 649');
-        setAddressDetail(data.addressDetail || 'R. 25 de Abril 49, 8125-234, Quarteira, Faro Algarve – Portugal');
-        
-        if (data.adminUsername) setAdminUsername(data.adminUsername);
-        if (data.adminPassword) setAdminPassword(data.adminPassword);
 
         setCloudStatus('connected');
-        return true;
-      } else {
-        console.warn("Nuvem retornou dados vazios ou inválidos. Ignorando sincronização de entrada.");
-        setCloudStatus('error');
-        return false;
+        return data;
       }
+      setCloudStatus('error');
+      return null;
     } catch (err) {
       console.error("Erro ao sincronizar com nuvem:", err);
       setCloudStatus('error');
-      return false;
+      return null;
     }
   };
 
   const publishToCloud = async (url: string) => {
     if (!url) return;
     
-    if (slides.length === 0 || !siteConfig.companyName) {
-      console.error("Segurança: Tentativa de publicar dados vazios bloqueada.");
-      alert("Erro de Segurança: Os dados atuais parecem estar vazios. Recarregue a página antes de guardar.");
-      return false;
-    }
-
     setIsSyncing(true);
     setCloudStatus('loading');
     try {
@@ -591,7 +622,7 @@ const App = () => {
         addressDetail,
         adminUsername,
         adminPassword,
-        version: "2.2",
+        version: "2.6",
         lastSync: new Date().toISOString()
       };
       
@@ -624,8 +655,7 @@ const App = () => {
         const localConfig = JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_site_config`) || "{}");
         setSiteConfig({
           ...DEFAULT_SITE_CONFIG,
-          ...localConfig,
-          magicEffect: { ...DEFAULT_MAGIC_EFFECT, ...(localConfig.magicEffect || {}) }
+          ...localConfig
         });
 
         setSectionImages(JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}_section_images`) || JSON.stringify(DEFAULT_SECTION_IMAGES)));
@@ -646,7 +676,7 @@ const App = () => {
         setTimeout(() => setIsInitialLoading(false), 800);
       }
 
-      fetchFromCloud(FIXED_GAS_URL).then(success => {
+      fetchFromCloud(FIXED_GAS_URL).then(data => {
         if (!hasLocalData) {
           setIsInitialLoading(false);
         }
@@ -756,14 +786,36 @@ const App = () => {
     setIsMenuOpen(false);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === adminUsername && password === adminPassword) {
-      setIsAuthenticated(true);
-      setIsLoginOpen(false);
-      setIsAdminOpen(true);
-      setLoginError(false);
-    } else setLoginError(true);
+    setIsAuthenticating(true);
+    setLoginError(false);
+
+    try {
+      const data = await fetchFromCloud(gasUrl);
+      const latestUser = (data?.adminUsername != null && String(data.adminUsername).trim() !== "") ? String(data.adminUsername).trim() : adminUsername;
+      const latestPass = (data?.adminPassword != null && String(data.adminPassword).trim() !== "") ? String(data.adminPassword).trim() : adminPassword;
+
+      if (username.trim() === latestUser && password.trim() === latestPass) {
+        setIsAuthenticated(true);
+        setIsLoginOpen(false);
+        setIsAdminOpen(true);
+        setLoginError(false);
+      } else {
+        setLoginError(true);
+      }
+    } catch (err) {
+      console.error("Erro na validação de login:", err);
+      if (username.trim() === adminUsername && password.trim() === adminPassword) {
+        setIsAuthenticated(true);
+        setIsLoginOpen(false);
+        setIsAdminOpen(true);
+      } else {
+        setLoginError(true);
+      }
+    } finally {
+      setIsAuthenticating(false);
+    }
   };
 
   const handleContactSubmit = async (e: React.FormEvent) => {
@@ -829,7 +881,7 @@ const App = () => {
         {isInitialLoading && <InitialLoader logoUrl={siteConfig.logoUrl} />}
       </AnimatePresence>
       
-      <MagicEffectRunner config={siteConfig?.magicEffect} />
+      <MagicEffectRunner manager={siteConfig?.magicEffect} />
 
       <div className={`fixed top-0 w-full flex flex-col transition-all duration-500 ${isMenuOpen ? 'z-[1000]' : 'z-[900]'}`}>
         <AnimatePresence>
@@ -1167,11 +1219,11 @@ const App = () => {
                            <span className="font-bold tracking-[0.3em] uppercase">{t.whatsappLabel}</span>
                          </a>
                          <div className="flex gap-6 mt-4">
-                            {socialLinks.instagram && socialLinks.instagram !== '#' && <a href={socialLinks.instagram} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all"><Instagram size={20}/></a>}
-                            {socialLinks.facebook && socialLinks.facebook !== '#' && <a href={socialLinks.facebook} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all"><Facebook size={20}/></a>}
-                            {socialLinks.youtube && socialLinks.youtube !== '#' && <a href={socialLinks.youtube} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all"><Youtube size={20}/></a>}
-                            {socialLinks.tiktok && socialLinks.tiktok !== '#' && <a href={socialLinks.tiktok} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all"><Music size={20}/></a>}
-                            {socialLinks.linkedin && socialLinks.linkedin !== '#' && <a href={socialLinks.linkedin} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all"><Linkedin size={20}/></a>}
+                            {socialLinks.instagram && socialLinks.instagram !== '#' && <a href={socialLinks.instagram} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110"><Instagram size={20}/></a>}
+                            {socialLinks.facebook && socialLinks.facebook !== '#' && <a href={socialLinks.facebook} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110"><Facebook size={20}/></a>}
+                            {socialLinks.youtube && socialLinks.youtube !== '#' && <a href={socialLinks.youtube} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110"><Youtube size={20}/></a>}
+                            {socialLinks.tiktok && socialLinks.tiktok !== '#' && <a href={socialLinks.tiktok} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110"><Music size={20}/></a>}
+                            {socialLinks.linkedin && socialLinks.linkedin !== '#' && <a href={socialLinks.linkedin} target="_blank" className="text-white/20 hover:text-[#f8c8c4] transition-all transform hover:scale-110"><Linkedin size={20}/></a>}
                          </div>
                        </div>
                      </div>
@@ -1318,7 +1370,10 @@ const App = () => {
               <form onSubmit={handleLogin} className="space-y-6">
                 <input placeholder="Utilizador" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-white/5 border border-white/10 p-4 rounded outline-none text-sm placeholder:text-white/20" />
                 <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-white/5 border border-white/10 p-4 rounded outline-none text-sm placeholder:text-white/20" />
-                <button type="submit" className="w-full btn-serenity flex items-center justify-center gap-3"><Lock size={12}/> Entrar</button>
+                <button type="submit" disabled={isAuthenticating} className="w-full btn-serenity flex items-center justify-center gap-3">
+                  {isAuthenticating ? <Loader2 size={12} className="animate-spin" /> : <Lock size={12}/>} 
+                  {isAuthenticating ? 'A validar...' : 'Entrar'}
+                </button>
               </form>
               <div className="mt-8 pt-8 border-t border-white/5 flex flex-col gap-4">
                 <button onClick={() => setIsLoginOpen(false)} className="w-full text-[9px] font-bold tracking-[0.3em] text-white/20 uppercase hover:text-white/40 transition-colors">Cancelar</button>
