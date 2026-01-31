@@ -7,7 +7,8 @@ import {
   Key, Server, Eye, EyeOff, ShieldCheck, Zap, AlertCircle, Loader2, 
   Info, Lightbulb, Check, Database, Download, Upload, FileJson, ExternalLink, Link, RefreshCw, CloudOff,
   Instagram, Linkedin, Palette, MessageSquare, Lock, Phone, MapPin, ToggleLeft, ToggleRight, Shield,
-  Layout, Facebook, Youtube, Music, Wand2, Sparkles, Clock, Calendar, Send, Globe, PlayCircle, Edit3, Power, PowerOff
+  Layout, Facebook, Youtube, Music, Wand2, Sparkles, Clock, Calendar, Send, Globe, PlayCircle, Edit3, Power, PowerOff,
+  Building2
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
@@ -134,7 +135,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isMagicLoading, setIsMagicLoading] = useState(false);
   
-  // Magic Form State
   const [magicForm, setMagicForm] = useState<MagicEvent>({
     id: '',
     name: '',
@@ -160,14 +160,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const removeNotice = (id: string) => setNotices(notices.filter(n => n.id !== id));
   const updateNotice = (id: string, text: string) => setNotices(notices.map(n => n.id === id ? { ...n, text } : n));
   const toggleNotice = (id: string) => setNotices(notices.map(n => n.id === id ? { ...n, active: !n.active } : n));
-  const addReview = () => setReviews([...reviews, { id: Date.now().toString(), author: "Novo Autor", text: "Conteúdo...", time: "1 mês atrás", initials: "NA", color: "#f8c8c4", avatar: "" }]);
+  
+  const addReview = () => setReviews([...reviews, { id: Date.now().toString(), author: "Novo Autor", text: "Conteúdo...", time: "agora mesmo", initials: "NA", color: "#f8c8c4", avatar: "" }]);
   const removeReview = (id: string) => setReviews(reviews.filter(r => r.id !== id));
   const updateReview = (id: string, field: keyof Review, value: string) => setReviews(reviews.map(r => r.id === id ? { ...r, [field]: value } : r));
+  
   const addPartner = () => setPartners([...partners, { id: Date.now().toString(), name: "Novo Parceiro", logo: "", url: "https://" }]);
   const removePartner = (id: string) => setPartners(partners.filter(p => p.id !== id));
   const updatePartner = (id: string, field: keyof Partner, value: string) => setPartners(partners.map(p => p.id === id ? { ...p, [field]: value } : p));
 
-  // --- Magic Manager Functions ---
   const manager = siteConfig.magicEffect || { activeId: null, items: [] };
 
   const handleGenerateMagic = async () => {
@@ -271,13 +272,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="min-h-[50vh]">
           {activeTab === 'site' && (
             <div className="space-y-12 max-w-6xl mx-auto">
-              {/* Magic Events Creator Section */}
               <div className="crystal-card p-12 space-y-10 border-[#f8c8c4]/30 bg-gradient-to-br from-[#f8c8c4]/5 to-transparent relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-12 text-[#f8c8c4]/10"><Wand2 size={120} strokeWidth={0.5} /></div>
                 <div className="flex items-center gap-6 text-[#f8c8c4]"><Sparkles size={24}/><h3 className="text-xl font-bold tracking-widest uppercase text-white">Criador de Magia (Biblioteca)</h3></div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 relative z-10">
-                   {/* Form Side */}
                    <div className="space-y-6">
                       <div className="grid grid-cols-1 gap-6">
                          <div>
@@ -312,7 +311,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
                    </div>
 
-                   {/* Library List Side */}
                    <div className="space-y-6">
                       <label className="admin-label flex items-center gap-2"><Briefcase size={10}/> Biblioteca de Eventos</label>
                       <div className="space-y-4 max-h-[500px] overflow-y-auto pr-4 scrollbar-thin">
@@ -360,7 +358,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
 
-              {/* General Site Configs */}
               <div className="crystal-card p-12 space-y-10 border-white/5">
                 <div className="flex items-center gap-6 text-white/40"><Globe size={24}/><h3 className="text-xl font-bold tracking-widest uppercase text-white">Configurações Gerais</h3></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -510,7 +507,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                            <Linkedin size={16} className="text-[#f8c8c4]/40" />
                            <input value={socialLinks.linkedin} onChange={e => updateSocialLink('linkedin', e.target.value)} placeholder="Link LinkedIn" className="bg-transparent border-none outline-none text-xs flex-1 text-white" />
                         </div>
-                        <p className="text-[8px] text-white/10 uppercase tracking-widest pt-2">Ícones aparecem no site apenas se preenchidos.</p>
                       </div>
                    </div>
                 </div>
@@ -540,20 +536,44 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             <div className="space-y-12">
                <div className="crystal-card p-12 border-white/5 space-y-6">
                  <label className="admin-label flex items-center gap-2"><LinkIcon size={12}/> Link Principal Google Maps (Reviews)</label>
-                 <input value={googleMapsLink} onChange={e => setGoogleMapsLink(e.target.value)} placeholder="https://..." className="admin-input" />
+                 <input value={googleMapsLink} onChange={e => setGoogleMapsLink(e.target.value)} placeholder="https://www.google.com/search?q=..." className="admin-input" />
                </div>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {reviews.map(r => (
                   <div key={r.id} className="crystal-card p-10 relative space-y-6 border-white/5">
                     <button onClick={() => removeReview(r.id)} className="absolute top-6 right-6 text-red-500/30 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
                     <div className="space-y-4">
-                       <input value={r.author} onChange={e => updateReview(r.id, 'author', e.target.value)} placeholder="Autor" className="admin-input font-bold" />
-                       <textarea value={r.text} onChange={e => updateReview(r.id, 'text', e.target.value)} placeholder="Depoimento" className="admin-input" rows={4} />
+                       <div>
+                          <label className="admin-label">Nome do Cliente / Autor</label>
+                          <input value={r.author} onChange={e => updateReview(r.id, 'author', e.target.value)} className="admin-input font-bold" />
+                       </div>
+                       <div>
+                          <label className="admin-label">Período da Avaliação (Ex: 12 meses atrás)</label>
+                          <input value={r.time} onChange={e => updateReview(r.id, 'time', e.target.value)} className="admin-input text-xs" />
+                       </div>
+                       <div>
+                          <label className="admin-label">URL da Foto de Perfil (Opcional)</label>
+                          <input value={r.avatar || ""} onChange={e => updateReview(r.id, 'avatar', e.target.value)} placeholder="https://..." className="admin-input text-[10px]" />
+                       </div>
+                       <div>
+                          <label className="admin-label">Depoimento</label>
+                          <textarea value={r.text} onChange={e => updateReview(r.id, 'text', e.target.value)} className="admin-input" rows={4} />
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                          <div>
+                             <label className="admin-label">Iniciais (Avatar Backup)</label>
+                             <input value={r.initials} onChange={e => updateReview(r.id, 'initials', e.target.value)} className="admin-input text-center uppercase" maxLength={2} />
+                          </div>
+                          <div>
+                             <label className="admin-label">Cor do Círculo</label>
+                             <input type="color" value={r.color} onChange={e => updateReview(r.id, 'color', e.target.value)} className="h-12 w-full bg-transparent border-none cursor-pointer" />
+                          </div>
+                       </div>
                     </div>
                   </div>
                 ))}
                </div>
-               <button onClick={addReview} className="admin-btn-add"><Plus size={16}/> Adicionar Novo Depoimento</button>
+               <button onClick={addReview} className="admin-btn-add"><Plus size={16}/> Adicionar Novo Depoimento de Cliente</button>
             </div>
           )}
 
@@ -563,12 +583,33 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 {partners.map(p => (
                   <div key={p.id} className="crystal-card p-8 relative space-y-6 border-white/5">
                     <button onClick={() => removePartner(p.id)} className="absolute top-4 right-4 text-red-500/30 hover:text-red-500 transition-colors"><Trash2 size={14}/></button>
-                    <input value={p.name} onChange={e => updatePartner(p.id, 'name', e.target.value)} placeholder="Nome Parceiro" className="admin-input" />
-                    <input value={p.logo} onChange={e => updatePartner(p.id, 'logo', e.target.value)} placeholder="URL Logo" className="admin-input text-[10px]" />
+                    
+                    <div className="space-y-6 pt-4">
+                      <div>
+                        <label className="admin-label flex items-center gap-2">
+                          <Building2 size={12} className="text-[#f8c8c4]/40" /> Nome do Parceiro
+                        </label>
+                        <input value={p.name} onChange={e => updatePartner(p.id, 'name', e.target.value)} placeholder="Ex: Algarve Living" className="admin-input" />
+                      </div>
+
+                      <div>
+                        <label className="admin-label flex items-center gap-2">
+                          <ImageIcon size={12} className="text-[#f8c8c4]/40" /> URL da Logomarca
+                        </label>
+                        <input value={p.logo} onChange={e => updatePartner(p.id, 'logo', e.target.value)} placeholder="https://..." className="admin-input text-[10px]" />
+                      </div>
+
+                      <div>
+                        <label className="admin-label flex items-center gap-2">
+                          <LinkIcon size={12} className="text-[#f8c8c4]/40" /> Link do Website
+                        </label>
+                        <input value={p.url} onChange={e => updatePartner(p.id, 'url', e.target.value)} placeholder="https://..." className="admin-input text-[10px]" />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
-              <button onClick={addPartner} className="admin-btn-add"><Plus size={16}/> Adicionar Parceiro</button>
+              <button onClick={addPartner} className="admin-btn-add"><Plus size={16}/> Adicionar Parceiro de Prestígio</button>
             </div>
           )}
 
