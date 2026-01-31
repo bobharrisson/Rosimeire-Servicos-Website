@@ -139,8 +139,8 @@ const translations = {
     navHome: "O Início", navServices: "Serviços", navReviews: "Legado", navContact: "CONTACTO",
     heroSubtitle: "Rosimeire Serviços",
     servicesTitle: "O Rigor do Detalhe",
-    servicesSubtitle: "A excelência técnica que preserves o seu legado.",
-    servicesDescription: "Dedicamo-nodes à preservação e cuidado da sua propriedade com um rigor inigualável. Através de um serviço de limpeza profissional de alto padrão, os nossos técnicos especializados asseguram que cada detalhe do seu imóvel seja tratado com a máxima perícia, garantizando um ambiente absolutamente imaculado. Aliamos a excelência técnica a uma política de transparência e valor justo, oferecendo-lhe a segurança de um património impecavelmente mantido, sempre que necessitar.",
+    servicesSubtitle: "A excelência técnica que preserva o seu património.",
+    servicesDescription: "Dedicamo-nos ao cuidado da sua propriedade com um rigor inigualável. Através de um serviço de limpeza profissional de alto padrão, os nossos técnicos especializados asseguram que cada detalhe do seu imóvel é tratado com a máxima perícia, garantindo um ambiente imaculado. Aliamos a qualidade técnica a uma política de transparência e valores justos, oferecendo-lhe a segurança de um património sempre bem mantido.",
     s1Title: "Alojamentos e Unidades Turísticas",
     s1Tagline: "Higienização rigorosa para a rotatividade do setor.",
     s1Desc: "Especialistas na preparação de alojamentos locais, hostels e unidades hoteleiras. Garantimos uma limpeza profunda e eficiente entre estadias, assegurando que cada novo hóspede encontre um imóvel com padrões de limpeza impecáveis.",
@@ -174,23 +174,23 @@ const translations = {
     careersTitle: "Carreiras",
     careersHeroTitle: "Join Our Legacy",
     careersHeroSubtitle: "We seek professionals who share our passion for excellence and rigor in detail.",
-    careersAdvisoryTitle: "Geographic Recruitment Notice",
-    careersAdvisoryText: "At the moment we are only recruiting candidates from the Faro District who can travel by public or private transport. Our recruitment focus is the Loulé Council, as our headquarters is located in the Parish of Quarteira. For this Parish, we can provide transport vans, in some cases, to our meeting points.",
-    careersWhyTitle: "Why Rosimeire Serviços?",
-    careersAdv1: "Continuous Training", careersAdv1Desc: "Technical development in specialized cleaning.",
-    careersAdv2: "Respectful Environment", careersAdv2Desc: "We value our team's well-being.",
-    careersAdv3: "Recognition", careersAdv3Desc: "Growth opportunities in the Algarve.",
-    careersApplyTitle: "Apply Today",
-    careersApplyDesc: "If you are dedicated, punctual, and have an eye for detail, we want to meet you.",
-    careersApplyBtn: "Fill Application Form",
+    careersAdvisoryTitle: "Aviso de Recrutamento Geográfico",
+    careersAdvisoryText: "No momento, apenas recrutamos candidatos do Distrito de Faro que possam deslocar-se em transporte público ou privado. O nosso foco de recrutamento é o Conselho de Loulé, uma vez que a nossa sede se localiza na Freguesia de Quarteira. Para esta Freguesia, podemos fornecer carrinhas de transporte, em alguns casos, para os nossos pontos de encontro.",
+    careersWhyTitle: "Por que a Rosimeire Serviços?",
+    careersAdv1: "Formação Contínua", careersAdv1Desc: "Desenvolvimento técnico em limpezas especializadas de alto padrão.",
+    careersAdv2: "Ambiente de Respeito", careersAdv2Desc: "Valorizamos o bem-estar e a dignidade de cada membro da nossa equipa.",
+    careersAdv3: "Reconhecimento", careersAdv3Desc: "Oportunidades reais de crescimento no setor de serviços no Algarve.",
+    careersApplyTitle: "Candidate-se Hoje",
+    careersApplyDesc: "Se é uma pessoa dedicada, pontual e com um olhar apurado para o detalhe, queremos conhecê-la.",
+    careersApplyBtn: "Preencher Formulário de Candidatura",
     careersFormLink: "https://docs.google.com/forms/d/e/1FAIpQLSdo6NUZsw3gcZhigbPrAafa1zb32hgjQi67dDkEKEEByc1rHg/viewform?usp=sf_link"
   },
   EN: {
     navHome: "Home", navServices: "Services", navReviews: "Legacy", navContact: "CONTACT",
     heroSubtitle: "Rosimeire Serviços",
     servicesTitle: "The Rigor of Detail",
-    servicesSubtitle: "The technical excellence that preserves your legacy.",
-    servicesDescription: "We are dedicated to the preservation and care of your property with unparalleled rigor. Through a high-standard professional cleaning service, our specialized technicians ensure that every detail of your property is treated with the utmost expertise, guaranteeing an absolutely immaculate environment. We combine technical excellence with a policy of transparency and fair value, offering you the security of an impeccably maintained estate, whenever you need it.",
+    servicesSubtitle: "The technical excellence that preserves your patrimony.",
+    servicesDescription: "We are dedicated to the care of your property with unparalleled rigor. Through a high-standard professional cleaning service, our specialized technicians ensure that every detail of your property is treated with the utmost expertise, guaranteeing an immaculate environment. We combine technical quality with a policy of transparency and fair values, offering the security of a property that is always well maintained.",
     s1Title: "Hospitality & Tourist Units",
     s1Tagline: "Rigorous sanitization for sector turnover.",
     s1Desc: "Specialists in preparing local accommodations, hostels, and hotel units. We guarantee a deep and efficient cleaning between stays, ensuring that every new guest finds a property with impeccable cleanliness standards.",
@@ -233,14 +233,14 @@ const translations = {
     careersApplyTitle: "Apply Today",
     careersApplyDesc: "If you are dedicated, punctual, and have an eye for detail, we want to meet you.",
     careersApplyBtn: "Fill Application Form",
-    careersFormLink: "https://docs.google.com/forms/for_link"
+    careersFormLink: "https://docs.google.com/forms/d/e/1FAIpQLSdo6NUZsw3gcZhigbPrAafa1zb32hgjQi67dDkEKEEByc1rHg/viewform?usp=sf_link"
   },
   ES: {
     navHome: "Inicio", navServices: "Servicios", navReviews: "Legado", navContact: "CONTACTO",
     heroSubtitle: "Rosimeire Serviços",
     servicesTitle: "El Rigor del Detalle",
-    servicesSubtitle: "La excelencia técnica que preserves su legado.",
-    servicesDescription: "Nos dedicamos a la preservación y el cuidado de su propriedade con un rigor inigualável. A través de un serviço de limpeza profesional de alto nivel, nuestros técnicos especializados aseguran que cada detalhe de su inmueble sea tratado con la máxima pericia, garantizando un ambiente absolutamente inmaculado. Combinamos la excelencia técnica con uma política de transparencia e valor justo, ofreciéndole la segurança de un patrimonio impecablemente mantenido, siempre que lo necesite.",
+    servicesSubtitle: "La excelencia técnica que preserves su patrimonio.",
+    servicesDescription: "Nos dedicamos al cuidado de su propiedad con un rigor inigualable. A través de un serviço de limpieza profesional de alto nivel, nuestros técnicos especializados aseguran que cada detalle de su inmueble es tratado con la máxima pericia, garantizando un ambiente inmaculado. Combinamos la calidad técnica con una política de transparencia e valores justos, ofreciéndole la seguridad de un patrimonio siempre bien mantenido.",
     s1Title: "Alojamientos y Unidades Turísticas",
     s1Tagline: "Higienização rigorosa para a rotatividade do setor.",
     s1Desc: "Especialistas en la preparación de alojamientos locales, hostales y unidades hoteleras. Garantizamos una limpeza profunda e eficiente entre estadias, aseguran que cada nuevo huésped encuentre un inmueble con estándares de limpeza impecables.",
@@ -264,9 +264,9 @@ const translations = {
     footerSobre: "Sobre", footerCarreira: "Carrera", developedBy: "Desarrollado y Gestionado Por",
     footerSocial: "Social", footerLinks: "La Empresa",
     adminTitle: "Panel Administrativo", adminSlides: "Slides", adminNotices: "Avisos", adminReviews: "Testimonios", adminPartners: "Socios", adminImages: "Visual", adminEmail: "Email",
-    sirTitle: "SIR - Sistema Integrado", logout: "Cerrar Panel", back: "Volver al Inicio",
+    sirTitle: "SIR - Sistema Integrado", logout: "Cerrar Panel", back: "Voltar al Inicio",
     aboutSectionTitle: "Nuestra Esencia",
-    aboutSectionText: "Rosimeire Serviços iniciou su trajetória em 2011, fruto da visão e dedicação de sua fundadora, Rosimeire Silva. Actuando inicialmente de forma independente em propriedades exclusivas, su rigor técnico, honestidade e um perfeccionismo inaquebrantável se convirtieron em su sello distintivo. Esta postura de excelencia permitió fidelizar una cartera de clientes de prestigio, consolidando los cimientos que impulsaron el crescimento y la solidez que a empresa apresenta hoy.",
+    aboutSectionText: "Rosimeire Serviços iniciou su trajetória em 2011, fruto da visão e dedicação de sua fundadora, Rosimeire Silva. Actuando inicialmente de forma independente em propriedades exclusivas, su rigor técnico, honestidade e um perfeccionismo inaquebrantável se convirtieron em su sello distintivo. Esta postura de excelencia permitió fidelizar una cartera de clientes de prestigio, consolidando los cimientos que impulsaram el crescimento y la solidez que a empresa apresenta hoy.",
     missionTitle: "Misión", missionText: "Satisfacer al cliente dejando su property impecablemente limpia, según su necesidad.",
     visionTitle: "Vision", visionText: "Próximamente nuestros serviços estarán disponibles en outros países de Europa, con el mesmo estándar de qualidade que atendemos actualmente em Portugal.",
     valuesTitle: "Valores",
@@ -278,12 +278,12 @@ const translations = {
     careersAdvisoryText: "Actualmente solo estamos recrutando candidatos del Distrito de Faro que puedan desplazarse en transporte público o propio. Nuestro foco de recrutamento es el Consejo de Loulé, ya que nuestra sede se encuentra em la Parroquia de Quarteira. Para esta Parroquia, podemos oferecer furgonetas de transporte, em some casos, a nuestros puntos de encuentro.",
     careersWhyTitle: "¿Por qué Rosimeire Serviços?",
     careersAdv1: "Formación Contínua", careersAdv1Desc: "Desarrollo técnico em limpeza especializada.",
-    careersAdv2: "Ambiente de Respeito", careersAdv2Desc: "Valorizamos el bienestar de nuestro equipo.",
+    careersAdv2: "Ambiente de Respeito", careersAdv2Desc: "Valorizamos o bienestar de nuestro equipo.",
     careersAdv3: "Reconhecimento", careersAdv3Desc: "Oportunidades de crescimento no Algarve.",
     careersApplyTitle: "Aplica Hoy",
     careersApplyDesc: "Si eres una person dedicad, puntual y con ojo para o detalhe, queremos conhecerte.",
     careersApplyBtn: "Completar Formulário de Candidatura",
-    careersFormLink: "https://docs.google.com/forms/for_link"
+    careersFormLink: "https://docs.google.com/forms/d/e/1FAIpQLSdo6NUZsw3gcZhigbPrAafa1zb32hgjQi67dDkEKEEByc1rHg/viewform?usp=sf_link"
   }
 };
 
@@ -540,7 +540,7 @@ const App = () => {
   }, [siteConfig.logoUrl]);
 
   useEffect(() => {
-    document.title = `${siteConfig.companyName} ${siteConfig.companySubtitle} | Serenity`;
+    document.title = `${siteConfig.companyName} ${siteConfig.companySubtitle}`;
   }, [siteConfig.companyName, siteConfig.companySubtitle]);
 
   // --- Form State ---
@@ -1257,13 +1257,52 @@ const App = () => {
           <motion.div key="careers" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="pt-48 pb-64">
             <div className="container mx-auto px-8 md:px-16">
                <button onClick={() => setView('home')} className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.4em] text-white/20 hover:text-[#f8c8c4] transition-all mb-16 group"><ArrowLeft size={16} /> {t.back}</button>
-              <h2 className="heading-serif text-5xl md:text-8xl text-white mb-12 uppercase leading-none">{t.careersHeroTitle}</h2>
-              <div className="relative mb-24">
-                <img src={sectionImages.careers} className="w-full h-[500px] object-cover rounded-sm border border-white/5 grayscale hover:grayscale-0 transition-all duration-1000" />
+              
+              <div className="flex flex-col gap-12 mb-24">
+                <h2 className="heading-serif text-5xl md:text-8xl text-white uppercase leading-none">{t.careersHeroTitle}</h2>
+                <p className="text-xl md:text-2xl font-light text-white/60 max-w-3xl leading-relaxed italic">{t.careersHeroSubtitle}</p>
               </div>
-              <div className="crystal-card p-16 rounded-sm text-center">
-                 <h3 className="heading-serif text-4xl mb-8">{t.careersApplyTitle}</h3>
-                 <a href={t.careersFormLink} target="_blank" rel="noopener noreferrer" className="btn-serenity inline-flex items-center gap-4">{t.careersApplyBtn} <ExternalLink size={14}/></a>
+
+              <div className="relative mb-24 rounded-sm overflow-hidden group shadow-2xl border border-white/5">
+                <img src={sectionImages.careers} className="w-full h-[400px] md:h-[600px] object-cover grayscale hover:grayscale-0 transition-all duration-1000" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#081221] via-transparent to-transparent opacity-60" />
+              </div>
+
+              {/* Recruitment Notice */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 mb-32 items-start">
+                <div className="lg:col-span-1">
+                   <div className="crystal-card p-10 !bg-[#f8c8c4]/5 border-[#f8c8c4]/20 relative overflow-hidden h-full">
+                      <div className="absolute -right-4 -bottom-4 text-[#f8c8c4]/10"><MapPin size={80} strokeWidth={0.5}/></div>
+                      <h3 className="tagline !text-[#f8c8c4] mb-8 flex items-center gap-3"><AlertTriangle size={14}/> {t.careersAdvisoryTitle}</h3>
+                      <p className="text-sm font-light text-white/70 leading-relaxed italic">{t.careersAdvisoryText}</p>
+                   </div>
+                </div>
+
+                <div className="lg:col-span-2 space-y-16">
+                   <h3 className="heading-serif text-4xl md:text-6xl text-white">{t.careersWhyTitle}</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                      {[
+                        { icon: <CheckCircle2 size={24}/>, title: t.careersAdv1, desc: t.careersAdv1Desc },
+                        { icon: <Users size={24}/>, title: t.careersAdv2, desc: t.careersAdv2Desc },
+                        { icon: <Award size={24}/>, title: t.careersAdv3, desc: t.careersAdv3Desc }
+                      ].map((adv, idx) => (
+                        <div key={idx} className="space-y-4 p-8 bg-white/[0.02] border border-white/5 rounded-sm hover:border-[#f8c8c4]/20 transition-all group">
+                           <div className="text-[#f8c8c4]/40 group-hover:text-[#f8c8c4] transition-colors">{adv.icon}</div>
+                           <h4 className="text-lg font-bold uppercase tracking-widest text-white">{adv.title}</h4>
+                           <p className="text-sm font-light text-white/40 leading-relaxed">{adv.desc}</p>
+                        </div>
+                      ))}
+                   </div>
+                </div>
+              </div>
+
+              <div className="crystal-card p-12 md:p-24 rounded-sm text-center relative overflow-hidden bg-gradient-to-br from-[#f8c8c4]/5 to-transparent border-[#f8c8c4]/10">
+                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-[1px] bg-[#f8c8c4]/20" />
+                 <h3 className="heading-serif text-4xl md:text-6xl mb-8 uppercase tracking-tighter">{t.careersApplyTitle}</h3>
+                 <p className="text-white/40 mb-12 max-w-2xl mx-auto font-light leading-relaxed">{t.careersApplyDesc}</p>
+                 <a href={t.careersFormLink} target="_blank" rel="noopener noreferrer" className="btn-serenity !py-6 !px-12 inline-flex items-center gap-4 text-[10px] font-black group">
+                   {t.careersApplyBtn} <ExternalLink size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                 </a>
               </div>
             </div>
           </motion.div>
