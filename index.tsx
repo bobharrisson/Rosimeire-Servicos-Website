@@ -8,7 +8,7 @@ import {
   Heart, ShieldCheck, MessageSquare, Flame, Award, Users, Check,
   ChevronLeft, ChevronRight, Save, RotateCcw, Server, Cloud, CloudOff, RefreshCw, Loader2,
   Instagram, Linkedin, Code, Zap, Trash2, Search, ChevronDown, MessageCircle, LogIn, Navigation,
-  Layout, Facebook, Youtube, Music, Wand2
+  Layout, Facebook, Youtube, Music, Wand2, AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminPanel from './AdminPanel';
@@ -175,17 +175,17 @@ const translations = {
     valuesTitle: "Valores",
     val1: "Empatia com os clientes", val2: "Qualidade", val3: "Integridade e Honestidade", val4: "Abertura e Respecto", val5: "Coragem",
     careersTitle: "Carreiras",
-    careersHeroTitle: "Junte-se ao Nosso Legado",
-    careersHeroSubtitle: "Procuramos profissionais que partilham a nossa paixão pela excelência e o rigor no detalhe.",
-    careersAdvisoryTitle: "Aviso de Recrutamento Geográfico",
-    careersAdvisoryText: "No momento estamos a recrutar apenas os candidatos do Distrito de Faro que, possam se locomover em meios de transporte públicos ou próprio, nosso foco de recrutamento está sendo o Conselho de Loulé, tendo em vista que nossa sede está situada na Freguesia de Quarteira, para essa Freguesia, conseguimos oferecer carrinhas para transportar, em alguns casos aos, nossos pontos de encontro.",
-    careersWhyTitle: "Porquê a Rosimeire Serviços?",
-    careersAdv1: "Formação Contínua", careersAdv1Desc: "Desenvolvimento técnico em limpeza especializada.",
-    careersAdv2: "Ambiente de Respeito", careersAdv2Desc: "Valorizamos o bem-estar da nossa equipa.",
-    careersAdv3: "Reconhecimento", careersAdv3Desc: "Oportunidades de crescimento no Algarve.",
-    careersApplyTitle: "Candidate-se Hoje",
-    careersApplyDesc: "Se é uma pessoa dedicada, pontual e com olho para o detalhe, queremos conheê-la.",
-    careersApplyBtn: "Preencher Formulário de Candidatura",
+    careersHeroTitle: "Join Our Legacy",
+    careersHeroSubtitle: "We seek professionals who share our passion for excellence and rigor in detail.",
+    careersAdvisoryTitle: "Geographic Recruitment Notice",
+    careersAdvisoryText: "At the moment we are only recruiting candidates from the Faro District who can travel by public or private transport. Our recruitment focus is the Loulé Council, as our headquarters is located in the Parish of Quarteira. For this Parish, we can provide transport vans, in some cases, to our meeting points.",
+    careersWhyTitle: "Why Rosimeire Serviços?",
+    careersAdv1: "Continuous Training", careersAdv1Desc: "Technical development in specialized cleaning.",
+    careersAdv2: "Respectful Environment", careersAdv2Desc: "We value our team's well-being.",
+    careersAdv3: "Recognition", careersAdv3Desc: "Growth opportunities in the Algarve.",
+    careersApplyTitle: "Apply Today",
+    careersApplyDesc: "If you are dedicated, punctual, and have an eye for detail, we want to meet you.",
+    careersApplyBtn: "Fill Application Form",
     careersFormLink: "https://docs.google.com/forms/d/e/1FAIpQLSdo6NUZsw3gcZhigbPrAafa1zb32hgjQi67dDkEKEEByc1rHg/viewform?usp=sf_link"
   },
   EN: {
@@ -223,7 +223,7 @@ const translations = {
     missionTitle: "Mission", missionText: "To satisfy the client by leaving their property impeccably clean, according to their needs.",
     visionTitle: "Vision", visionText: "Soon our services will be available in other European countries, with the same quality standard we currently provide in Portugal, for our diverse clientele.",
     valuesTitle: "Values",
-    val1: "Empathy with clients", val2: "Quality", val3: "Integrity and Honesty", val4: "Openness and Respect", val5: "Courage",
+    val1: "Empathy with clients", val2: "Quality", val3: "Integrity and Honest", val4: "Openness and Respect", val5: "Courage",
     careersTitle: "Careers",
     careersHeroTitle: "Join Our Legacy",
     careersHeroSubtitle: "We seek professionals who share our passion for excellence and rigor in detail.",
@@ -270,15 +270,15 @@ const translations = {
     sirTitle: "SIR - Sistema Integrado", logout: "Cerrar Panel", back: "Volver al Inicio",
     aboutSectionTitle: "Nuestra Esencia",
     aboutSectionText: "Rosimeire Serviços iniciou su trajetória em 2011, fruto da visão e dedicação de sua fundadora, Rosimeire Silva. Actuando inicialmente de forma independente em propriedades exclusivas, su rigor técnico, honestidade e um perfeccionismo inaquebrantável se convirtieron em su sello distintivo. Esta postura de excelencia permitió fidelizar una cartera de clientes de prestigio, consolidando los cimientos que impulsaron el crescimento y la solidez que la empresa apresenta hoy.",
-    missionTitle: "Misión", missionText: "Satisfacer al cliente dejando su propiedad impecablemente limpia, según su necesidad.",
-    visionTitle: "Vision", visionText: "Próximamente nuestros serviços estarán disponibles en otros países de Europa, con el mesmo estándar de qualidade que atendemos actualmente em Portugal.",
+    missionTitle: "Misión", missionText: "Satisfacer al cliente dejando su property impecablemente limpia, según su necesidad.",
+    visionTitle: "Vision", visionText: "Próximamente nuestros serviços estarán disponibles en outros países de Europa, con el mesmo estándar de qualidade que atendemos actualmente em Portugal.",
     valuesTitle: "Valores",
     val1: "Empatia com los clientes", val2: "Qualidad", val3: "Integridad e Honestidad", val4: "Abertura e Respeto", val5: "Coraje",
     careersTitle: "Carreras",
     careersHeroTitle: "Únete a Nuestro Legado",
     careersHeroSubtitle: "Buscamos profissionais que compartan nuestra pasión por la excelencia e el rigor em el detalhe.",
     careersAdvisoryTitle: "Aviso de Recrutamento Geográfico",
-    careersAdvisoryText: "Actualmente solo estamos recrutando candidatos del Distrito de Faro que puedan desplazarse en transporte público o propio. Nuestro foco de recrutamento es el Consejo de Loulé, ya que nuestra sede se encuentra en la Parroquia de Quarteira. Para esta Parroquia, podemos oferecer furgonetas de transporte, em some casos, a nuestros puntos de encuentro.",
+    careersAdvisoryText: "Actualmente solo estamos recrutando candidatos del Distrito de Faro que puedan desplazarse en transporte público o propio. Nuestro foco de recrutamento es el Consejo de Loulé, ya que nuestra sede se encuentra em la Parroquia de Quarteira. Para esta Parroquia, podemos oferecer furgonetas de transporte, em some casos, a nuestros puntos de encuentro.",
     careersWhyTitle: "¿Por qué Rosimeire Serviços?",
     careersAdv1: "Formación Contínua", careersAdv1Desc: "Desarrollo técnico em limpeza especializada.",
     careersAdv2: "Ambiente de Respeito", careersAdv2Desc: "Valorizamos el bienestar de nuestro equipo.",
@@ -540,7 +540,7 @@ const App = () => {
       const response = await fetch(url, { cache: 'no-store' });
       const data = await response.json();
       
-      if (data && data.slides) {
+      if (data && data.slides && data.slides.length > 0) {
         setSlides(data.slides);
         
         // Garantir que incomingSiteConfig tenha a estrutura mínima correta
@@ -576,8 +576,12 @@ const App = () => {
 
         setCloudStatus('connected');
         return true;
+      } else {
+        // Se a nuvem retornou algo inesperado ou vazio, não sobrescrevemos o local
+        console.warn("Nuvem retornou dados vazios ou inválidos. Ignorando sincronização de entrada.");
+        setCloudStatus('error');
+        return false;
       }
-      return false;
     } catch (err) {
       console.error("Erro ao sincronizar com nuvem:", err);
       setCloudStatus('error');
@@ -587,6 +591,14 @@ const App = () => {
 
   const publishToCloud = async (url: string) => {
     if (!url) return;
+    
+    // TRAVA DE SEGURANÇA: Não publicar se o estado atual parece estar "limpo" ou inválido
+    if (slides.length === 0 || !siteConfig.companyName) {
+      console.error("Segurança: Tentativa de publicar dados vazios bloqueada.");
+      alert("Erro de Segurança: Os dados atuais parecem estar vazios. Recarregue a página antes de guardar.");
+      return false;
+    }
+
     setIsSyncing(true);
     setCloudStatus('loading');
     try {
@@ -604,7 +616,7 @@ const App = () => {
         addressDetail,
         adminUsername,
         adminPassword,
-        version: "1.4",
+        version: "2.0",
         lastSync: new Date().toISOString()
       };
       
@@ -661,6 +673,7 @@ const App = () => {
         setTimeout(() => setIsInitialLoading(false), 800);
       }
 
+      // Tenta carregar da nuvem, mas com cautela
       fetchFromCloud(FIXED_GAS_URL).then(success => {
         if (!hasLocalData) {
           setIsInitialLoading(false);
@@ -703,7 +716,7 @@ const App = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const [currentPartnerIndex, setCurrentPartnerIndex] = useState(0);
-  const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success'>('idle');
+  const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const t = translations[lang];
 
   useEffect(() => {
@@ -794,7 +807,13 @@ const App = () => {
     e.preventDefault();
     setFormStatus('sending');
     
+    console.debug("Iniciando envio de formulário...", { form: contactForm, config: emailConfig });
+
     try {
+      const recipient = emailConfig.recipientEmail && emailConfig.recipientEmail.trim() !== "" 
+        ? emailConfig.recipientEmail 
+        : "atendimento@rosimeireservicos.com";
+
       const payload = {
         action: 'send_contact',
         formData: {
@@ -803,26 +822,33 @@ const App = () => {
           phone: `${contactForm.ddi} ${contactForm.phone}`,
           message: contactForm.message
         },
-        recipient: emailConfig.recipientEmail
+        recipient: recipient,
+        emailConfig: emailConfig 
       };
 
-      // Chamada real ao Google Apps Script
-      await fetch(gasUrl, {
+      console.debug("Payload enviado ao GAS:", payload);
+
+      // Enviando requisição
+      const fetchPromise = fetch(gasUrl, {
         method: 'POST',
-        mode: 'no-cors', // Necessário para GAS quando não há headers de CORS
+        mode: 'no-cors', // Modo no-cors é necessário para GAS sem servidor proxy intermédio
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(payload)
       });
 
+      // No modo no-cors, o navegador não nos deixa ler se deu 200 ou 500
+      // Mas se o fetch não deu Throw, a rede funcionou.
+      await fetchPromise;
+
+      console.debug("Envio concluído (Modo Assíncrono GAS).");
       setFormStatus('success');
-      setTimeout(() => setFormStatus('idle'), 5000);
+      setTimeout(() => setFormStatus('idle'), 8000);
       handleClearForm();
+
     } catch (err) {
-      console.error("Erro ao enviar contacto:", err);
-      // Mesmo com erro de CORS no console, o modo 'no-cors' envia o dado.
-      // Assumimos sucesso se a promise resolver ou fornecemos feedback
-      setFormStatus('success');
-      handleClearForm();
+      console.error("Erro fatal na rede durante o envio:", err);
+      setFormStatus('error');
+      setTimeout(() => setFormStatus('idle'), 5000);
     }
   };
 
@@ -1065,7 +1091,6 @@ const App = () => {
                           {reviews[currentReviewIndex].avatar ? (
                             <img src={reviews[currentReviewIndex].avatar} className="w-24 h-24 rounded-full object-cover border-2 border-[#f8c8c4]/30" />
                           ) : (
-                            // Use the designated color for background instead of initials string
                             <div className="w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-xl" style={{ backgroundColor: reviews[currentReviewIndex].color }}>
                               {reviews[currentReviewIndex].initials}
                             </div>
@@ -1362,8 +1387,15 @@ const App = () => {
                     
                     <div className="flex flex-col gap-6">
                       <button className="w-full btn-serenity py-8" disabled={formStatus === 'sending'}>
-                        {formStatus === 'idle' ? t.send : (formStatus === 'sending' ? 'A Enviar...' : t.success)}
+                        {formStatus === 'idle' ? t.send : (formStatus === 'sending' ? 'A Enviar...' : (formStatus === 'error' ? 'Erro no Envio' : t.success))}
                       </button>
+                      
+                      {formStatus === 'error' && (
+                        <p className="text-red-400 text-[9px] font-bold text-center uppercase tracking-widest flex items-center justify-center gap-2">
+                          <AlertTriangle size={12}/> Verifique a sua ligação ou credenciais Admin.
+                        </p>
+                      )}
+
                       <button 
                         type="button"
                         onClick={handleClearForm}
@@ -1466,7 +1498,6 @@ const App = () => {
         addressDetail={addressDetail} setAddressDetail={setAddressDetail}
         adminUsername={adminUsername} setAdminUsername={setAdminUsername}
         adminPassword={adminPassword} setAdminPassword={setAdminPassword}
-        // Corrected prop to pass the setter for AdminPanel to manage its own tab state if needed
         activeTab={activeAdminTab} setActiveTab={setActiveAdminTab} t={t}
         isSyncing={isSyncing} onResetDefaults={handleResetDefaults}
         gasUrl={gasUrl} setGasUrl={setGasUrl} onPublishToCloud={() => publishToCloud(gasUrl)}
