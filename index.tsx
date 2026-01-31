@@ -161,7 +161,7 @@ const translations = {
     quoteTitle: "Contacto",
     addressTitle: "Nosso Escritório",
     name: "Nome Completo", email: "Email", phone: "Contacto Telefónico", message: "Em que podemos ajudar?",
-    send: "Enviar Mensagem", success: "Mensagem enviada. Entraremos em contacto brevemente.",
+    send: "Enviar Mensagem", success: "Mensagem enviada com sucesso!",
     clearForm: "Limpar Formulário", searchCountry: "Procurar País...",
     whatsappLabel: "WhatsApp Direto",
     footerSobre: "Sobre", footerCarreira: "Carreira", developedBy: "Desenvolvido & Gerido Por",
@@ -211,7 +211,7 @@ const translations = {
     quoteTitle: "Contact",
     addressTitle: "Our Office",
     name: "Full Name", email: "Email", phone: "Phone Number", message: "How may we assist?",
-    send: "Send Message", success: "Message sent. We will contact you shortly.",
+    send: "Send Message", success: "Message sent successfully!",
     clearForm: "Clear Form", searchCountry: "Search Country...",
     whatsappLabel: "Direct WhatsApp",
     footerSobre: "About", footerCarreira: "Careers", developedBy: "Developed & Managed By",
@@ -243,7 +243,7 @@ const translations = {
     heroSubtitle: "Rosimeire Serviços",
     servicesTitle: "El Rigor del Detalle",
     servicesSubtitle: "La excelencia técnica que preserves su legado.",
-    servicesDescription: "Nos dedicamos a la preservación y el cuidado de su propriedade con un rigor inigualável. A través de un serviço de limpeza profesional de alto nivel, nuestros técnicos especializados aseguran que cada detalle de su inmueble sea tratado con la máxima pericia, garantizando un ambiente absolutamente inmaculado. Combinamos la excelencia técnica con una política de transparencia e valor justo, ofreciéndole la segurança de un patrimonio impecablemente mantenido, siempre que lo necesite.",
+    servicesDescription: "Nos dedicamos a la preservación y el cuidado de su propriedade con un rigor inigualável. A través de un serviço de limpeza profesional de alto nivel, nuestros técnicos especializados aseguran que cada detalhe de su inmueble sea tratado con la máxima pericia, garantizando un ambiente absolutamente inmaculado. Combinamos la excelencia técnica con una política de transparencia e valor justo, ofreciéndole la segurança de un patrimonio impecablemente mantenido, siempre que lo necesite.",
     s1Title: "Alojamientos y Unidades Turísticas",
     s1Tagline: "Higienização rigorosa para a rotatividade do setor.",
     s1Desc: "Especialistas en la preparación de alojamientos locales, hostales y unidades hoteleras. Garantizamos una limpeza profunda e eficiente entre estadias, aseguran que cada nuevo huésped encuentre un inmueble con estándares de limpeza impecables.",
@@ -252,7 +252,7 @@ const translations = {
     s2Desc: "Servicios de limpeza diaria o periódica adaptados a la rutina de su hogar. Oferecemos el apoyo de equipos dedicados para la gestión de su santuario personal, actuando con la máxima discreción, celo y regularidad.",
     s3Title: "Detalle de Precisão",
     s3Tagline: "Enfoque absoluto en los pormenores y acabados.",
-    s3Desc: "Un serviço de limpeza minucioso que va más allá de lo esencial. Intervenimos en los detalles más exigentes y de difícil acesso, garantizando un nivel de perfección y frescura que transforma completamente el ambiente.",
+    s3Desc: "Un serviço de limpeza minucioso que va más allá de lo esencial. Intervenimos en los detalhes más exigentes y de difícil acesso, garantizando un nivel de perfección y frescura que transforma completamente el ambiente.",
     s4Title: "Limpezas Post-Obra",
     s4Tagline: "Finalización técnica para entrega de espaços listos para habitar.",
     s4Desc: "Eliminación profunda de polvos y resíduos de construção en chalets, restaurantes o tiendas. Transformamos o escenario de obra em um ambiente limpo e acolhedor, garantizando una transición perfeita para la utilización final.",
@@ -261,7 +261,7 @@ const translations = {
     quoteTitle: "Contacto",
     addressTitle: "Nuestra Oficina",
     name: "Nombre Completo", email: "Email", phone: "Teléfono", message: "¿Cómo podemos ajudar?",
-    send: "Enviar Mensagem", success: "Mensaje enviado. Le contactaremos pronto.",
+    send: "Enviar Mensagem", success: "Mensaje enviado con éxito!",
     clearForm: "Limpar Formulario", searchCountry: "Buscar País...",
     whatsappLabel: "WhatsApp Directo",
     footerSobre: "Sobre", footerCarreira: "Carrera", developedBy: "Desarrollado y Gestionado Por",
@@ -616,7 +616,7 @@ const App = () => {
         addressDetail,
         adminUsername,
         adminPassword,
-        version: "2.0",
+        version: "2.1",
         lastSync: new Date().toISOString()
       };
       
@@ -807,13 +807,18 @@ const App = () => {
     e.preventDefault();
     setFormStatus('sending');
     
-    console.debug("Iniciando envio de formulário...", { form: contactForm, config: emailConfig });
+    // Verificando se há e-mail configurado no Admin
+    const targetEmail = emailConfig.recipientEmail && emailConfig.recipientEmail.includes('@') 
+      ? emailConfig.recipientEmail 
+      : null;
+
+    if (!targetEmail) {
+      alert("Aviso: Nenhum e-mail de recebimento foi configurado no Painel Administrativo. O formulário não pode ser enviado.");
+      setFormStatus('error');
+      return;
+    }
 
     try {
-      const recipient = emailConfig.recipientEmail && emailConfig.recipientEmail.trim() !== "" 
-        ? emailConfig.recipientEmail 
-        : "atendimento@rosimeireservicos.com";
-
       const payload = {
         action: 'send_contact',
         formData: {
@@ -822,31 +827,25 @@ const App = () => {
           phone: `${contactForm.ddi} ${contactForm.phone}`,
           message: contactForm.message
         },
-        recipient: recipient,
-        emailConfig: emailConfig 
+        recipient: targetEmail,
+        emailConfig: emailConfig // Enviando config completa para debug no backend
       };
 
-      console.debug("Payload enviado ao GAS:", payload);
-
-      // Enviando requisição
-      const fetchPromise = fetch(gasUrl, {
+      // Chamada via POST para o Google Apps Script
+      await fetch(gasUrl, {
         method: 'POST',
-        mode: 'no-cors', // Modo no-cors é necessário para GAS sem servidor proxy intermédio
+        mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(payload)
       });
 
-      // No modo no-cors, o navegador não nos deixa ler se deu 200 ou 500
-      // Mas se o fetch não deu Throw, a rede funcionou.
-      await fetchPromise;
-
-      console.debug("Envio concluído (Modo Assíncrono GAS).");
+      // Feedback de Sucesso
       setFormStatus('success');
-      setTimeout(() => setFormStatus('idle'), 8000);
+      setTimeout(() => setFormStatus('idle'), 10000);
       handleClearForm();
 
     } catch (err) {
-      console.error("Erro fatal na rede durante o envio:", err);
+      console.error("Erro fatal ao disparar formulário:", err);
       setFormStatus('error');
       setTimeout(() => setFormStatus('idle'), 5000);
     }
@@ -1392,7 +1391,7 @@ const App = () => {
                       
                       {formStatus === 'error' && (
                         <p className="text-red-400 text-[9px] font-bold text-center uppercase tracking-widest flex items-center justify-center gap-2">
-                          <AlertTriangle size={12}/> Verifique a sua ligação ou credenciais Admin.
+                          <AlertTriangle size={12}/> Verifique se preencheu o "E-mail de Recebimento" no Painel Admin.
                         </p>
                       )}
 

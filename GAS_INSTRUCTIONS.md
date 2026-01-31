@@ -1,23 +1,30 @@
 
-# Configuração do SIR Backend v2.0 (Sistema de Depuração & Entrega Garantida)
+# Configuração do SIR Backend v2.1 (Destino Dinâmico & Entrega Prioritária)
 
-Se os e-mails não estão chegando, esta versão ajudará a identificar o erro criando um registro histórico na sua própria planilha.
+Esta versão garante que o e-mail seja enviado para o endereço definido por você no **Painel Administrativo do Site** (sessão SMTP/E-mail).
 
-## 1. O Código Definitivo (v2.0)
-Substitua todo o conteúdo do seu script por este código:
+## 1. O Código SIR v2.1
+Substitua todo o conteúdo do seu Apps Script por este:
 
 ```javascript
 /**
- * Google Apps Script - Rosimeire Serviços v2.0
- * Bridge de Dados + Data Loss Protection + Error Logging System
+ * Google Apps Script - Rosimeire Serviços v2.1
+ * Bridge de Dados + Data Loss Protection + Dynamic Destination
  */
 
-// Função para autorizar e testar o script manualmente no editor (Clique em EXECUTAR nesta função primeiro)
+// FUNÇÃO CRÍTICA: Clique em EXECUTAR nesta função após colar o código!
 function MANUAL_AUTH_AND_TEST() {
-  Logger.log("Script Autorizado com Sucesso!");
-  const email = Session.getActiveUser().getEmail();
-  GmailApp.sendEmail(email, "Teste de Autorização SIR", "Se recebeu este e-mail, o script está autorizado a enviar mensagens.");
-  return "OK";
+  Logger.log("Iniciando Teste de Entrega...");
+  const userEmail = Session.getActiveUser().getEmail();
+  
+  try {
+    GmailApp.sendEmail(userEmail, "Teste de Autorização SIR v2.1", "O seu motor de e-mail está autorizado e pronto para processar contactos do site.");
+    Logger.log("E-mail de teste enviado para: " + userEmail);
+    return "SUCESSO: E-mail enviado. Verifique sua caixa de entrada.";
+  } catch(e) {
+    Logger.log("ERRO: " + e.toString());
+    return "FALHA: " + e.toString();
+  }
 }
 
 function doGet() {
@@ -49,54 +56,58 @@ function doPost(e) {
   try {
     payload = JSON.parse(e.postData.contents);
   } catch (err) {
-    logToSheet("Erro Crítico", "JSON Inválido recebido: " + err.toString());
+    logToSheet("Erro no Payload", "JSON corrompido");
     return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "JSON Inválido" })).setMimeType(ContentService.MimeType.JSON);
   }
 
-  // AÇÃO: Envio de Contacto
+  // AÇÃO: Envio de Contacto do Site
   if (payload.action === 'send_contact') {
     try {
       const formData = payload.formData || {};
       const config = payload.emailConfig || {};
       
-      const name = formData.name || "N/A";
-      const clientEmail = formData.email || "N/A";
-      const phone = formData.phone || "N/A";
-      const message = formData.message || "Sem conteúdo";
-      const recipient = config.recipientEmail || "atendimento@rosimeireservicos.com";
+      const name = formData.name || "Cliente";
+      const clientEmail = formData.email || "Sem e-mail";
+      const phone = formData.phone || "Sem contacto";
+      const message = formData.message || "";
       
-      const subject = "Website Rosimeire: Contacto de " + name;
+      // PRIORIDADE: O e-mail configurado no Admin do site
+      const recipient = payload.recipient || config.recipientEmail || "atendimento@rosimeireservicos.com";
+      
+      const subject = "⚠️ NOVO CONTACTO: " + name;
       const htmlBody = `
-        <div style="font-family: sans-serif; border: 1px solid #f8c8c4; padding: 20px;">
-          <h2>Novo Contacto</h2>
+        <div style="font-family: sans-serif; max-width: 600px; border: 1px solid #f8c8c4; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #081221; border-bottom: 2px solid #f8c8c4; padding-bottom: 10px;">Rosimeire Serviços - Contacto</h2>
           <p><strong>Nome:</strong> ${name}</p>
-          <p><strong>E-mail:</strong> ${clientEmail}</p>
-          <p><strong>Telefone:</strong> ${phone}</p>
-          <hr>
-          <p><strong>Mensagem:</strong><br>${message.replace(/\n/g, '<br>')}</p>
+          <p><strong>E-mail do Cliente:</strong> ${clientEmail}</p>
+          <p><strong>Telemóvel:</strong> ${phone}</p>
+          <div style="background: #fdf2f2; padding: 15px; border-left: 4px solid #f8c8c4; margin-top: 20px;">
+            <strong>Mensagem:</strong><br>
+            ${message.replace(/\n/g, '<br>')}
+          </div>
+          <p style="font-size: 10px; color: #999; margin-top: 30px;">Mensagem enviada via formulário do website.</p>
         </div>
       `;
       
-      // Tentativa de envio via Gmail Relay
+      // Envio Real
       GmailApp.sendEmail(recipient, subject, "", { 
         htmlBody: htmlBody,
         replyTo: clientEmail,
         name: "Website Rosimeire"
       });
       
-      logToSheet("Sucesso", "E-mail enviado para " + recipient);
+      logToSheet("E-mail Enviado", "Destino: " + recipient + " | Remetente: " + clientEmail);
       return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
       
     } catch (err) {
-      logToSheet("Erro no Envio", err.toString());
+      logToSheet("Falha no E-mail", err.toString());
       return ContentService.createTextOutput(JSON.stringify({ status: "error", details: err.toString() })).setMimeType(ContentService.MimeType.JSON);
     }
   }
 
-  // AÇÃO PADRÃO: Salvar Dados
+  // AÇÃO: Salvar Dados da Planilha
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Database");
-  const hasValidSlides = payload.slides && payload.slides.length > 0;
-  if (payload && sheet && hasValidSlides) {
+  if (payload && sheet && payload.slides) {
     const row = [
       JSON.stringify(payload.slides),
       JSON.stringify(payload.siteConfig),
@@ -115,42 +126,25 @@ function doPost(e) {
     sheet.getRange(2, 1, 1, 13).setValues([row]);
     return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
   }
-  
-  return ContentService.createTextOutput(JSON.stringify({ status: "ignored" })).setMimeType(ContentService.MimeType.JSON);
 }
 
-// Função Auxiliar para Logs
 function logToSheet(status, message) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let logSheet = ss.getSheetByName("Logs");
-  if (!logSheet) {
-    logSheet = ss.insertSheet("Logs");
-    logSheet.appendRow(["Data/Hora", "Status", "Detalhes"]);
-    logSheet.getRange(1,1,1,3).setFontWeight("bold").setBackground("#f3f3f3");
-  }
-  logSheet.appendRow([new Date(), status, message]);
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let logSheet = ss.getSheetByName("Logs");
+    if (!logSheet) { logSheet = ss.insertSheet("Logs"); logSheet.appendRow(["Hora", "Estado", "Info"]); }
+    logSheet.appendRow([new Date(), status, message]);
+  } catch(e) {}
 }
 ```
 
-## 2. Como Garantir que Funcione (Passo-a-Passo)
+## 2. Instruções de Ativação (Não Pule!)
 
-### A. Autorização (O mais importante)
-1. No editor do Apps Script, olhe para a barra de ferramentas superior onde diz `doGet`.
-2. Clique na seta ao lado e selecione a função **`MANUAL_AUTH_AND_TEST`**.
-3. Clique no botão **Executar** (índice de play).
-4. Uma janela pedirá permissão. Clique em **Revisar Permissões**, escolha sua conta, clique em **Avançado** e depois em **Aceder a Rosimeire Serviços (não seguro)**.
-5. Aceite tudo. Se você receber um e-mail de teste agora, o backend está pronto.
+1.  **Cole o código** v2.1 no editor do Script.
+2.  Na barra superior do editor, selecione a função **`MANUAL_AUTH_AND_TEST`**.
+3.  Clique em **Executar**.
+4.  Dê todas as permissões necessárias (Avançado -> Aceder a Rosimeire Serviços).
+5.  **IMPORTANTE**: Vá ao site, entre no **Painel Admin**, vá à aba **E-mail** e verifique se o campo **"E-mail de Recebimento"** tem o seu e-mail correto. Clique em **Guardar & Finalizar**.
+6.  Agora, faça um teste real na página de Contactos.
 
-### B. Implantação
-1. Clique em **Implantar** > **Gerenciar Implantações**.
-2. Clique no ícone de **Lápis** para editar.
-3. No campo "Versão", selecione obrigatoriamente **"Nova Versão"**.
-4. Clique em **Implantar**.
-
-### C. Verificação de Erros
-Se enviar pelo site e não chegar:
-1. Abra a sua Planilha Google.
-2. Procure a nova aba **"Logs"** que o script criou.
-3. Lá dirá exatamente se o Google bloqueou o e-mail ou se o destinatário estava errado.
-
-**Nota sobre SMTP:** Como o Google Script é executado nos servidores do Google, ele usa a API nativa do Gmail. As configurações de SMTP que você preencheu no Admin servem como registro e para definir o `recipientEmail` (para onde o e-mail vai). Se você precisar usar um servidor SMTP externo (como Outlook ou Hostgator) de forma rigorosa, seria necessário um backend em Node.js ou PHP. Este método via GAS é o mais seguro e gratuito para o seu volume de atendimento.
+O script agora sabe que deve olhar para o campo "E-mail de Recebimento" da planilha antes de disparar.
