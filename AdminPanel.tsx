@@ -8,7 +8,7 @@ import {
   Info, Lightbulb, Check, Database, Download, Upload, FileJson, ExternalLink, Link, RefreshCw, CloudOff,
   Instagram, Linkedin, Palette, MessageSquare, Lock, Phone, MapPin, ToggleLeft, ToggleRight, Shield,
   Layout, Facebook, Youtube, Music, Wand2, Sparkles, Clock, Calendar, Send, Globe, PlayCircle, Edit3, Power, PowerOff,
-  Building2
+  Building2, AlertTriangle
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
@@ -135,6 +135,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isMagicLoading, setIsMagicLoading] = useState(false);
   
+  // Modal States
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{id: string, name: string} | null>(null);
+  const [validationAlert, setValidationAlert] = useState<{title: string, message: string} | null>(null);
+
   const [magicForm, setMagicForm] = useState<MagicEvent>({
     id: '',
     name: '',
@@ -172,14 +176,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const manager = siteConfig.magicEffect || { activeId: null, items: [] };
 
   const handleGenerateMagic = async () => {
-    if (!magicForm.prompt.trim()) { alert("Descreva o efeito visual primeiro."); return; }
-    if (!magicForm.name.trim()) { alert("Dê um nome ao evento."); return; }
-    if (!magicForm.startDate || !magicForm.endDate) { alert("Defina as datas de início e fim."); return; }
+    if (!magicForm.name.trim()) {
+      setValidationAlert({ title: "Nome Obrigatório", message: "Por favor, dê um nome ao seu evento de magia para identificá-lo na biblioteca." });
+      return;
+    }
+    if (!magicForm.prompt.trim()) {
+      setValidationAlert({ title: "Descrição Ausente", message: "A IA precisa de uma descrição do efeito visual para poder criar o código CSS." });
+      return;
+    }
+    if (!magicForm.startDate || !magicForm.endDate) {
+      setValidationAlert({ title: "Datas Obrigatórias", message: "As datas de Início e Fim são cruciais para que o sistema saiba quando exibir o efeito automaticamente." });
+      return;
+    }
     
     setIsMagicLoading(true);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const prompt = `Você é um engenheiro de animação CSS especializado em efeitos atmosféricos avançados. Gere APENAS código CSS puro (sem Markdown, sem blocos de código) para um efeito visual imersivo que será aplicado a uma div de tela inteira (.magic-event-layer). Ignore as cores padrão do site e siga RIGOROSAMENTE a descrição: "${magicForm.prompt}". O efeito deve ser executado SOBRE o conteúdo do site sem bloquear cliques (use backgrounds transparentes ou animações de partículas). Alvo principal do CSS: .magic-event-layer e seus pseudo-elementos ::before/::after ou filhos gerados por animação.`;
+      const prompt = `Você é um engenheiro de animação CSS de elite. Gere APENAS código CSS puro para um efeito atmosférico sobreposto. ALVO: .magic-event-layer. REGRAS: 1. Ignore o tema do site. 2. Use cores e formas conforme descrito: "${magicForm.prompt}". 3. Garanta pointer-events: none. 4. Não use blocos de código markdown.`;
       const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt });
       const cleanedCode = (response.text || "").replace(/```css/g, '').replace(/```/g, '').trim();
       
@@ -196,8 +209,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
       updateSiteConfig('magicEffect', { ...manager, items: newItems });
       setMagicForm({ id: '', name: '', code: '', prompt: '', startDate: '', endDate: '' });
-      alert("Evento gerado e guardado na biblioteca!");
-    } catch (err) { alert("Erro ao conectar com a IA."); } finally { setIsMagicLoading(false); }
+      setValidationAlert({ title: "Magia Criada!", message: "O evento foi gerado com sucesso e já está disponível na sua biblioteca." });
+    } catch (err) { 
+      setValidationAlert({ title: "Erro na Conexão", message: "Não foi possível comunicar com o motor de IA. Verifique a sua ligação." });
+    } finally { setIsMagicLoading(false); }
   };
 
   const handleTestMagic = (item: MagicEvent) => {
@@ -209,15 +224,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       document.head.appendChild(styleElement);
     }
     styleElement.innerHTML = item.code;
-    alert(`A testar: ${item.name}. O efeito foi aplicado localmente.`);
+    setValidationAlert({ title: "Teste Ativo", message: `O efeito "${item.name}" foi aplicado temporariamente ao site para sua visualização.` });
   };
 
-  const handleRemoveMagic = (id: string) => {
-    if (window.confirm("Tem certeza que deseja remover este evento da biblioteca?")) {
-      const newItems = manager.items.filter(i => i.id !== id);
-      const newActiveId = manager.activeId === id ? null : manager.activeId;
-      updateSiteConfig('magicEffect', { items: newItems, activeId: newActiveId });
-    }
+  const confirmRemoveMagic = () => {
+    if (!deleteConfirmation) return;
+    const newItems = manager.items.filter(i => i.id !== deleteConfirmation.id);
+    const newActiveId = manager.activeId === deleteConfirmation.id ? null : manager.activeId;
+    updateSiteConfig('magicEffect', { items: newItems, activeId: newActiveId });
+    setDeleteConfirmation(null);
   };
 
   const handleActivateMagic = (id: string) => {
@@ -242,6 +257,42 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   return (
     <motion.div initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: '100%' }} className="fixed inset-0 z-[1000] bg-[#081221] text-white overflow-y-auto">
+      {/* --- CUSTOM MODALS --- */}
+      <AnimatePresence>
+        {validationAlert && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[5000] flex items-center justify-center p-6 bg-[#081221]/80 backdrop-blur-md">
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="crystal-card p-10 max-w-md w-full border-[#f8c8c4]/30 shadow-2xl relative">
+              <div className="flex flex-col items-center text-center gap-6">
+                <div className="p-4 bg-[#f8c8c4]/10 rounded-full text-[#f8c8c4]"><Info size={32}/></div>
+                <div className="space-y-2">
+                  <h4 className="text-xl font-bold uppercase tracking-widest">{validationAlert.title}</h4>
+                  <p className="text-sm text-white/60 leading-relaxed">{validationAlert.message}</p>
+                </div>
+                <button onClick={() => setValidationAlert(null)} className="btn-serenity w-full !py-4">COMPREENDIDO</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {deleteConfirmation && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[5000] flex items-center justify-center p-6 bg-[#081221]/80 backdrop-blur-md">
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="crystal-card p-10 max-w-md w-full border-red-500/30 shadow-2xl">
+              <div className="flex flex-col items-center text-center gap-6">
+                <div className="p-4 bg-red-500/10 rounded-full text-red-500"><AlertTriangle size={32}/></div>
+                <div className="space-y-2">
+                  <h4 className="text-xl font-bold uppercase tracking-widest">Remover Evento?</h4>
+                  <p className="text-sm text-white/60 leading-relaxed">Tem certeza que deseja apagar o evento <span className="text-white font-bold">"{deleteConfirmation.name}"</span>? Esta ação não pode ser desfeita.</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 w-full">
+                  <button onClick={() => setDeleteConfirmation(null)} className="p-4 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">Cancelar</button>
+                  <button onClick={confirmRemoveMagic} className="p-4 bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest rounded-sm hover:bg-red-600 transition-colors">REMOVER</button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="container mx-auto px-8 md:px-32 py-24 pb-32">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-8">
           <h2 className="heading-serif text-4xl md:text-7xl uppercase tracking-tighter">Painel de Controlo</h2>
@@ -332,7 +383,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                                   </div>
                                   <div className="flex gap-2">
                                      <button onClick={() => handleEditMagic(item)} title="Editar" className="p-2 text-white/20 hover:text-white transition-colors"><Edit3 size={14}/></button>
-                                     <button onClick={() => handleRemoveMagic(item.id)} title="Remover" className="p-2 text-white/20 hover:text-red-400 transition-colors"><Trash2 size={14}/></button>
+                                     <button onClick={() => setDeleteConfirmation({id: item.id, name: item.name})} title="Remover" className="p-2 text-white/20 hover:text-red-400 transition-colors"><Trash2 size={14}/></button>
                                   </div>
                                </div>
                                
