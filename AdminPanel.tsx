@@ -179,7 +179,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     setIsMagicLoading(true);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const prompt = `Você é um designer web de luxo especializado em efeitos atmosféricos. Gere APENAS código CSS para um efeito visual imersivo e elegante baseado na descrição: "${magicForm.prompt}". Cores sugeridas: #081221, #f8c8c4, dourado suave. Alvo: .magic-event-layer. Não use markdown.`;
+      const prompt = `Você é um engenheiro de animação CSS especializado em efeitos atmosféricos avançados. Gere APENAS código CSS puro (sem Markdown, sem blocos de código) para um efeito visual imersivo que será aplicado a uma div de tela inteira (.magic-event-layer). Ignore as cores padrão do site e siga RIGOROSAMENTE a descrição: "${magicForm.prompt}". O efeito deve ser executado SOBRE o conteúdo do site sem bloquear cliques (use backgrounds transparentes ou animações de partículas). Alvo principal do CSS: .magic-event-layer e seus pseudo-elementos ::before/::after ou filhos gerados por animação.`;
       const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt });
       const cleanedCode = (response.text || "").replace(/```css/g, '').replace(/```/g, '').trim();
       
@@ -281,11 +281,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="grid grid-cols-1 gap-6">
                          <div>
                             <label className="admin-label">Nome do Evento</label>
-                            <input value={magicForm.name} onChange={e => setMagicForm({...magicForm, name: e.target.value})} placeholder="Ex: Evento de Natal 2025" className="admin-input !bg-white/5" />
+                            <input value={magicForm.name} onChange={e => setMagicForm({...magicForm, name: e.target.value})} placeholder="Ex: Neve no Algarve" className="admin-input !bg-white/5" />
                          </div>
                          <div>
-                            <label className="admin-label">Descreva o efeito desejado</label>
-                            <textarea value={magicForm.prompt} onChange={e => setMagicForm({...magicForm, prompt: e.target.value})} placeholder="Ex: Estrelas douradas cintilantes caindo suavemente no fundo..." className="admin-input !bg-white/5 min-h-[120px]" />
+                            <label className="admin-label">Descreva o efeito desejado (IA)</label>
+                            <textarea value={magicForm.prompt} onChange={e => setMagicForm({...magicForm, prompt: e.target.value})} placeholder="Ex: Partículas azuis neon flutuando pelo ecrã com brilho suave..." className="admin-input !bg-white/5 min-h-[120px]" />
                          </div>
                       </div>
                       

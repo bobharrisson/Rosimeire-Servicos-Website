@@ -479,7 +479,7 @@ const MagicEffectRunner = ({ manager }: { manager?: MagicEffectManager }) => {
 
   return (
     <div 
-      className="magic-event-layer fixed inset-0 z-[9999] pointer-events-none overflow-hidden select-none" 
+      className="magic-event-layer fixed inset-0 z-[10000] pointer-events-none overflow-hidden select-none" 
       aria-hidden="true" 
     />
   );
