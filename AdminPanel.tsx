@@ -413,90 +413,105 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         )}
                       </div>
                    </div>
+                 </div>
+               </div>
+
+             <div className="crystal-card p-12 space-y-10 border-white/5">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                  <div className="flex items-center gap-6 text-white/40">
+                    <Globe size={24}/>
+                    <h3 className="text-xl font-bold tracking-widest uppercase text-white">Configurações Gerais</h3>
+                  </div>
+                  <button 
+                    onClick={async () => { setIsSaving(true); await onPublishToCloud(); setIsSaving(false); }} 
+                    disabled={isSaving}
+                    className="flex items-center gap-4 bg-[#f8c8c4]/10 hover:bg-[#f8c8c4]/20 border border-[#f8c8c4]/30 px-8 py-4 rounded-sm text-[10px] font-black tracking-[0.3em] text-[#f8c8c4] transition-all group"
+                  >
+                    {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Cloud size={14} className="group-hover:translate-y-[-2px] transition-transform" />}
+                    SINCRONIZAR COM A NUVEM
+                  </button>
                 </div>
-              </div>
 
-              <div className="crystal-card p-12 space-y-10 border-white/5">
-                <div className="flex items-center gap-6 text-white/40"><Globe size={24}/><h3 className="text-xl font-bold tracking-widest uppercase text-white">Configurações Gerais</h3></div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                   <div className="space-y-6">
-                      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-sm space-y-6">
-                        <label className="admin-label">Identidade Visual</label>
-                        <div className="space-y-6">
-                           <div>
-                              <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">URL da Logomarca (PNG/SVG)</label>
-                              <input value={siteConfig.logoUrl || ""} onChange={e => updateSiteConfig('logoUrl', e.target.value)} placeholder="https://..." className="admin-input" />
-                           </div>
-                           <div>
-                              <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Nome Principal</label>
-                              <input value={siteConfig.companyName || ""} onChange={e => updateSiteConfig('companyName', e.target.value)} className="admin-input font-bold" />
-                           </div>
-                           <div>
-                              <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Slogan / Subtítulo</label>
-                              <input value={siteConfig.companySubtitle || ""} onChange={e => updateSiteConfig('companySubtitle', e.target.value)} className="admin-input" />
-                           </div>
-                        </div>
-                      </div>
-                   </div>
-                   <div className="space-y-6">
-                      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-sm space-y-6">
-                        <label className="admin-label">Rodapé & Copyright</label>
-                        <div className="space-y-6">
-                           <div>
-                              <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Nota do Rodapé</label>
-                              <textarea value={siteConfig.footerNote || ""} onChange={e => updateSiteConfig('footerNote', e.target.value)} className="admin-input" rows={2} />
-                           </div>
-                           <div>
-                              <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Texto de Direitos Autorais</label>
-                              <input value={siteConfig.footerCopyright || ""} onChange={e => updateSiteConfig('footerCopyright', e.target.value)} className="admin-input" />
-                           </div>
-                           <div>
-                              <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Desenvolvido Por</label>
-                               <input value={siteConfig.developedBy || ""} onChange={e => updateSiteConfig('developedBy', e.target.value)} className="admin-input" />
-                            </div>
-                         </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-8">
+                  {/* Identidade Visual */}
+                  <div className="p-6 bg-white/[0.02] border border-white/5 rounded-sm space-y-6 flex flex-col">
+                    <label className="admin-label">Identidade Visual</label>
+                    <div className="space-y-6 flex-1">
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">URL da Logomarca (PNG/SVG)</label>
+                          <input value={siteConfig.logoUrl || ""} onChange={e => updateSiteConfig('logoUrl', e.target.value)} placeholder="https://..." className="admin-input" />
                        </div>
-
-                       <div className="p-6 bg-white/[0.02] border border-white/5 rounded-sm space-y-6">
-                         <label className="admin-label">Livro de Reclamações & Legal</label>
-                         <div className="space-y-6">
-                            <div>
-                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">URL Livro de Reclamações</label>
-                               <input value={siteConfig.complaintsBookUrl || ""} onChange={e => updateSiteConfig('complaintsBookUrl', e.target.value)} placeholder="https://..." className="admin-input" />
-                            </div>
-                            <div>
-                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Título Info Consumidor</label>
-                               <input value={siteConfig.consumerInfoTitle || ""} onChange={e => updateSiteConfig('consumerInfoTitle', e.target.value)} className="admin-input" />
-                            </div>
-                            <div>
-                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Texto Info Consumidor</label>
-                               <textarea value={siteConfig.consumerInfoText || ""} onChange={e => updateSiteConfig('consumerInfoText', e.target.value)} className="admin-input" rows={2} />
-                            </div>
-                            <div>
-                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Contacto Info Consumidor</label>
-                               <input value={siteConfig.consumerInfoContact || ""} onChange={e => updateSiteConfig('consumerInfoContact', e.target.value)} className="admin-input" />
-                            </div>
-                         </div>
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Nome Principal</label>
+                          <input value={siteConfig.companyName || ""} onChange={e => updateSiteConfig('companyName', e.target.value)} className="admin-input font-bold" />
                        </div>
-
-                       <div className="p-6 bg-white/[0.02] border border-white/5 rounded-sm space-y-6">
-                         <label className="admin-label">Preçário (DL 138/90)</label>
-                         <div className="space-y-6">
-                            <div>
-                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">URL do Preçário (PDF)</label>
-                               <input value={siteConfig.priceListUrl || ""} onChange={e => updateSiteConfig('priceListUrl', e.target.value)} placeholder="/caminho/para/o/pdf" className="admin-input" />
-                            </div>
-                            <div>
-                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Título do Preçário</label>
-                               <input value={siteConfig.priceListTitle || ""} onChange={e => updateSiteConfig('priceListTitle', e.target.value)} className="admin-input" />
-                            </div>
-                            <div>
-                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Texto do Preçário</label>
-                               <textarea value={siteConfig.priceListText || ""} onChange={e => updateSiteConfig('priceListText', e.target.value)} className="admin-input" rows={3} />
-                            </div>
-                         </div>
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Slogan / Subtítulo</label>
+                          <input value={siteConfig.companySubtitle || ""} onChange={e => updateSiteConfig('companySubtitle', e.target.value)} className="admin-input" />
                        </div>
                     </div>
+                  </div>
+
+                  {/* Rodapé & Copyright */}
+                  <div className="p-6 bg-white/[0.02] border border-white/5 rounded-sm space-y-6 flex flex-col">
+                    <label className="admin-label">Rodapé & Copyright</label>
+                    <div className="space-y-6 flex-1">
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Nota do Rodapé</label>
+                          <textarea value={siteConfig.footerNote || ""} onChange={e => updateSiteConfig('footerNote', e.target.value)} className="admin-input" rows={2} />
+                       </div>
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Copyright</label>
+                          <input value={siteConfig.footerCopyright || ""} onChange={e => updateSiteConfig('footerCopyright', e.target.value)} className="admin-input" />
+                       </div>
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Desenvolvido Por</label>
+                          <input value={siteConfig.developedBy || ""} onChange={e => updateSiteConfig('developedBy', e.target.value)} className="admin-input" />
+                       </div>
+                    </div>
+                  </div>
+
+                  {/* Livro de Reclamações & Legal */}
+                  <div className="p-6 bg-white/[0.02] border border-white/5 rounded-sm space-y-6 flex flex-col">
+                    <label className="admin-label">Consumidor & Legal</label>
+                    <div className="space-y-6 flex-1">
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">URL Livro Reclamações</label>
+                          <input value={siteConfig.complaintsBookUrl || ""} onChange={e => updateSiteConfig('complaintsBookUrl', e.target.value)} placeholder="https://..." className="admin-input" />
+                       </div>
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Título Info</label>
+                          <input value={siteConfig.consumerInfoTitle || ""} onChange={e => updateSiteConfig('consumerInfoTitle', e.target.value)} className="admin-input" />
+                       </div>
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Texto Legal</label>
+                          <textarea value={siteConfig.consumerInfoText || ""} onChange={e => updateSiteConfig('consumerInfoText', e.target.value)} className="admin-input" rows={2} />
+                       </div>
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Contacto</label>
+                          <input value={siteConfig.consumerInfoContact || ""} onChange={e => updateSiteConfig('consumerInfoContact', e.target.value)} className="admin-input" />
+                       </div>
+                    </div>
+                  </div>
+
+                  {/* Preçário (DL 138/90) */}
+                  <div className="p-6 bg-white/[0.02] border border-white/5 rounded-sm space-y-6 flex flex-col">
+                    <label className="admin-label">Preçário (DL 138/90)</label>
+                    <div className="space-y-6 flex-1">
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">URL Preçário (PDF)</label>
+                          <input value={siteConfig.priceListUrl || ""} onChange={e => updateSiteConfig('priceListUrl', e.target.value)} className="admin-input" />
+                       </div>
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Título Secção</label>
+                          <input value={siteConfig.priceListTitle || ""} onChange={e => updateSiteConfig('priceListTitle', e.target.value)} className="admin-input" />
+                       </div>
+                       <div>
+                          <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Texto Descritivo</label>
+                          <textarea value={siteConfig.priceListText || ""} onChange={e => updateSiteConfig('priceListText', e.target.value)} className="admin-input" rows={4} />
+                       </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
