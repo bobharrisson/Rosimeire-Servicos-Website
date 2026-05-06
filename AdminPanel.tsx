@@ -44,6 +44,10 @@ interface SiteConfig {
   footerCopyright: string;
   developedBy: string;
   magicEffect: MagicEffectManager;
+  complaintsBookUrl: string;
+  consumerInfoTitle: string;
+  consumerInfoText: string;
+  consumerInfoContact: string;
 }
 
 interface SectionImages {
@@ -445,11 +449,33 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                            </div>
                            <div>
                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Desenvolvido Por</label>
-                              <input value={siteConfig.developedBy || ""} onChange={e => updateSiteConfig('developedBy', e.target.value)} className="admin-input" />
-                           </div>
-                        </div>
-                      </div>
-                   </div>
+                               <input value={siteConfig.developedBy || ""} onChange={e => updateSiteConfig('developedBy', e.target.value)} className="admin-input" />
+                            </div>
+                         </div>
+                       </div>
+
+                       <div className="p-6 bg-white/[0.02] border border-white/5 rounded-sm space-y-6">
+                         <label className="admin-label">Livro de Reclamações & Legal</label>
+                         <div className="space-y-6">
+                            <div>
+                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">URL Livro de Reclamações</label>
+                               <input value={siteConfig.complaintsBookUrl || ""} onChange={e => updateSiteConfig('complaintsBookUrl', e.target.value)} placeholder="https://..." className="admin-input" />
+                            </div>
+                            <div>
+                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Título Info Consumidor</label>
+                               <input value={siteConfig.consumerInfoTitle || ""} onChange={e => updateSiteConfig('consumerInfoTitle', e.target.value)} className="admin-input" />
+                            </div>
+                            <div>
+                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Texto Info Consumidor</label>
+                               <textarea value={siteConfig.consumerInfoText || ""} onChange={e => updateSiteConfig('consumerInfoText', e.target.value)} className="admin-input" rows={2} />
+                            </div>
+                            <div>
+                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Contacto Info Consumidor</label>
+                               <input value={siteConfig.consumerInfoContact || ""} onChange={e => updateSiteConfig('consumerInfoContact', e.target.value)} className="admin-input" />
+                            </div>
+                         </div>
+                       </div>
+                    </div>
                 </div>
               </div>
             </div>

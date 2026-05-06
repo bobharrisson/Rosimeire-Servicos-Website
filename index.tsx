@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { 
   Menu, X, Home, Building2, Paintbrush, Gem, Mail, Phone, ArrowRight,
-  Shield, Wind, Sparkle, Settings, ExternalLink, Bell, Lock, User, Info,
+  Wind, Sparkle, Settings, ExternalLink, Bell, Lock, User, Info,
   Star, CheckCircle2, Briefcase, MapPin, ArrowLeft, Globe, Target, Eye, 
   Heart, ShieldCheck, MessageSquare, Flame, Award, Users, Check,
   ChevronLeft, ChevronRight, Save, RotateCcw, Server, Cloud, CloudOff, RefreshCw, Loader2,
@@ -49,6 +49,10 @@ interface SiteConfig {
   footerCopyright: string;
   developedBy: string;
   magicEffect: MagicEffectManager;
+  complaintsBookUrl: string;
+  consumerInfoTitle: string;
+  consumerInfoText: string;
+  consumerInfoContact: string;
 }
 
 interface SectionImages {
@@ -299,7 +303,11 @@ const DEFAULT_SITE_CONFIG: SiteConfig = {
   footerNote: "A alma do Algarve bem cuidada.",
   footerCopyright: "© 2025. Rosimeire Serviços - Algarve.",
   developedBy: "Bob Harrisson Gracindo Madeiro",
-  magicEffect: DEFAULT_MAGIC_EFFECT
+  magicEffect: DEFAULT_MAGIC_EFFECT,
+  complaintsBookUrl: "https://www.livroreclamacoes.pt",
+  consumerInfoTitle: "Informação ao Consumidor (Lei 144/2015)",
+  consumerInfoText: "Em caso de litígio, o consumidor pode recorrer ao Centro de Informação, Mediação e Arbitragem de Consumo do Algarve (CIMAAL).",
+  consumerInfoContact: "Tel: 289 823 135 | www.consumoalgarve.pt"
 };
 
 const DEFAULT_SLIDES: Slide[] = [
@@ -1533,6 +1541,32 @@ const App = () => {
               </div>
             </div>
           </div>
+
+          {/* Sessão Livro de Reclamações & Info Consumidor - Padrão SIR */}
+          <div className="mb-24 pt-16 border-t border-white/5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div className="space-y-6">
+                 <span className="text-[10px] font-black tracking-[0.4em] uppercase text-white/50">{siteConfig.consumerInfoTitle}</span>
+                 <p className="text-sm font-light text-white/40 leading-relaxed max-w-xl">
+                   {siteConfig.consumerInfoText}
+                 </p>
+                 <span className="text-[10px] font-bold text-[#f8c8c4]/60 tracking-widest block uppercase italic">{siteConfig.consumerInfoContact}</span>
+              </div>
+              <div className="flex justify-start lg:justify-end">
+                <a href={siteConfig.complaintsBookUrl} target="_blank" rel="noopener noreferrer" className="crystal-card p-6 flex items-center gap-6 group hover:border-red-500/40 transition-all border-red-900/30 bg-[#4c0519]/80 rounded-2xl shadow-2xl shadow-black/40">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-transform group-hover:scale-110 duration-500" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black tracking-[0.3em] text-white/40 uppercase mb-1">Acesso Direto</span>
+                    <span className="text-sm font-bold tracking-[0.1em] text-white uppercase group-hover:text-white transition-colors">LIVRO DE RECLAMAÇÕES</span>
+                  </div>
+                  <ExternalLink size={16} className="text-white/40 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all ml-4" />
+                </a>
+              </div>
+            </div>
+          </div>
+
           <div className="pt-16 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
             <p className="text-[9px] font-bold tracking-[0.4em] text-white/40 uppercase italic">{siteConfig.footerCopyright}</p>
             <div className="flex items-center gap-5 text-white/20 group cursor-default">
