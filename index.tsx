@@ -8,7 +8,7 @@ import {
   Heart, ShieldCheck, MessageSquare, Flame, Award, Users, Check,
   ChevronLeft, ChevronRight, Save, RotateCcw, Server, Cloud, CloudOff, RefreshCw, Loader2,
   Instagram, Linkedin, Code, Zap, Trash2, Search, ChevronDown, MessageCircle, LogIn, Navigation,
-  Layout, Facebook, Youtube, Music, Wand2, AlertTriangle, Calendar, PlayCircle
+  Layout, Facebook, Youtube, Music, Wand2, AlertTriangle, Calendar, PlayCircle, FileText, Tag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminPanel from './AdminPanel';
@@ -53,6 +53,9 @@ interface SiteConfig {
   consumerInfoTitle: string;
   consumerInfoText: string;
   consumerInfoContact: string;
+  priceListUrl: string;
+  priceListTitle: string;
+  priceListText: string;
 }
 
 interface SectionImages {
@@ -307,7 +310,10 @@ const DEFAULT_SITE_CONFIG: SiteConfig = {
   complaintsBookUrl: "https://www.livroreclamacoes.pt",
   consumerInfoTitle: "Informação ao Consumidor (Lei 144/2015)",
   consumerInfoText: "Em caso de litígio, o consumidor pode recorrer ao Centro de Informação, Mediação e Arbitragem de Consumo do Algarve (CIMAAL).",
-  consumerInfoContact: "Tel: 289 823 135 | www.consumoalgarve.pt"
+  consumerInfoContact: "Tel: 289 823 135 | www.consumoalgarve.pt",
+  priceListUrl: "/precario.pdf",
+  priceListTitle: "Preçário e Transparência (DL 138/90)",
+  priceListText: "O Decreto-Lei n.º 138/90, de 26 de abril, alterado pelo DL n.º 162/99, de 13 de maio, regula a obrigatoriedade de afixação de preços para bens e serviços ao consumidor em Portugal. Exige que o preço total (incluindo taxas e impostos) seja indicado de forma clara, visível e inequívoca, garantindo a transparência."
 };
 
 const DEFAULT_SLIDES: Slide[] = [
@@ -1563,6 +1569,37 @@ const App = () => {
                   </div>
                   <ExternalLink size={16} className="text-white/40 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all ml-4" />
                 </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Sessão Preçário - Padrão SIR */}
+          <div className="mb-24 pt-16 border-t border-white/5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div className="order-2 lg:order-1 flex justify-start">
+                <a href={siteConfig.priceListUrl} target="_blank" rel="noopener noreferrer" className="crystal-card p-6 flex items-center gap-6 group hover:border-[#d4af37]/40 transition-all border-[#d4af37]/10 bg-[#d4af37]/5 rounded-2xl">
+                  <div className="p-4 bg-[#d4af37]/10 rounded-xl relative overflow-hidden group-hover:bg-[#d4af37]/20 transition-all">
+                    <FileText size={24} className="text-[#d4af37] relative z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-[#d4af37]/0 to-[#d4af37]/30 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black tracking-[0.3em] text-white/30 uppercase mb-1">Documento PDF</span>
+                    <span className="text-sm font-bold tracking-[0.1em] text-white uppercase group-hover:text-[#d4af37] transition-colors">CONSULTAR PREÇÁRIO</span>
+                  </div>
+                  <div className="ml-4 p-2 rounded-lg bg-white/5 text-white/20 group-hover:text-[#d4af37] transition-all">
+                    <Tag size={14} />
+                  </div>
+                </a>
+              </div>
+              <div className="order-1 lg:order-2 space-y-6 text-right">
+                 <span className="text-[10px] font-black tracking-[0.4em] uppercase text-white/50">{siteConfig.priceListTitle}</span>
+                 <p className="text-sm font-light text-white/40 leading-relaxed max-w-xl ml-auto">
+                   {siteConfig.priceListText}
+                 </p>
+                 <div className="flex justify-end gap-3 items-center">
+                    <div className="w-8 h-[1px] bg-[#d4af37]/30" />
+                    <span className="text-[9px] font-bold text-[#d4af37]/60 tracking-widest uppercase italic">Transparência Total</span>
+                 </div>
               </div>
             </div>
           </div>

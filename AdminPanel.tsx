@@ -48,6 +48,9 @@ interface SiteConfig {
   consumerInfoTitle: string;
   consumerInfoText: string;
   consumerInfoContact: string;
+  priceListUrl: string;
+  priceListTitle: string;
+  priceListText: string;
 }
 
 interface SectionImages {
@@ -472,6 +475,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                             <div>
                                <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Contacto Info Consumidor</label>
                                <input value={siteConfig.consumerInfoContact || ""} onChange={e => updateSiteConfig('consumerInfoContact', e.target.value)} className="admin-input" />
+                            </div>
+                         </div>
+                       </div>
+
+                       <div className="p-6 bg-white/[0.02] border border-white/5 rounded-sm space-y-6">
+                         <label className="admin-label">Preçário (DL 138/90)</label>
+                         <div className="space-y-6">
+                            <div>
+                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">URL do Preçário (PDF)</label>
+                               <input value={siteConfig.priceListUrl || ""} onChange={e => updateSiteConfig('priceListUrl', e.target.value)} placeholder="/caminho/para/o/pdf" className="admin-input" />
+                            </div>
+                            <div>
+                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Título do Preçário</label>
+                               <input value={siteConfig.priceListTitle || ""} onChange={e => updateSiteConfig('priceListTitle', e.target.value)} className="admin-input" />
+                            </div>
+                            <div>
+                               <label className="text-[8px] font-bold uppercase text-white/20 mb-2 block tracking-widest">Texto do Preçário</label>
+                               <textarea value={siteConfig.priceListText || ""} onChange={e => updateSiteConfig('priceListText', e.target.value)} className="admin-input" rows={3} />
                             </div>
                          </div>
                        </div>
