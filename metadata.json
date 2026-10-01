@@ -1,6 +1,6 @@
 {
-  "description": "Website moderno de serviços de limpeza de luxo no Algarve, com sistema de tradução, admin para slides e design glassmorphism.",
-  "requestFramePermissions": [],
   "name": "Rosimeire Serviços - Website",
+  "description": "Website institucional premium de serviços de limpeza no Algarve, integrado ao Supabase (PostgreSQL) e ao ecossistema central SIR.",
+  "requestFramePermissions": [],
   "majorCapabilities": []
 }
