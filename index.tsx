@@ -3,15 +3,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { 
   Menu, X, Home, Building2, Paintbrush, Gem, Mail, Phone, ArrowRight,
-  Wind, Sparkle, Settings, ExternalLink, Bell, Lock, User, Info,
+  Wind, Sparkle, ExternalLink, Bell, User, Info,
   Star, CheckCircle2, Briefcase, MapPin, ArrowLeft, Globe, Target, Eye, 
   Heart, ShieldCheck, MessageSquare, Flame, Award, Users, Check,
-  ChevronLeft, ChevronRight, Save, RotateCcw, Server, Cloud, CloudOff, RefreshCw, Loader2,
+  ChevronLeft, ChevronRight, Loader2,
   Instagram, Linkedin, Code, Zap, Trash2, Search, ChevronDown, MessageCircle, LogIn, Navigation,
   Layout, Facebook, Youtube, Music, Wand2, AlertTriangle, Calendar, PlayCircle, FileText, Tag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import AdminPanel from './AdminPanel';
+import { supabase, isSupabaseConfigured, fetchWebsiteDatabase } from './supabase';
 
 // --- Types ---
 type Language = 'PT' | 'EN' | 'ES';
@@ -385,7 +385,6 @@ const DEFAULT_REVIEWS: Review[] = [
 
 const INITIAL_GOOGLE_MAPS_LINK = "https://www.google.com/search?q=Rosimeire+Servi%C3%A7os+Quarteira&si=AMgyJEs9DArPE9xmb5yVYVjpG4jqWDEKSIpCRSjmm88XZWnGNakrDl7qyiJLF74BYlGsMcE9Da1nUDIZ5DNa9RlMSKMI70hspYaTqbBEPz7oFQkgC81_ZMtEKchYDA-1FddJnX-cdUqx";
 const SHARE_MAP_LINK = "https://www.google.com/maps/dir/?api=1&destination=Rosimeire+Servi%C3%A7os+Quarteira";
-const FIXED_GAS_URL = "https://script.google.com/macros/s/AKfycbzsOBqT_YLZW576jbHX8vAcuBi4bSNhn4CYdqTwcu7ObX6QcqNIhjXlsOYxlud9nqy6/exec";
 const SIR_URL = "https://sir.rosimeireservicos.com"; 
 
 // --- Components ---
@@ -503,26 +502,12 @@ const App = () => {
   const [lang, setLang] = useState<Language>('PT');
   const [view, setView] = useState<View>('home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeAdminTab, setActiveAdminTab] = useState<'slides' | 'notices' | 'reviews' | 'partners' | 'images' | 'email' | 'user' | 'site'>('slides');
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [cloudStatus, setCloudStatus] = useState<'idle' | 'loading' | 'connected' | 'error'>('idle');
   
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState(false);
-
   const [isDDIOpen, setIsDDIOpen] = useState(false);
   const [ddiSearch, setDDISearch] = useState("");
   const ddiRef = useRef<HTMLDivElement>(null);
-
-  // --- Admin Access Config ---
-  const [adminUsername, setAdminUsername] = useState('admin');
-  const [adminPassword, setAdminPassword] = useState('rosimeire2025');
 
   const STORAGE_KEY_PREFIX = 'rosimeire_config_v15_manager';
 
@@ -538,7 +523,6 @@ const App = () => {
   const [googleMapsLink, setGoogleMapsLink] = useState<string>(INITIAL_GOOGLE_MAPS_LINK);
   const [contactPhone, setContactPhone] = useState<string>('+351 912 525 649');
   const [addressDetail, setAddressDetail] = useState<string>('R. 25 de Abril 49, 8125-234, Quarteira, Faro Algarve – Portugal');
-  const [gasUrl, setGasUrl] = useState<string>(FIXED_GAS_URL);
 
   // --- Favicon & Document Title Update ---
   useEffect(() => {
@@ -566,112 +550,77 @@ const App = () => {
     ddi: '+351'
   });
 
-  // --- Cloud Sync Implementation ---
-  const fetchFromCloud = async (url: string) => {
-    if (!url) return;
+  // --- Supabase Cloud Sync Implementation ---
+  const fetchFromCloud = async () => {
     setCloudStatus('loading');
     try {
-      const response = await fetch(url, { cache: 'no-store' });
-      const data = await response.json();
+      if (!isSupabaseConfigured) {
+        setCloudStatus('idle');
+        return null;
+      }
+
+      // Busca dados com fallbacks automáticos de schema no Supabase
+      const data = await fetchWebsiteDatabase();
       
       if (data) {
-        const cloudUser = data.adminUsername != null ? String(data.adminUsername).trim() : "";
-        const cloudPass = data.adminPassword != null ? String(data.adminPassword).trim() : "";
+        const parseField = (val: any, fallback: any) => {
+          if (!val) return fallback;
+          if (typeof val === 'object') return val;
+          try { return JSON.parse(val); } catch { return fallback; }
+        };
 
-        if (cloudUser !== "") setAdminUsername(cloudUser);
-        if (cloudPass !== "") setAdminPassword(cloudPass);
+        const incomingSlides = parseField(data.slides || data.hero_slides, null);
+        if (incomingSlides && incomingSlides.length > 0) {
+          setSlides(incomingSlides);
+        }
 
-        if (data.slides && data.slides.length > 0) {
-          setSlides(data.slides);
-          
-          let incomingSiteConfig = { ...DEFAULT_SITE_CONFIG, ...(data.siteConfig || {}) };
-          
-          // Migração de estrutura antiga se necessário
+        const rawConfig = parseField(data.siteConfig || data.site_config, null);
+        if (rawConfig) {
+          let incomingSiteConfig = { ...DEFAULT_SITE_CONFIG, ...rawConfig };
           if (!incomingSiteConfig.magicEffect || Array.isArray(incomingSiteConfig.magicEffect)) {
              incomingSiteConfig.magicEffect = { ...DEFAULT_MAGIC_EFFECT };
           } else if (!incomingSiteConfig.magicEffect.items) {
-             // Provavelmente a estrutura do prompt anterior (simples)
-             const old = incomingSiteConfig.magicEffect as any;
-             if (old.prompt || old.code) {
-                incomingSiteConfig.magicEffect = {
-                  activeId: old.active ? 'legacy' : null,
-                  items: [{
-                    id: 'legacy',
-                    name: 'Evento Legado',
-                    prompt: old.prompt || '',
-                    code: old.code || '',
-                    startDate: old.startDate || '',
-                    endDate: old.endDate || ''
-                  }]
-                };
-             } else {
-                incomingSiteConfig.magicEffect = { ...DEFAULT_MAGIC_EFFECT };
-             }
+             incomingSiteConfig.magicEffect = { ...DEFAULT_MAGIC_EFFECT };
           }
-          
           setSiteConfig(incomingSiteConfig);
-          setSectionImages(data.sectionImages || DEFAULT_SECTION_IMAGES);
-          setSocialLinks(data.socialLinks || DEFAULT_SOCIAL_LINKS);
-          setEmailConfig(data.emailConfig || DEFAULT_EMAIL_CONFIG);
-          setNotices(data.notices || DEFAULT_NOTICES);
-          setReviews(data.reviews || DEFAULT_REVIEWS);
-          setPartners(data.partners || DEFAULT_PARTNERS);
-          setGoogleMapsLink(data.googleMapsLink || INITIAL_GOOGLE_MAPS_LINK);
-          setContactPhone(data.contactPhone || '+351 912 525 649');
-          setAddressDetail(data.addressDetail || 'R. 25 de Abril 49, 8125-234, Quarteira, Faro Algarve – Portugal');
         }
+
+        const incomingSectionImages = parseField(data.sectionImages || data.section_images, null);
+        if (incomingSectionImages) setSectionImages(incomingSectionImages);
+
+        const incomingSocialLinks = parseField(data.socialLinks || data.social_links, null);
+        if (incomingSocialLinks) setSocialLinks(incomingSocialLinks);
+
+        const incomingEmailConfig = parseField(data.emailConfig || data.email_config, null);
+        if (incomingEmailConfig) setEmailConfig(incomingEmailConfig);
+
+        const incomingNotices = parseField(data.notices, null);
+        if (incomingNotices) setNotices(incomingNotices);
+
+        const incomingReviews = parseField(data.reviews, null);
+        if (incomingReviews) setReviews(incomingReviews);
+
+        const incomingPartners = parseField(data.partners, null);
+        if (incomingPartners) setPartners(incomingPartners);
+
+        const incomingMaps = data.googleMapsLink || data.google_maps_link || data.google_maps;
+        if (incomingMaps) setGoogleMapsLink(incomingMaps);
+
+        const incomingPhone = data.contactPhone || data.contact_phone || data.phone;
+        if (incomingPhone) setContactPhone(incomingPhone);
+
+        const incomingAddress = data.addressDetail || data.address_detail || data.address;
+        if (incomingAddress) setAddressDetail(incomingAddress);
 
         setCloudStatus('connected');
         return data;
       }
+      setCloudStatus('idle');
+      return null;
+    } catch (err: any) {
+      console.error("[Supabase] Erro ao sincronizar com nuvem:", err);
       setCloudStatus('error');
       return null;
-    } catch (err) {
-      console.error("Erro ao sincronizar com nuvem:", err);
-      setCloudStatus('error');
-      return null;
-    }
-  };
-
-  const publishToCloud = async (url: string) => {
-    if (!url) return;
-    
-    setIsSyncing(true);
-    setCloudStatus('loading');
-    try {
-      const payload = {
-        slides, 
-        siteConfig,
-        sectionImages, 
-        socialLinks, 
-        emailConfig, 
-        notices, 
-        reviews, 
-        partners, 
-        googleMapsLink,
-        contactPhone,
-        addressDetail,
-        adminUsername,
-        adminPassword,
-        version: "2.6",
-        lastSync: new Date().toISOString()
-      };
-      
-      await fetch(url, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload)
-      });
-      
-      setCloudStatus('connected');
-      setTimeout(() => setIsSyncing(false), 2000);
-      return true;
-    } catch (err) {
-      console.error("Erro ao publicar:", err);
-      setCloudStatus('error');
-      setIsSyncing(false);
-      return false;
     }
   };
 
@@ -698,8 +647,6 @@ const App = () => {
         setGoogleMapsLink(localStorage.getItem(`${STORAGE_KEY_PREFIX}_maps`) || INITIAL_GOOGLE_MAPS_LINK);
         setContactPhone(localStorage.getItem(`${STORAGE_KEY_PREFIX}_phone`) || '+351 912 525 649');
         setAddressDetail(localStorage.getItem(`${STORAGE_KEY_PREFIX}_address`) || 'R. 25 de Abril 49, 8125-234, Quarteira, Faro Algarve – Portugal');
-        setAdminUsername(localStorage.getItem(`${STORAGE_KEY_PREFIX}_admin_user`) || 'admin');
-        setAdminPassword(localStorage.getItem(`${STORAGE_KEY_PREFIX}_admin_pass`) || 'rosimeire2025');
         hasLocalData = true;
       }
 
@@ -707,7 +654,7 @@ const App = () => {
         setTimeout(() => setIsInitialLoading(false), 800);
       }
 
-      fetchFromCloud(FIXED_GAS_URL).then(data => {
+      fetchFromCloud().then(data => {
         if (!hasLocalData) {
           setIsInitialLoading(false);
         }
@@ -730,10 +677,8 @@ const App = () => {
       localStorage.setItem(`${STORAGE_KEY_PREFIX}_maps`, googleMapsLink);
       localStorage.setItem(`${STORAGE_KEY_PREFIX}_phone`, contactPhone);
       localStorage.setItem(`${STORAGE_KEY_PREFIX}_address`, addressDetail);
-      localStorage.setItem(`${STORAGE_KEY_PREFIX}_admin_user`, adminUsername);
-      localStorage.setItem(`${STORAGE_KEY_PREFIX}_admin_pass`, adminPassword);
     }
-  }, [slides, siteConfig, sectionImages, socialLinks, emailConfig, notices, reviews, partners, googleMapsLink, contactPhone, addressDetail, adminUsername, adminPassword, isInitialLoading]);
+  }, [slides, siteConfig, sectionImages, socialLinks, emailConfig, notices, reviews, partners, googleMapsLink, contactPhone, addressDetail, isInitialLoading]);
 
   // Close DDI dropdown on click outside
   useEffect(() => {
@@ -783,13 +728,6 @@ const App = () => {
   const handleNextPartner = () => setCurrentPartnerIndex(p => (p + 1) % partners.length);
   const handlePrevPartner = () => setCurrentPartnerIndex(p => (p - 1 + partners.length) % partners.length);
 
-  const handleResetDefaults = () => {
-    if (confirm("Tem certeza que deseja apagar todas as personalizações locais?")) {
-      localStorage.clear();
-      window.location.reload();
-    }
-  };
-
   const handleHeroButtonClick = (link?: string) => {
     if (!link) {
       setView('contact');
@@ -825,77 +763,40 @@ const App = () => {
 
   useEffect(() => { window.scrollTo(0, 0); }, [view]);
 
-  const handleAdminAccess = () => {
-    if (isAuthenticated) setIsAdminOpen(true);
-    else setIsLoginOpen(true);
-    setIsMenuOpen(false);
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsAuthenticating(true);
-    setLoginError(false);
-
-    try {
-      const data = await fetchFromCloud(gasUrl);
-      const latestUser = (data?.adminUsername != null && String(data.adminUsername).trim() !== "") ? String(data.adminUsername).trim() : adminUsername;
-      const latestPass = (data?.adminPassword != null && String(data.adminPassword).trim() !== "") ? String(data.adminPassword).trim() : adminPassword;
-
-      if (username.trim() === latestUser && password.trim() === latestPass) {
-        setIsAuthenticated(true);
-        setIsLoginOpen(false);
-        setIsAdminOpen(true);
-        setLoginError(false);
-      } else {
-        setLoginError(true);
-      }
-    } catch (err) {
-      console.error("Erro na validação de login:", err);
-      if (username.trim() === adminUsername && password.trim() === adminPassword) {
-        setIsAuthenticated(true);
-        setIsLoginOpen(false);
-        setIsAdminOpen(true);
-      } else {
-        setLoginError(true);
-      }
-    } finally {
-      setIsAuthenticating(false);
-    }
-  };
-
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormStatus('sending');
-    
-    const targetEmail = emailConfig.recipientEmail && emailConfig.recipientEmail.includes('@') 
-      ? emailConfig.recipientEmail 
-      : "atendimento@rosimeireservicos.com";
 
     try {
-      const payload = {
-        action: 'send_contact',
-        formData: {
-          name: contactForm.name,
-          email: contactForm.email,
-          phone: `${contactForm.ddi} ${contactForm.phone}`,
-          message: contactForm.message
-        },
-        recipient: targetEmail
+      const submission = {
+        nome: contactForm.name,
+        email: contactForm.email,
+        telefone: `${contactForm.ddi} ${contactForm.phone}`,
+        ddi: contactForm.ddi,
+        mensagem: contactForm.message
       };
 
-      await fetch(gasUrl, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload)
-      });
+      // Envia os dados submetidos diretamente para a tabela WEBSITE.contact_submissions
+      if (isSupabaseConfigured) {
+        const { error } = await supabase
+          .schema('WEBSITE')
+          .from('contact_submissions')
+          .insert([submission]);
+
+        if (error) {
+          console.error('[Supabase] Erro ao inserir registo em contact_submissions:', error);
+          throw error;
+        }
+      } else {
+        console.info('[Supabase] Credenciais não configuradas. Submissão registada localmente:', submission);
+      }
 
       setFormStatus('success');
       setTimeout(() => setFormStatus('idle'), 8000);
       handleClearForm();
 
     } catch (err) {
-      console.error("Erro fatal ao disparar formulário:", err);
+      console.error("[Supabase] Erro fatal ao submeter formulário:", err);
       setFormStatus('error');
       setTimeout(() => setFormStatus('idle'), 5000);
     }
@@ -972,17 +873,14 @@ const App = () => {
                 ))}
               </div>
 
-              {/* Acesso SIR (Visível em Tablet e Desktop) */}
+              {/* Acesso Discreto SIR (Somente Ícone) */}
               <button 
                 onClick={() => window.open(SIR_URL, '_blank')}
-                className="hidden sm:flex group items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase text-[#f8c8c4]/60 hover:text-[#f8c8c4] transition-all"
+                className="hidden sm:flex items-center justify-center p-2 text-white/30 hover:text-[#f8c8c4] hover:bg-white/[0.04] rounded-full transition-all duration-300"
+                title="Acesso SIR"
+                aria-label="Acesso SIR"
               >
-                <LogIn size={16} className="group-hover:scale-110 transition-transform text-[#f8c8c4]"/> <span className="hidden xs:inline">SIR</span>
-              </button>
-
-              {/* Admin Icon (Visível em Tablet e Desktop) */}
-              <button onClick={handleAdminAccess} className={`hidden sm:flex transition-colors p-1 ${isAuthenticated ? 'text-[#f8c8c4]' : 'text-white/30 hover:text-[#f8c8c4]'}`}>
-                <Settings size={18} />
+                <LogIn size={15} />
               </button>
               
               {/* Menu Hambúrguer / X Toggle */}
@@ -1052,34 +950,25 @@ const App = () => {
             </nav>
 
             <div className="flex flex-col gap-10">
-              {/* 2. Traduções */}
-              <div className="flex gap-8 border-t border-white/5 pt-10">
-                {['PT', 'EN', 'ES'].map(l => (
-                  <button key={l} onClick={() => setLang(l as Language)} className={`text-sm font-bold tracking-widest ${lang === l ? 'text-[#f8c8c4]' : 'text-white/20'}`}>{l}</button>
-                ))}
-              </div>
+              {/* 2. Traduções e Acesso Discreto SIR */}
+              <div className="flex justify-between items-center border-t border-white/5 pt-10">
+                <div className="flex gap-8">
+                  {['PT', 'EN', 'ES'].map(l => (
+                    <button key={l} onClick={() => setLang(l as Language)} className={`text-sm font-bold tracking-widest ${lang === l ? 'text-[#f8c8c4]' : 'text-white/20'}`}>{l}</button>
+                  ))}
+                </div>
 
-              {/* 3. SIR e ENGRENAGEM (Modo Smartphone) */}
-              <div className="flex sm:hidden gap-6 pb-2">
+                {/* Ícone Discreto SIR (Smartphone) */}
                 <button 
                   onClick={() => {
                     window.open(SIR_URL, '_blank');
                     setIsMenuOpen(false);
                   }}
-                  className="p-4 border border-[#f8c8c4]/20 rounded-sm text-[#f8c8c4] hover:bg-[#f8c8c4]/10 transition-all flex items-center justify-center"
-                  title="SIR"
+                  className="p-2.5 text-white/30 hover:text-[#f8c8c4] transition-colors rounded-full hover:bg-white/5"
+                  title="Acesso SIR"
+                  aria-label="Acesso SIR"
                 >
-                  <LogIn size={26} />
-                </button>
-                <button 
-                  onClick={() => {
-                    handleAdminAccess();
-                    setIsMenuOpen(false);
-                  }}
-                  className="p-4 border border-white/5 rounded-sm text-white/30 hover:text-white transition-all flex items-center justify-center"
-                  title="Admin"
-                >
-                  <Settings size={26} />
+                  <LogIn size={20} />
                 </button>
               </div>
 
@@ -1468,48 +1357,6 @@ const App = () => {
                 </div>
               </motion.div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AdminPanel 
-        isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} onLogout={() => { setIsAuthenticated(false); setIsAdminOpen(false); }}
-        siteConfig={siteConfig} setSiteConfig={setSiteConfig}
-        slides={slides} setSlides={setSlides}
-        sectionImages={sectionImages} setSectionImages={setSectionImages}
-        socialLinks={socialLinks} setSocialLinks={setSocialLinks}
-        emailConfig={emailConfig} setEmailConfig={setEmailConfig}
-        notices={notices} setNotices={setNotices} reviews={reviews} setReviews={setReviews}
-        partners={partners} setPartners={setPartners}
-        googleMapsLink={googleMapsLink} setGoogleMapsLink={setGoogleMapsLink}
-        contactPhone={contactPhone} setContactPhone={setContactPhone}
-        addressDetail={addressDetail} setAddressDetail={setAddressDetail}
-        adminUsername={adminUsername} setAdminUsername={setAdminUsername}
-        adminPassword={adminPassword} setAdminPassword={setAdminPassword}
-        activeTab={activeAdminTab} setActiveTab={setActiveAdminTab} t={t}
-        isSyncing={isSyncing} onResetDefaults={handleResetDefaults}
-        gasUrl={gasUrl} setGasUrl={setGasUrl} onPublishToCloud={() => publishToCloud(gasUrl)}
-        cloudStatus={cloudStatus}
-      />
-
-      <AnimatePresence>
-        {isLoginOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[1200] flex items-center justify-center bg-[#081221]/80 backdrop-blur-md">
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="crystal-card p-12 max-w-sm w-full">
-              <h3 className="heading-serif text-2xl text-center mb-8 uppercase tracking-widest">Acesso Restrito</h3>
-              <form onSubmit={handleLogin} className="space-y-6">
-                <input placeholder="Utilizador" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-white/5 border border-white/10 p-4 rounded outline-none text-sm placeholder:text-white/20" />
-                <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-white/5 border border-white/10 p-4 rounded outline-none text-sm placeholder:text-white/20" />
-                <button type="submit" disabled={isAuthenticating} className="w-full btn-serenity flex items-center justify-center gap-3">
-                  {isAuthenticating ? <Loader2 size={12} className="animate-spin" /> : <Lock size={12}/>} 
-                  {isAuthenticating ? 'A validar...' : 'Entrar'}
-                </button>
-              </form>
-              <div className="mt-8 pt-8 border-t border-white/5 flex flex-col gap-4">
-                <button onClick={() => setIsLoginOpen(false)} className="w-full text-[9px] font-bold tracking-[0.3em] text-white/20 uppercase hover:text-white/40 transition-colors">Cancelar</button>
-              </div>
-              {loginError && <p className="text-red-400 text-[10px] font-bold text-center mt-6 uppercase tracking-widest">Credenciais incorretas.</p>}
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
