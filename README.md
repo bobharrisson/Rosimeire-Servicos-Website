@@ -2,19 +2,40 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# Rosimeire Serviços — Website Oficial
 
-This contains everything you need to run your app locally.
+Website institucional moderno de serviços de limpeza premium no Algarve (Quarteira, Vilamoura, Faro), integrado ao **Ecossistema Central SIR** e ao **Supabase (PostgreSQL)**.
 
-View your app in AI Studio: https://ai.studio/apps/905083d0-e17e-4dbc-879e-4fd9bfdd3770
+---
 
-## Run Locally
+## 🚀 Principais Atualizações (Migração Supabase)
 
-**Prerequisites:**  Node.js
+- **Banco de Dados Central:** Conexão direta com Supabase PostgreSQL (`WEBSITE.database` e `WEBSITE.contact_submissions`).
+- **Arquitetura Desacoplada:** Gerenciamento de conteúdo centralizado no **SIR Ecosystem** (`https://sir.rosimeireservicos.com`).
+- **Navegação Limpa:** Acesso ao SIR através de um ícone minimalista e discreto na barra de navegação e menu mobile.
+- **Centro de Informações Técnicas:** Consulte o arquivo [`agents.md`](./agents.md) para a documentação técnica completa da arquitetura e diretrizes de desenvolvimento.
 
+---
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🛠️ Como Executar Localmente
+
+**Pré-requisitos:** Node.js (v18+)
+
+1. Instalar dependências:
+   ```bash
+   npm install
+   ```
+2. Configurar variáveis de ambiente:
+   Copie `.env.example` para `.env.local` e defina suas credenciais do Supabase:
+   ```env
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key-here
+   ```
+3. Iniciar o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+4. Build de produção:
+   ```bash
+   npm run build
+   ```

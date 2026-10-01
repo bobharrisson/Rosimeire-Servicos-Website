@@ -1,3 +1,8 @@
+/**
+ * Supabase Client & Data Synchronization Layer
+ * Ecossistema Central SIR — Rosimeire Serviços (Algarve, Portugal)
+ * Versão: 3.0-supabase
+ */
 import { createClient } from '@supabase/supabase-js';
 
 const rawUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();

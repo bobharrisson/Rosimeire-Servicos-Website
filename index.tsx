@@ -1,4 +1,9 @@
 
+/**
+ * Rosimeire Serviços — Aplicação Principal
+ * Integrado ao Supabase (PostgreSQL) e Ecossistema Central SIR
+ * Versão: 3.0.0
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { 
